@@ -13,15 +13,18 @@ export function examples(): Cand[] {
     { id: "ex2", ejemplo: true, nombre: "Promoción inacabada de 20 viviendas", barrio: "Barrio a elegir", via: "parada", precio: 1800000, viv: 20, estado: "Contactado", notas: "Datos inventados para ver cómo funciona la lista.", chk: { 0: true } },
   ];
 }
-export const initial = (): State => ({ group: { name: "", fam: 20, barrio: "", ciudad: "", region: "" }, done: {}, cands: examples(), calc: { ...CDEF }, open: null });
+export const initial = (): State => ({ group: { name: "", fam: 20, barrio: "", ciudad: "València", region: "cv" }, done: {}, cands: examples(), calc: { ...CDEF }, open: null });
 
 function load(): State {
   const base = initial();
   try {
     const sv = JSON.parse(localStorage.getItem(KEY) || "null");
     if (sv && typeof sv === "object") {
+      const g = { ...base.group, ...sv.group };
+      // Quien guardó el estado sin ciudad ni comunidad (nunca la eligió) también parte de València.
+      if (!String(g.ciudad || "").trim() && !String(g.region || "").trim()) { g.ciudad = base.group.ciudad; g.region = base.group.region; }
       return {
-        group: { ...base.group, ...sv.group },
+        group: g,
         done: sv.done && typeof sv.done === "object" ? sv.done : {},
         cands: Array.isArray(sv.cands) ? sv.cands : base.cands,
         calc: { ...base.calc, ...sv.calc },
