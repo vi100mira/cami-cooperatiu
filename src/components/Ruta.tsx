@@ -37,10 +37,10 @@ export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
       </div>
       <figure className="hphoto">
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/1024px-Cases_Cabanyal_-_15.jpeg"
-          srcSet="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/640px-Cases_Cabanyal_-_15.jpeg 640w, https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/1024px-Cases_Cabanyal_-_15.jpeg 1024w"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/960px-Cases_Cabanyal_-_15.jpeg"
+          srcSet="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/500px-Cases_Cabanyal_-_15.jpeg 500w, https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/960px-Cases_Cabanyal_-_15.jpeg 960w, https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/1280px-Cases_Cabanyal_-_15.jpeg 1280w"
           sizes="(max-width: 640px) 100vw, 420px"
-          width={1024} height={768} alt="Casa con fachada de azulejos azules en el barrio del Cabanyal, València" fetchPriority="high" decoding="async"
+          width={960} height={720} alt="Casa con fachada de azulejos azules en el barrio del Cabanyal, València" fetchPriority="high" decoding="async"
         />
         <figcaption><a href="https://commons.wikimedia.org/wiki/File:Cases_Cabanyal_-_15.jpeg" target="_blank" rel="noopener noreferrer">Foto: Coentor · CC BY-SA 3.0 ↗</a></figcaption>
       </figure>
