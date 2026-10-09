@@ -1,5 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { parseFotocasa, type Listing } from "./parse-fotocasa";
+import { parsePisos } from "./parse-pisos";
+import { unirListados } from "./merge";
 import { canSpend, recordCall, recordFailure } from "./guards";
 
 export type Tipo = "edificios" | "terrenos";
@@ -8,16 +10,23 @@ export type Tipo = "edificios" | "terrenos";
  * Ciudades con búsqueda en vivo: slug de Fotocasa verificado a mano. Para añadir una ciudad,
  * comprueba primero que la URL devuelve resultados y añade una línea aquí (no se acepta nada más).
  */
-export const CITIES: Record<string, { slug: string; nombre: string }> = {
-  valencia: { slug: "valencia-capital", nombre: "València" },
+export const CITIES: Record<string, { slug: string; pisos: string; nombre: string }> = {
+  valencia: { slug: "valencia-capital", pisos: "valencia_capital", nombre: "València" },
 };
 export function isCity(x: unknown): x is string { return typeof x === "string" && Object.prototype.hasOwnProperty.call(CITIES, x); }
 export function sourceUrl(tipo: Tipo, ciudad: string) { return `https://www.fotocasa.es/es/comprar/${tipo}/${CITIES[ciudad].slug}/todas-las-zonas/l`; }
 export function isTipo(x: unknown): x is Tipo { return x === "edificios" || x === "terrenos"; }
 
-export interface SearchResult { tipo: Tipo; ciudad: string; fuente: string; actualizado: string; items: Listing[]; }
+export interface SearchResult { tipo: Tipo; ciudad: string; fuente: string; fuentes: string[]; fallidos: string[]; actualizado: string; items: Listing[]; }
 
-async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
+interface Portal { id: string; nombre: string; tipos: Tipo[]; url: (t: Tipo, c: string) => string; parse: (md: string) => Listing[] }
+/** Portales verificados a mano. Idealista bloquea la lectura automática y no se usa. */
+const PORTALES: Portal[] = [
+  { id: "fotocasa", nombre: "Fotocasa", tipos: ["edificios", "terrenos"], url: sourceUrl, parse: (md) => parseFotocasa(md, 30).map((l) => ({ ...l, fuente: "Fotocasa" })) },
+  { id: "pisos", nombre: "Pisos.com", tipos: ["edificios"], url: (t, c) => `https://www.pisos.com/venta/${t}-${CITIES[c].pisos}/`, parse: (md) => parsePisos(md, 30) },
+];
+
+async function leerPortal(p: Portal, tipo: Tipo, ciudad: string): Promise<Listing[]> {
   const ok = canSpend();
   if (!ok.ok) throw new Error("limit:" + ok.reason);
   recordCall();
@@ -28,23 +37,38 @@ async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
     const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}` },
-      body: JSON.stringify({ url: sourceUrl(tipo, ciudad), formats: ["markdown"], onlyMainContent: true, proxy: "basic" }),
+      body: JSON.stringify({ url: p.url(tipo, ciudad), formats: ["markdown"], onlyMainContent: true, proxy: "basic" }),
       signal: ctrl.signal,
       cache: "no-store",
     });
-    if (!res.ok) throw new Error("upstream:" + res.status);
+    if (!res.ok) throw new Error(`upstream:${p.id}:${res.status}`);
     const j = (await res.json()) as { success?: boolean; data?: { markdown?: string } };
     const md = j.data?.markdown;
-    if (!j.success || !md) throw new Error("upstream:empty");
-    const items = parseFotocasa(md, 30);
-    if (!items.length) throw new Error("parse:empty");
-    return { tipo, ciudad, fuente: "Fotocasa", actualizado: new Date().toISOString(), items };
-  } catch (e) {
-    recordFailure();
-    throw e;
+    if (!j.success || !md) throw new Error(`upstream:${p.id}:empty`);
+    const items = p.parse(md);
+    if (!items.length) throw new Error(`parse:${p.id}:empty`);
+    return items;
   } finally { clearTimeout(timer); }
+}
+
+async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
+  const usar = PORTALES.filter((p) => p.tipos.includes(tipo));
+  // Secuencial: así el tope diario se comprueba antes de cada lectura y nunca se sobrepasa.
+  const listas: Listing[][] = [], fuentes: string[] = [], fallidos: string[] = [];
+  let limite: Error | null = null;
+  for (const p of usar) {
+    try { listas.push(await leerPortal(p, tipo, ciudad)); fuentes.push(p.nombre); }
+    catch (e) {
+      if (e instanceof Error && e.message.startsWith("limit:")) { limite = e; break; }
+      fallidos.push(p.nombre);
+    }
+  }
+  if (!listas.length) { if (limite) throw limite; recordFailure(); throw new Error("upstream:all"); }
+  if (fallidos.length === usar.length) recordFailure();
+  const items = unirListados(listas);
+  return { tipo, ciudad, fuente: fuentes.join(" + "), fuentes, fallidos: [...fallidos, ...(limite ? ["(límite diario)"] : [])], actualizado: new Date().toISOString(), items };
 }
 
 /** Caché de 24 h: un error lanza excepción y NO se cachea. */
 export const getListings = (tipo: Tipo, ciudad: string) =>
-  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v3", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();
+  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v4", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();

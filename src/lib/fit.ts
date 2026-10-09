@@ -30,7 +30,8 @@ export const ETIQUETA_TEXTO: Record<Etiqueta, string> = { turistico: "Turístico
 /** Título legible: los portales ponen solo «Edificio». */
 export function tituloLegible(l: Pick<Listing, "titulo" | "zona" | "m2">): string {
   const base = l.titulo && l.titulo.length > 12 ? l.titulo : "Edificio";
-  return [base, l.zona && l.zona !== "València" ? l.zona : "", l.m2 ? l.m2 + " m²" : ""].filter(Boolean).join(" · ");
+  const zona = l.zona && l.zona !== "València" && !base.toLowerCase().includes(l.zona.toLowerCase()) ? l.zona : "";
+  return [base, zona, l.m2 ? l.m2 + " m²" : ""].filter(Boolean).join(" · ");
 }
 
 export type Orden = "relevancia" | "pv" | "precio" | "m2";

@@ -37,5 +37,6 @@ describe("fit", () => {
   it("da un título legible", () => {
     expect(tituloLegible({ titulo: "Edificio", zona: "el Carme", m2: 272 })).toBe("Edificio · el Carme · 272 m²");
     expect(tituloLegible({ titulo: "Edificio", zona: "València", m2: null })).toBe("Edificio");
+    expect(tituloLegible({ titulo: "Edificio en Campanar", zona: "Campanar", m2: 120 })).toBe("Edificio en Campanar · 120 m²");
   });
 });

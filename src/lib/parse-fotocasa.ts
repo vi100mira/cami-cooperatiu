@@ -7,6 +7,10 @@ export interface Listing {
   zona: string;
   resumen: string;
   fotos: string[];
+  /** Portal de origen (se rellena al unir resultados). */
+  fuente?: string;
+  /** El mismo inmueble en otros portales. */
+  otras?: { fuente: string; url: string }[];
 }
 
 const JUNK_SLUGS = new Set(["ascensor", "todas-las-zonas", "valencia", "valencia-capital"]);

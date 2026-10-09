@@ -66,3 +66,7 @@ Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser e
 - `src/components/*`: interfaz.
 
 Guía de orientación; no es asesoría jurídica ni financiera.
+
+## Portales de la búsqueda en vivo
+
+Fotocasa (edificios y terrenos) y Pisos.com (edificios), unidos sin duplicados por precio y m². Idealista bloquea la lectura automática y no se usa: la vía legítima es pedir su API oficial. Cada consulta no cacheada de edificios cuesta 2 créditos (uno por portal); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.

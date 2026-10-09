@@ -6,7 +6,7 @@ import type { Listing } from "@/lib/parse-fotocasa";
 import { filtrar, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, tituloLegible, type Orden } from "@/lib/fit";
 
 type Tipo = "edificios" | "terrenos";
-interface Res { tipo: Tipo; fuente: string; actualizado: string; items: Listing[]; }
+interface Res { tipo: Tipo; fuente: string; fallidos?: string[]; actualizado: string; items: Listing[]; }
 const CIUDAD_NOMBRE: Record<string, string> = { valencia: "València" };
 const MSG: Record<string, string> = {
   desactivada: "La búsqueda en vivo está apagada ahora mismo. Puedes usar los enlaces de portales de la sección de entidades.",
@@ -55,12 +55,14 @@ export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: List
       {state.res && (
         <>
           <p className="warn" role="note">Aviso: las viviendas estimadas y el precio por vivienda salen de los m² construidos del anuncio (suponiendo unos 80 m² por vivienda) y <b>pueden no ser exactos</b>. Confirma siempre los datos en el anuncio original.</p>
+          {!!state.res.fallidos?.length && <p className="warn" role="note">No hemos podido leer {state.res.fallidos.join(", ")} en esta consulta, así que faltan sus anuncios. Prueba mañana o usa los botones de portales.</p>}
           <p className="note">{items.length} de {state.res.items.length} resultados · Fuente: {state.res.fuente} · Actualizado {new Date(state.res.actualizado).toLocaleString("es-ES")}. Las viviendas estimadas suponen unos 80 m² construidos por vivienda: es solo una pista, confirma siempre en el anuncio.</p>
           <div className="res-list">
             {items.map((l) => (
               <article key={l.id} className="listing">
                 <Photos fotos={l.fotos ?? []} alt={`${l.titulo} en ${l.zona}`} />
                 <h4>{tituloLegible(l)}</h4>
+                {l.fuente && <span className="ex" style={{ background: "var(--surface-2)", color: "var(--ink-2)" }}>{l.fuente}</span>}
                 {etiquetas(l, tipo).map((e) => <span key={e} className="ex">{ETIQUETA_TEXTO[e]}</span>)}
                 <div className="tag">{l.zona}</div>
                 <div className="nums" style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13.5 }}>
@@ -73,6 +75,7 @@ export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: List
                 {l.resumen && <p className="desc">{l.resumen}</p>}
                 <div className="acts" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <a className="btn ghost sm" href={l.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>
+                  {(l.otras ?? []).filter((o) => /^https:\/\//.test(o.url)).map((o) => <a key={o.fuente} className="btn ghost sm" href={o.url} target="_blank" rel="noopener noreferrer">También en {o.fuente} ↗</a>)}
                   <button type="button" className="btn sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, state.res!.tipo)}>Simular en calculadora</button>
                   <button type="button" className="btn ghost sm" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, state.res!.tipo)}>Apuntar como candidato</button>
                 </div>
