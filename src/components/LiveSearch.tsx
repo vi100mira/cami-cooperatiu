@@ -15,7 +15,7 @@ const MSG: Record<string, string> = {
   no_disponible: "El portal no ha respondido, o ha cambiado su web y no hemos podido leerla. Inténtalo más tarde y, si sigue fallando, usa los botones de portales de arriba.",
 };
 
-export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t: Tipo) => void; ciudad: string }) {
+export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
   const [tipo, setTipo] = useState<Tipo>("edificios");
   const [state, setState] = useState<{ loading: boolean; res?: Res; err?: string }>({ loading: false });
   const [maxP, setMaxP] = useState("");
@@ -73,7 +73,8 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
                 {l.resumen && <p className="desc">{l.resumen}</p>}
                 <div className="acts" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <a className="btn ghost sm" href={l.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>
-                  <button type="button" className="btn sm" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, state.res!.tipo)}>Apuntar como candidato</button>
+                  <button type="button" className="btn sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, state.res!.tipo)}>Simular en calculadora</button>
+                  <button type="button" className="btn ghost sm" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, state.res!.tipo)}>Apuntar como candidato</button>
                 </div>
               </article>
             ))}
