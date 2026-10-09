@@ -18,6 +18,42 @@ export const stats = (done: Record<string, boolean>, i: number) => {
 };
 export const curIdx = (done: Record<string, boolean>) => { const i = PH.findIndex((_, k) => !stats(done, k).full); return i < 0 ? PH.length - 1 : i; };
 
+/** El edificio de la cooperativa: 6 plantas = 6 fases, 5 ventanas por planta = 5 pasos. Cada paso hecho enciende una ventana. */
+function Edificio({ done, total, count }: { done: Record<string, boolean>; total: number; count: number }) {
+  const W = 260, H = 236, x0 = 22, bw = 216, top = 50, fh = 26, nF = PH.length, base = top + fh * nF;
+  const floors = PH.map((p, i) => ({ y: base - fh * (i + 1), full: stats(done, i).full, tasks: p.tasks }));
+  const plantas = floors.filter((f) => f.full).length;
+  return (
+    <div className="bld">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Vuestro edificio: ${count} de ${total} pasos hechos, ${plantas} de ${nF} plantas completas`}>
+        <defs>
+          <linearGradient id="glow" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="var(--sun)" stopOpacity=".28" /><stop offset="1" stopColor="var(--sun)" stopOpacity="0" /></linearGradient>
+        </defs>
+        {count > 0 && <ellipse cx={W / 2} cy={base} rx="120" ry="34" fill="url(#glow)" />}
+        {/* cubierta a dos aguas con chimenea */}
+        <rect x="176" y="14" width="14" height="26" className="b-wall" />
+        <path d={`M${x0 - 8} ${top} L${W / 2} 16 L${W - x0 + 8} ${top} Z`} className="b-roof" />
+        <rect x={x0 - 4} y={top - 3} width={bw + 8} height="6" rx="1.5" className="b-roof" />
+        {/* fachada */}
+        <rect x={x0} y={top} width={bw} height={fh * nF} className="b-wall" />
+        {floors.map((f, i) => (
+          <g key={i}>
+            {i < nF - 1 && <line x1={x0} x2={x0 + bw} y1={f.y} y2={f.y} className="b-line" />}
+            {f.tasks.map((t, j) => {
+              const on = !!done[t.id], wx = x0 + 10 + j * 42, wy = f.y + 5;
+              return <g key={t.id}><rect x={wx} y={wy} width="26" height="16" rx="2" className={on ? "b-win on" : "b-win"} />{on && <line x1={wx + 13} x2={wx + 13} y1={wy} y2={wy + 16} className="b-mull" />}</g>;
+            })}
+          </g>
+        ))}
+        {/* calle */}
+        <rect x="0" y={base} width={W} height="4" className="b-ground" />
+        <rect x={W / 2 - 9} y={base - 20} width="18" height="20" rx="2" className="b-door" />
+        <text x={W / 2} y={base + 26} textAnchor="middle" className="b-cap">{count}/{total} pasos</text>
+      </svg>
+    </div>
+  );
+}
+
 export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
   const all = PH.reduce((a, p) => a + p.tasks.length, 0);
   const done = PH.reduce((a, _, i) => a + stats(s.done, i).d, 0);
@@ -32,14 +68,7 @@ export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
         <p className="lead">De un grupo de familias a las llaves de un edificio que nadie podrá especular. Sigue la ruta, simula las cuentas y busca oportunidades.</p>
         <p className="next">{fin ? <><b>Ruta completada.</b> Ya podéis vivir en común.</> : <><b>Siguiente paso:</b> {plain(nx!.t)}</>}</p>
       </div>
-      <div className="pring" role="img" aria-label={`Progreso total: ${done} de ${all} pasos`}>
-        <svg viewBox="0 0 84 84" aria-hidden="true">
-          <circle cx="42" cy="42" r="34" fill="none" stroke="var(--surface-2)" strokeWidth="8" />
-          {done > 0 && <circle cx="42" cy="42" r="34" fill="none" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" strokeDasharray={C.toFixed(2)} strokeDashoffset={(C * (1 - pct)).toFixed(2)} transform="rotate(-90 42 42)" />}
-          <text className="tx" x="42" y="42" textAnchor="middle">{Math.round(pct * 100)}%</text>
-          <text className="sm" x="42" y="56" textAnchor="middle">{done}/{all}</text>
-        </svg>
-      </div>
+      <Edificio done={s.done} total={all} count={done} />
     </section>
   );
 }
