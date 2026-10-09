@@ -279,7 +279,13 @@ details.dd>summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--a
 @media (min-width:760px){.sheet{left:auto;right:24px;bottom:24px;width:410px;border-radius:20px;max-height:82vh}}
 .tip{position:fixed;z-index:70;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.35;border-radius:8px;padding:6px 10px;max-width:260px;box-shadow:0 6px 20px rgba(8,14,30,.3)}
 .tip b{font-weight:600}
-footer{font-size:13px;color:var(--ink-3);display:grid;gap:6px;max-width:72ch}
+.site-foot{margin-top:6px;border-top:1px solid var(--line);padding:22px 4px 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:20px 40px;font-size:13px;color:var(--ink-2);line-height:1.55}
+.sf-brand{display:grid;gap:4px;align-content:start}
+.sf-brand b{font:800 18px var(--font-display);color:var(--ink)}
+.sf-brand span{color:var(--ink-3)}
+.sf-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px 32px}
+.sf-cols b{color:var(--ink)}
+@media (max-width:760px){.site-foot,.sf-cols{grid-template-columns:1fr}}
 @media (max-width:640px){
   .grp-g{grid-template-columns:1fr 1fr}.grp-g .fld:first-child,.grp-g .fld:last-child{grid-column:1/-1}
   .hero{grid-template-columns:1fr;padding:18px 16px}.pring{position:absolute;top:14px;right:14px;width:64px;height:64px}.pring svg{width:64px;height:64px}

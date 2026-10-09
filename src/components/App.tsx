@@ -54,9 +54,12 @@ function Shell() {
           {tab === "faq" && <Faq />}
           {tab === "glos" && <Glos />}
         </main>
-        <footer>
-          <p>Techo Común es una guía de orientación sin ánimo de lucro. No es asesoría jurídica ni financiera: antes de firmar estatutos, préstamos o compras, consulta con una persona profesional y con una federación como Fecovi.</p>
-          <p>Las cifras de las calculadoras son ejemplos editables. Los anuncios de la búsqueda en vivo proceden de un portal externo y pueden no estar actualizados. Las condiciones de cada concurso cambian; lee siempre sus bases.</p>
+        <footer className="site-foot">
+          <div className="sf-brand"><b>Techo Común</b><span>Guía de vivienda cooperativa en cesión de uso. Sin ánimo de lucro.</span></div>
+          <div className="sf-cols">
+            <p><b>Orientación, no asesoría.</b> No es asesoría jurídica ni financiera: antes de firmar estatutos, préstamos o compras, consulta con una persona profesional y con una federación como Fecovi.</p>
+            <p><b>Datos orientativos.</b> Las cifras de las calculadoras son ejemplos editables. Los anuncios de la búsqueda en vivo proceden de portales externos y pueden no estar actualizados. Las condiciones de cada concurso cambian: lee siempre sus bases.</p>
+          </div>
         </footer>
       </div>
       <Sheet term={term} onClose={close} onOpen={setTerm} />
