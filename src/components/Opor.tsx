@@ -154,8 +154,8 @@ export default function Opor() {
             ? <p className="warn" role="note">La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que para <b>{s.group.ciudad.trim()}</b> no hay botón de búsqueda. Usa los botones de portales de aquí abajo: abren la búsqueda ya filtrada en cada portal.</p>
             : <p className="warn" role="note">Escribe una ciudad para activar la búsqueda. Para València aparece la búsqueda en vivo; para el resto, los botones de portales.</p>}
       </div>
-      <PortalSearch ciudad={s.group.ciudad} />
       {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
+      <PortalSearch ciudad={s.group.ciudad} />
 
       <div className="intro"><h2>Cinco formas de conseguir techo</h2><p>Una valoración orientativa de este asistente, basada en lo que se ha leído en prensa y guías del sector. No son datos medidos. Ordena según lo que más os importe.</p></div>
       <Vias onAdd={(id) => toForm({ via: id })} />
