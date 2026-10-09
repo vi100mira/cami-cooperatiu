@@ -3,7 +3,7 @@
  *  1. Interruptor: SEARCH_ENABLED distinto de "true" => búsqueda apagada (0 créditos).
  *  2. Lista blanca: solo 2 consultas fijas (edificios, terrenos). El usuario no puede elegir URL.
  *  3. Caché de 24 h compartida (ver search.ts): visitas repetidas no gastan créditos.
- *  4. Tope diario de llamadas reales a Firecrawl (SEARCH_DAILY_CAP, por defecto 6).
+ *  4. Tope diario de llamadas reales a Firecrawl (SEARCH_DAILY_CAP, por defecto 12).
  *  5. Límite por IP (best-effort, en memoria de la instancia).
  *  6. Enfriamiento tras fallo, para no reintentar en bucle.
  * Los contadores en memoria son por instancia serverless: sirven de freno extra, pero la
@@ -15,7 +15,7 @@ const g = globalThis as unknown as { __guards?: { day: string; calls: number; fa
 const st = (g.__guards ??= { day: day(), calls: 0, failUntil: 0, ips: new Map() });
 
 export function enabled() { return process.env.SEARCH_ENABLED === "true" && !!process.env.FIRECRAWL_API_KEY; }
-export function dailyCap() { const n = parseInt(process.env.SEARCH_DAILY_CAP ?? "6", 10); return Number.isFinite(n) && n >= 0 ? Math.min(n, 50) : 6; }
+export function dailyCap() { const n = parseInt(process.env.SEARCH_DAILY_CAP ?? "12", 10); return Number.isFinite(n) && n >= 0 ? Math.min(n, 50) : 12; }
 
 export function canSpend(now = Date.now()): { ok: true } | { ok: false; reason: string } {
   if (st.day !== day()) { st.day = day(); st.calls = 0; }

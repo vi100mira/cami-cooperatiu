@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { parseFotocasa, type Listing } from "./parse-fotocasa";
 import { parsePisos } from "./parse-pisos";
+import { parseYaencontre } from "./parse-yaencontre";
 import { unirListados } from "./merge";
 import { canSpend, recordCall, recordFailure } from "./guards";
 
@@ -10,8 +11,8 @@ export type Tipo = "edificios" | "terrenos";
  * Ciudades con búsqueda en vivo: slug de Fotocasa verificado a mano. Para añadir una ciudad,
  * comprueba primero que la URL devuelve resultados y añade una línea aquí (no se acepta nada más).
  */
-export const CITIES: Record<string, { slug: string; pisos: string; nombre: string }> = {
-  valencia: { slug: "valencia-capital", pisos: "valencia_capital", nombre: "València" },
+export const CITIES: Record<string, { slug: string; pisos: string; yaencontre: string; nombre: string }> = {
+  valencia: { slug: "valencia-capital", pisos: "valencia_capital", yaencontre: "valencia", nombre: "València" },
 };
 export function isCity(x: unknown): x is string { return typeof x === "string" && Object.prototype.hasOwnProperty.call(CITIES, x); }
 export function sourceUrl(tipo: Tipo, ciudad: string) { return `https://www.fotocasa.es/es/comprar/${tipo}/${CITIES[ciudad].slug}/todas-las-zonas/l`; }
@@ -23,7 +24,8 @@ interface Portal { id: string; nombre: string; tipos: Tipo[]; url: (t: Tipo, c: 
 /** Portales verificados a mano. Idealista bloquea la lectura automática y no se usa. */
 const PORTALES: Portal[] = [
   { id: "fotocasa", nombre: "Fotocasa", tipos: ["edificios", "terrenos"], url: sourceUrl, parse: (md) => parseFotocasa(md, 30).map((l) => ({ ...l, fuente: "Fotocasa" })) },
-  { id: "pisos", nombre: "Pisos.com", tipos: ["edificios"], url: (t, c) => `https://www.pisos.com/venta/${t}-${CITIES[c].pisos}/`, parse: (md) => parsePisos(md, 30) },
+  { id: "pisos", nombre: "Pisos.com", tipos: ["edificios", "terrenos"], url: (t, c) => `https://www.pisos.com/venta/${t}-${CITIES[c].pisos}/`, parse: (md) => parsePisos(md, 30) },
+  { id: "yaencontre", nombre: "yaencontre", tipos: ["edificios", "terrenos"], url: (t, c) => `https://www.yaencontre.com/venta/${t}/${CITIES[c].yaencontre}`, parse: (md) => parseYaencontre(md, 30) },
 ];
 
 async function leerPortal(p: Portal, tipo: Tipo, ciudad: string): Promise<Listing[]> {
@@ -71,4 +73,4 @@ async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
 
 /** Caché de 24 h: un error lanza excepción y NO se cachea. */
 export const getListings = (tipo: Tipo, ciudad: string) =>
-  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v4", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();
+  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v5", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();

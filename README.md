@@ -23,7 +23,7 @@ npm run build
   1. `SEARCH_ENABLED` distinto de `true` ⇒ búsqueda apagada, 0 créditos (valor por defecto).
   2. Lista blanca: solo 2 URLs fijas (edificios, terrenos). Nadie puede pedir otra URL.
   3. Caché de 24 h: con visitas ilimitadas, el gasto máximo teórico son ~2 créditos al día.
-  4. Tope diario `SEARCH_DAILY_CAP` (por defecto 6, máximo absoluto 50) por instancia.
+  4. Tope diario `SEARCH_DAILY_CAP` (por defecto 12, máximo absoluto 50) por instancia.
   5. Límite de 20 consultas por hora y por IP.
   6. Enfriamiento de 10 min tras un fallo; los errores no se cachean ni se reintentan en bucle.
   7. **Importante**: en tu cuenta de Firecrawl usa el plan gratuito y **no actives la recarga automática**. Así el límite real lo pone la cuenta.
@@ -51,7 +51,7 @@ Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser e
 
 1. Sube el repo a GitHub (`git remote add origin … && git push -u origin main`).
 2. En vercel.com ⇒ *Add New… ⇒ Project* ⇒ importa el repo (plan **Hobby**). Framework: Next.js (automático).
-3. *Settings ⇒ Environment Variables*: añade `FIRECRAWL_API_KEY`, `SEARCH_ENABLED=true` y `SEARCH_DAILY_CAP=6` solo si quieres la búsqueda. Redespliega.
+3. *Settings ⇒ Environment Variables*: añade `FIRECRAWL_API_KEY`, `SEARCH_ENABLED=true` y `SEARCH_DAILY_CAP=12` solo si quieres la búsqueda. Redespliega.
 4. Cada `git push` a `main` despliega solo.
 
 ## Dominio propio
@@ -69,4 +69,4 @@ Guía de orientación; no es asesoría jurídica ni financiera.
 
 ## Portales de la búsqueda en vivo
 
-Fotocasa (edificios y terrenos) y Pisos.com (edificios), unidos sin duplicados por precio y m². Idealista bloquea la lectura automática y no se usa: la vía legítima es pedir su API oficial. Cada consulta no cacheada de edificios cuesta 2 créditos (uno por portal); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.
+Fotocasa, Pisos.com y yaencontre (edificios y terrenos), unidos sin duplicados por precio y m². Idealista bloquea la lectura automática y no se usa: la vía legítima es pedir su API oficial. Cada consulta no cacheada cuesta 3 créditos (uno por portal); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.
