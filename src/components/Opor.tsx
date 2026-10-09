@@ -7,6 +7,7 @@ import { Rich } from "./Rich";
 import LiveSearch from "./LiveSearch";
 import PortalSearch from "./PortalSearch";
 import { viviendasEstimadas } from "@/lib/fit";
+import { catastroUrl, parseDireccion } from "@/lib/catastro";
 import type { Listing } from "@/lib/parse-fotocasa";
 import { Photos, MapBox } from "./Media";
 
@@ -41,6 +42,31 @@ function Vias({ onAdd }: { onAdd: (id: string) => void }) {
   );
 }
 
+function CatastroLookup({ c, ciudad, onFound }: { c: Cand; ciudad: string; onFound: (ref: string) => void }) {
+  const [st, setSt] = useState<{ loading?: boolean; msg?: string; opts?: { refcat: string; direccion: string }[] }>({});
+  const posible = !!parseDireccion(c.direccion || "") && !!ciudad;
+  const buscar = async () => {
+    setSt({ loading: true });
+    try {
+      const r = await fetch("/api/catastro?" + new URLSearchParams({ direccion: c.direccion || "", municipio: ciudad }));
+      const j = await r.json();
+      if (!r.ok) return setSt({ msg: j.error === "demasiadas_peticiones" ? "Demasiadas consultas seguidas. Espera un rato." : j.error === "no_disponible" ? "El Catastro no ha respondido. Inténtalo más tarde." : "No he entendido la dirección. Escríbela como «Calle Colón 1»." });
+      const p = (j.parcelas ?? []) as { refcat: string; direccion: string }[];
+      if (p.length === 1) onFound(p[0].refcat);
+      else if (p.length > 1) setSt({ opts: p });
+      else setSt({ msg: "El Catastro no ha encontrado esa dirección. Si la conoces, pega la referencia catastral a mano." });
+    } catch { setSt({ msg: "El Catastro no ha respondido. Inténtalo más tarde." }); }
+  };
+  return (
+    <div className="note">
+      <button type="button" className="btn ghost sm" disabled={!posible || st.loading} onClick={buscar} title={posible ? "Busca la referencia catastral de la dirección" : "Escribe la dirección como «Calle Colón 1» y pon la ciudad del grupo"}>{st.loading ? "Buscando…" : "Buscar referencia catastral"}</button>
+      {!posible && <span> Para buscarla, la dirección debe tener tipo de vía y número (por ejemplo «Calle Colón 1»).</span>}
+      {st.msg && <p className="warn" role="alert">{st.msg}</p>}
+      {st.opts && <div><p>Hay varias parcelas con ese número. Elige la tuya:</p>{st.opts.map((o) => <button key={o.refcat} type="button" className="btn ghost sm" onClick={() => onFound(o.refcat)}>{o.direccion} · {o.refcat}</button>)}</div>}
+    </div>
+  );
+}
+
 function CandCard({ c, onSim }: { c: Cand; onSim: (c: Cand) => void }) {
   const { s, set } = useStore();
   const ciudad = s.group.ciudad.trim();
@@ -57,8 +83,9 @@ function CandCard({ c, onSim }: { c: Cand; onSim: (c: Cand) => void }) {
       <div className="fld"><label className="lb" htmlFor={"est-" + c.id}>Estado</label>
         <select id={"est-" + c.id} value={c.estado} onChange={(e) => upd((x) => ({ ...x, estado: e.target.value }))}>{ES.map((e) => <option key={e}>{e}</option>)}</select></div>
       {c.notas && <p className="note">{c.notas}</p>}
-      {(c.direccion || (!c.ejemplo && c.barrio)) && <MapBox query={((c.direccion || c.nombre + " " + c.barrio) + " " + (ciudad || "")).trim()} />}
-      {c.refcat && <p className="note">Ref. catastral: <b style={{ fontFamily: "var(--font-mono)", userSelect: "all" }}>{c.refcat}</b> · pégala en el buscador del Catastro</p>}
+      {(c.direccion || (!c.ejemplo && c.barrio)) && <MapBox query={((c.direccion || c.nombre + " " + c.barrio) + " " + (ciudad || "")).trim()} refcat={c.refcat} />}
+      {c.refcat && <p className="note">Ref. catastral: <b style={{ fontFamily: "var(--font-mono)", userSelect: "all" }}>{c.refcat}</b>{catastroUrl(c.refcat) ? <> · <a href={catastroUrl(c.refcat)!} target="_blank" rel="noopener noreferrer">Abrir la ficha del edificio ↗</a></> : " · no parece una referencia válida (14 o 20 caracteres)"}</p>}
+      {!c.refcat && c.direccion && <CatastroLookup c={c} ciudad={ciudad} onFound={(ref) => upd((x) => ({ ...x, refcat: ref }))} />}
       <div className="note" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         {c.url && /^https:\/\//.test(c.url) && <a href={c.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
         {c.plano && /^https:\/\//.test(c.plano) && <a href={c.plano} target="_blank" rel="noopener noreferrer">Plano o documentos ↗</a>}

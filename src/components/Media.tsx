@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { catastroUrl } from "@/lib/catastro";
 
 const httpsOnly = (u: string) => /^https:\/\//.test(u);
 export const mapsSearch = (q: string) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
@@ -27,14 +28,15 @@ export function Photos({ fotos, alt }: { fotos: string[]; alt: string }) {
 }
 
 /** Mapa incrustado solo al pulsar (no carga nada de terceros hasta entonces). */
-export function MapBox({ query }: { query: string }) {
+export function MapBox({ query, refcat }: { query: string; refcat?: string }) {
   const [open, setOpen] = useState(false);
+  const cat = refcat ? catastroUrl(refcat) : null;
   return (
     <div className="mapbox">
       <div className="acts" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button type="button" className="btn ghost sm" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{open ? "Ocultar mapa" : "Ver mapa"}</button>
         <a className="btn ghost sm" href={mapsSearch(query)} target="_blank" rel="noopener noreferrer">Abrir en Google Maps ↗</a>
-        <a className="btn ghost sm" href="https://www.sedecatastro.gob.es/" target="_blank" rel="noopener noreferrer">Catastro ↗</a>
+        {cat && <a className="btn ghost sm" href={cat} target="_blank" rel="noopener noreferrer">Ficha en el Catastro ↗</a>}
       </div>
       {open && <iframe title={"Mapa: " + query} src={"https://maps.google.com/maps?output=embed&q=" + encodeURIComponent(query)} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />}
     </div>

@@ -7,8 +7,9 @@ import Ruta, { Hero } from "./Ruta";
 import Calc from "./Calc";
 import Opor from "./Opor";
 import Glos from "./Glos";
+import Faq from "./Faq";
 
-const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["glos", "Glosario"]];
+const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["faq", "Preguntas"], ["glos", "Glosario"]];
 
 function Shell() {
   const { s } = useStore();
@@ -45,6 +46,7 @@ function Shell() {
           {tab === "ruta" && <Ruta goTo={goTo} />}
           {tab === "calc" && <Calc />}
           {tab === "opor" && <Opor />}
+          {tab === "faq" && <Faq />}
           {tab === "glos" && <Glos />}
         </main>
         <footer>
