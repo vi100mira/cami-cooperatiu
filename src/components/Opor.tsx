@@ -144,7 +144,16 @@ export default function Opor() {
   return (
     <section className="view">
       <div className="intro" id="buscador"><h2>Buscar edificios y terrenos</h2>
-        <p>{live ? "Función en pruebas: edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que no aparece para tu ciudad. Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los botones de portales de aquí abajo."}</p></div>
+        <p>Indica en qué ciudad buscáis y usa los portales o, en València, la búsqueda en vivo (función en pruebas).</p></div>
+      <div className="card">
+        <div className="fld"><label className="lb" htmlFor="bs-ciudad">Ciudad o municipio donde buscáis</label>
+          <input id="bs-ciudad" type="text" autoComplete="off" placeholder="Por ejemplo, València" value={s.group.ciudad} onChange={(e) => { const v = e.target.value; set((x) => ({ ...x, group: { ...x.group, ciudad: v } })); }} /></div>
+        {live
+          ? <p className="note">Hay búsqueda en vivo para València: abajo tienes el botón <b>Buscar en València</b>. Se actualiza como mucho una vez al día para no gastar recursos compartidos.</p>
+          : s.group.ciudad.trim()
+            ? <p className="warn" role="note">La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que para <b>{s.group.ciudad.trim()}</b> no hay botón de búsqueda. Usa los botones de portales de aquí abajo: abren la búsqueda ya filtrada en cada portal.</p>
+            : <p className="warn" role="note">Escribe una ciudad para activar la búsqueda. Para València aparece la búsqueda en vivo; para el resto, los botones de portales.</p>}
+      </div>
       <PortalSearch ciudad={s.group.ciudad} />
       {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
 
