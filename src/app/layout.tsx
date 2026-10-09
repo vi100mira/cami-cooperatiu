@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Camí Cooperatiu",
+  title: "Techo Común",
   description: "Guía gratuita y sin ánimo de lucro para crear una cooperativa de vivienda en cesión de uso en España.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };

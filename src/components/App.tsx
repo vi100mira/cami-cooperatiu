@@ -48,7 +48,7 @@ function Shell() {
           {tab === "glos" && <Glos />}
         </main>
         <footer>
-          <p>Camí Cooperatiu es una guía de orientación sin ánimo de lucro. No es asesoría jurídica ni financiera: antes de firmar estatutos, préstamos o compras, consulta con una persona profesional y con una federación como Fecovi.</p>
+          <p>Techo Común es una guía de orientación sin ánimo de lucro. No es asesoría jurídica ni financiera: antes de firmar estatutos, préstamos o compras, consulta con una persona profesional y con una federación como Fecovi.</p>
           <p>Las cifras de las calculadoras son ejemplos editables. Los anuncios de la búsqueda en vivo proceden de un portal externo y pueden no estar actualizados. Las condiciones de cada concurso cambian; lee siempre sus bases.</p>
         </footer>
       </div>

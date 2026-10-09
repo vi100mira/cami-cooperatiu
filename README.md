@@ -1,4 +1,6 @@
-# Camí Cooperatiu
+# Techo Común
+
+(Repositorio: `cami-cooperatiu`, nombre inicial del proyecto.)
 
 Guía gratuita y sin ánimo de lucro para crear una **cooperativa de vivienda en cesión de uso** en España: ruta de 6 fases, 3 calculadoras, vías de oportunidad, candidatos, directorio de entidades con mensajes listos, glosario y búsqueda en vivo de edificios y terrenos en venta.
 
@@ -30,7 +32,7 @@ npm run build
 ## Alcance geográfico
 
 La app es de ámbito estatal. Cada grupo indica su comunidad autónoma y su ciudad; las entidades, enlaces y mensajes se adaptan (`entitiesFor` en `src/lib/content.ts`). La Comunitat Valenciana tiene datos propios (Fecovi, EVha, Ley 3/2023); en el resto aparecen recursos estatales (banca ética, Sostre Cívic, Sareb/Casa 47) y enlaces de búsqueda de la federación, la consejería y el ayuntamiento de su zona. Para enriquecer otra comunidad, añade una rama en `entitiesFor` con datos verificados.
-La búsqueda en vivo solo se activa en ciudades de la lista blanca `CITIES` (`src/lib/search.ts`, hoy solo València); en el resto se enlaza a los portales. El nombre «Camí Cooperatiu» es provisional (camí = camino en valenciano).
+La búsqueda en vivo solo se activa en ciudades de la lista blanca `CITIES` (`src/lib/search.ts`, hoy solo València); en el resto se enlaza a los portales.
 
 Cuentas y trabajo en equipo: ver `docs/USUARIOS-Y-COOPERATIVAS.md`.
 

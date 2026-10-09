@@ -20,7 +20,7 @@ export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
       <svg className="tiles" aria-hidden="true"><defs><pattern id="az" width="44" height="44" patternUnits="userSpaceOnUse"><path className="tp" d="M22 3L41 22L22 41L3 22Z" /><circle className="tpf" cx="22" cy="22" r="5" /><path className="tp" d="M0 0h7M0 0v7M44 0h-7M44 0v7M0 44h7M0 44v-7M44 44h-7M44 44v-7" /></pattern></defs><rect width="100%" height="100%" fill="url(#az)" /></svg>
       <div className="hero-t">
         <p className="eyebrow">Vivienda cooperativa en cesión de uso · España</p>
-        <h1>Camí Cooperatiu</h1>
+        <h1>Techo Común</h1>
         <p className="lead">De un grupo de familias a las llaves de un edificio que nadie podrá especular. Sigue la ruta, simula las cuentas y busca oportunidades.</p>
         <p className="next">{fin ? <><b>Ruta completada.</b> Ya podéis vivir en común.</> : <><b>Siguiente paso:</b> {plain(nx!.t)}</>}</p>
       </div>
