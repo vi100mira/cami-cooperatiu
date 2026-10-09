@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { parseFotocasa, type Listing } from "./parse-fotocasa";
 import { parsePisos } from "./parse-pisos";
+import { detectGestora } from "./gestoras";
 import { parseYaencontre } from "./parse-yaencontre";
 import { unirListados } from "./merge";
 import { canSpend, recordCall, recordFailure } from "./guards";
@@ -47,7 +48,7 @@ async function leerPortal(p: Portal, tipo: Tipo, ciudad: string): Promise<Listin
     const j = (await res.json()) as { success?: boolean; data?: { markdown?: string } };
     const md = j.data?.markdown;
     if (!j.success || !md) throw new Error(`upstream:${p.id}:empty`);
-    const items = p.parse(md);
+    const items = p.parse(md).map((l) => (l.gestora ? l : { ...l, gestora: detectGestora(l.url, l.titulo, l.resumen) }));
     if (!items.length) throw new Error(`parse:${p.id}:empty`);
     return items;
   } finally { clearTimeout(timer); }
@@ -73,4 +74,4 @@ async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
 
 /** Caché de 24 h: un error lanza excepción y NO se cachea. */
 export const getListings = (tipo: Tipo, ciudad: string) =>
-  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v5", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();
+  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v6", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();

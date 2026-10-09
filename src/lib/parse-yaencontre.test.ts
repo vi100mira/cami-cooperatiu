@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { parseYaencontre } from "./parse-yaencontre";
+import { detectGestora } from "./gestoras";
 describe("parseYaencontre", () => {
   const md = readFileSync(__dirname + "/__fixtures__/yaencontre-edificios.md", "utf8");
   const r = parseYaencontre(md);
@@ -23,4 +24,19 @@ describe("parseYaencontre", () => {
     expect(r[1].resumen).toContain("EDIFICIO COMPLETO");
   });
   it("respeta el máximo", () => { expect(parseYaencontre(md, 2)).toHaveLength(2); });
+});
+
+
+describe("gestoras de Sareb", () => {
+  it("reconoce Hipoges por el id de agencia de yaencontre", () => {
+    expect(detectGestora("https://www.yaencontre.com/venta/piso/inmueble-21204-112757163")).toBe("Hipoges");
+  });
+  it("reconoce por el nombre del anunciante y no confunde otras agencias", () => {
+    expect(detectGestora("https://x.es/a", "ALISEDA Servicios Inmobiliarios")).toBe("Aliseda");
+    expect(detectGestora("https://www.yaencontre.com/venta/edificio/inmueble-69432-1", "SUNSTAY")).toBeUndefined();
+  });
+  it("el parser marca el anuncio de Hipoges", () => {
+    const md = "### [Casa en El Grau, Valencia](https://www.yaencontre.com/venta/casa/inmueble-21204-112778642)     184.000 €\n\n66 m²2.787 €/m²\n\nNO COBRAMOS COMISIÓN DE INTERMEDIACIÓN AL COMPRADOR\n";
+    expect(parseYaencontre(md)[0].gestora).toBe("Hipoges");
+  });
 });

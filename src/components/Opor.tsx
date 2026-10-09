@@ -223,7 +223,7 @@ export default function Opor() {
             ? <Alert variant="warning"><TriangleAlert aria-hidden /><span>La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que para <b>{s.group.ciudad.trim()}</b> no hay botón de búsqueda. Usa los botones de portales de aquí abajo: abren la búsqueda ya filtrada en cada portal.</span></Alert>
             : <Alert variant="warning"><TriangleAlert aria-hidden /><span>Escribe una ciudad para activar la búsqueda. Para València aparece la búsqueda en vivo; para el resto, los botones de portales.</span></Alert>}
       </Card>
-      {live && <LiveSearch ciudad="valencia" onSim={simularListing} onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}. Verifica todos los datos.` })} />}
+      {live && <LiveSearch ciudad="valencia" onSim={simularListing} onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: l.gestora ? "parada" : tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}.${l.gestora ? ` Lo publica ${l.gestora}, gestora de Sareb: pregunta si es de Sareb, de un banco o una cesión de remate.` : ""} Verifica todos los datos.` })} />}
       <PortalSearch ciudad={s.group.ciudad} />
 
       <Intro title="Cinco formas de conseguir techo">Una valoración orientativa de este asistente, basada en lo que se ha leído en prensa y guías del sector. No son datos medidos. Ordena según lo que más os importe.</Intro>

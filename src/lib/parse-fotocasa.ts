@@ -9,6 +9,8 @@ export interface Listing {
   fotos: string[];
   /** Portal de origen (se rellena al unir resultados). */
   fuente?: string;
+  /** Gestora de activos de Sareb que publica el anuncio (Hipoges, Aliseda…), si se reconoce. */
+  gestora?: string;
   /** El mismo inmueble en otros portales. */
   otras?: { fuente: string; url: string }[];
 }

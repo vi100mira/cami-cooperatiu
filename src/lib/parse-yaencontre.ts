@@ -1,4 +1,5 @@
 import type { Listing } from "./parse-fotocasa";
+import { detectGestora } from "./gestoras";
 
 const HEAD = /^###\s+\[([^\]]+)\]\((https:\/\/www\.yaencontre\.com\/venta\/[^)\s]+)\)\s+(\d{1,3}(?:\.\d{3})*)\s?€/;
 const IMG = /!\[[^\]]*\]\((https:\/\/media\.yaencontre\.com\/img\/photo\/[^)\s]+)\)/;
@@ -26,6 +27,7 @@ export function parseYaencontre(md: string, max = 30): Listing[] {
     }
     const end = k + 1 < heads.length ? heads[k + 1] : Math.min(lines.length, h + 30);
     let m2: number | null = null, resumen = "";
+    const anunciante = lines.slice(h + 1, Math.min(end, h + 8)).map((l) => l.match(/^\[([^\]]+)\]\(https:\/\/www\.yaencontre\.com\/inmobiliarias\//)?.[1]).find(Boolean) ?? "";
     for (let i = h + 1; i < Math.min(end, h + 30); i++) {
       const t = lines[i].trim();
       if (!t) continue;
@@ -37,7 +39,7 @@ export function parseYaencontre(md: string, max = 30): Listing[] {
     const partes = m[1].replace(/^(Edificio|Terreno|Solar|Parcela)\s+en\s+/i, "").split(",").map((s) => s.trim());
     if (partes.length > 1 && /^valencia$/i.test(partes[partes.length - 1])) partes.pop();
     const zona = partes[partes.length - 1] || "València";
-    out.push({ id: "y" + id, titulo: m[1], url, precio: parseInt(m[3].replace(/\./g, ""), 10), m2, zona, resumen, fotos, fuente: "yaencontre" });
+    out.push({ id: "y" + id, titulo: m[1], url, precio: parseInt(m[3].replace(/\./g, ""), 10), m2, zona, resumen, fotos, fuente: "yaencontre", gestora: detectGestora(url, anunciante) });
   });
   return out;
 }

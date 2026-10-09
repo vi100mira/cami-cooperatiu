@@ -15,6 +15,7 @@ export function unirListados(listas: Listing[][]): Listing[] {
         if (l.fuente && dup.fuente !== l.fuente && !(dup.otras ?? []).some((o) => o.fuente === l.fuente)) {
           dup.otras = [...(dup.otras ?? []), { fuente: l.fuente, url: l.url }];
         }
+        if (!dup.gestora && l.gestora) dup.gestora = l.gestora;
         if (dup.fotos.length < 2 && l.fotos.length > dup.fotos.length) dup.fotos = l.fotos;
         continue;
       }
