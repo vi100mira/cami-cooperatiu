@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { VIAS, CRIT, ES, ES_MIX, CHK, ENT, tplText } from "@/lib/content";
+import { VIAS, CRIT, ES, ES_MIX, CHK, entitiesFor, isValenciaCity, tplText, type Entity } from "@/lib/content";
 import { useStore, type Cand } from "@/lib/store";
 import { eur } from "@/lib/format";
 import { Rich } from "./Rich";
@@ -95,7 +95,7 @@ function CopyBtn({ text, label, ghost }: { text: string; label: string; ghost?: 
   }}>{msg ?? label}</button>;
 }
 
-function EntCard({ e }: { e: (typeof ENT)[number] }) {
+function EntCard({ e }: { e: Entity }) {
   const { s } = useStore();
   const initial = e.tpl ? tplText(e.tpl, s.group) : "";
   const [edited, setEdited] = useState<string | null>(null);
@@ -118,6 +118,8 @@ export default function Opor() {
   const [prefill, setPrefill] = useState<Partial<Cand> | null>(null);
   const [mixed, setMixed] = useState(0);
   const cnt = ES.map((e) => s.cands.filter((c) => c.estado === e).length);
+  const ENT = entitiesFor(s.group);
+  const live = isValenciaCity(s.group);
   const gs: string[] = []; ENT.forEach((e) => { if (!gs.includes(e.g)) gs.push(e.g); });
   const toForm = (p: Partial<Cand>) => { setPrefill(p); setMixed((n) => n + 1); setTimeout(() => document.getElementById("candForm")?.scrollIntoView({ behavior: "smooth" }), 50); };
   const simular = (c: Cand) => {
@@ -129,8 +131,9 @@ export default function Opor() {
       <div className="intro"><h2>Cinco formas de conseguir techo</h2><p>Una valoración orientativa de este asistente, basada en lo que se ha leído en prensa y guías del sector. No son datos medidos. Ordena según lo que más os importe.</p></div>
       <Vias onAdd={(id) => toForm({ via: id })} />
 
-      <div className="intro" id="buscador"><h2>Buscar en vivo</h2><p>Edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos.</p></div>
-      <LiveSearch onPick={(l, tipo) => toForm({ nombre: l.titulo + (l.zona ? " · " + l.zona : ""), barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />
+      <div className="intro" id="buscador"><h2>Buscar edificios y terrenos</h2>
+        <p>{live ? "Edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo solo está disponible en algunas ciudades (de momento València). Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los enlaces de «Propietarios y portales» más abajo: abren la búsqueda en los portales."}</p></div>
+      {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ nombre: l.titulo + (l.zona ? " · " + l.zona : ""), barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
 
       <div className="intro" id="candidatos"><h2>Vuestros candidatos</h2><p>Apunta cada edificio o solar que encontréis, hazle seguimiento y mándalo a la calculadora con un toque. Las tarjetas marcadas como ejemplo se pueden borrar.</p></div>
       <div className="card"><div className="eyebrow">Embudo de candidatos</div>

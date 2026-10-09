@@ -113,6 +113,7 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0}
 
 /* Ruta */
 .grp-g{display:grid;grid-template-columns:2fr 1fr 2fr;gap:12px}
+.grp-g.loc{grid-template-columns:1fr 1fr}
 .metro{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin-block:4px 6px}
 .metro::before{content:"";position:absolute;top:15px;left:calc(100%/12);right:calc(100%/12);height:4px;background:var(--line);border-radius:2px}
 .metro .fill{position:absolute;top:15px;left:calc(100%/12);height:4px;background:var(--accent);border-radius:2px;width:calc((100% - 100%/6)*var(--p,0));transition:width .4s}

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Camí Cooperatiu",
-  description: "Guía gratuita y sin ánimo de lucro para crear una cooperativa de vivienda en cesión de uso en València.",
+  description: "Guía gratuita y sin ánimo de lucro para crear una cooperativa de vivienda en cesión de uso en España.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 

@@ -1,6 +1,6 @@
 # Camí Cooperatiu
 
-Guía gratuita y sin ánimo de lucro para crear una **cooperativa de vivienda en cesión de uso** en València: ruta de 6 fases, 3 calculadoras, vías de oportunidad, candidatos, directorio de entidades con mensajes listos, glosario y búsqueda en vivo de edificios y terrenos en venta.
+Guía gratuita y sin ánimo de lucro para crear una **cooperativa de vivienda en cesión de uso** en España: ruta de 6 fases, 3 calculadoras, vías de oportunidad, candidatos, directorio de entidades con mensajes listos, glosario y búsqueda en vivo de edificios y terrenos en venta.
 
 Next.js (App Router) + TypeScript. Los datos del grupo se guardan solo en el navegador (localStorage). No hay base de datos ni cuentas.
 
@@ -26,6 +26,13 @@ npm run build
   6. Enfriamiento de 10 min tras un fallo; los errores no se cachean ni se reintentan en bucle.
   7. **Importante**: en tu cuenta de Firecrawl usa el plan gratuito y **no actives la recarga automática**. Así el límite real lo pone la cuenta.
 - Los contadores 4–6 viven en memoria de cada instancia serverless; son un freno extra. La garantía real son la caché (3) y el tope de créditos de la cuenta (7).
+
+## Alcance geográfico
+
+La app es de ámbito estatal. Cada grupo indica su comunidad autónoma y su ciudad; las entidades, enlaces y mensajes se adaptan (`entitiesFor` en `src/lib/content.ts`). La Comunitat Valenciana tiene datos propios (Fecovi, EVha, Ley 3/2023); en el resto aparecen recursos estatales (banca ética, Sostre Cívic, Sareb/Casa 47) y enlaces de búsqueda de la federación, la consejería y el ayuntamiento de su zona. Para enriquecer otra comunidad, añade una rama en `entitiesFor` con datos verificados.
+La búsqueda en vivo solo se activa en ciudades de la lista blanca `CITIES` (`src/lib/search.ts`, hoy solo València); en el resto se enlaza a los portales. El nombre «Camí Cooperatiu» es provisional (camí = camino en valenciano).
+
+Cuentas y trabajo en equipo: ver `docs/USUARIOS-Y-COOPERATIVAS.md`.
 
 ## Fuente de datos y aviso legal
 

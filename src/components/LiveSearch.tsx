@@ -12,14 +12,14 @@ const MSG: Record<string, string> = {
   no_disponible: "El portal no ha respondido. Inténtalo más tarde.",
 };
 
-export default function LiveSearch({ onPick }: { onPick: (l: Listing, t: Tipo) => void }) {
+export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t: Tipo) => void; ciudad: string }) {
   const [tipo, setTipo] = useState<Tipo>("edificios");
   const [state, setState] = useState<{ loading: boolean; res?: Res; err?: string }>({ loading: false });
   const [maxP, setMaxP] = useState("");
   const run = async () => {
     setState({ loading: true });
     try {
-      const r = await fetch("/api/buscar?tipo=" + tipo);
+      const r = await fetch("/api/buscar?ciudad=" + ciudad + "&tipo=" + tipo);
       const j = await r.json();
       if (!r.ok) setState({ loading: false, err: MSG[j.error] ?? "No se ha podido buscar." });
       else setState({ loading: false, res: j });
@@ -35,7 +35,7 @@ export default function LiveSearch({ onPick }: { onPick: (l: Listing, t: Tipo) =
       <div className="form-g">
         <div className="fld"><label className="lb" htmlFor="ls-max">Precio máximo (€), opcional</label><input id="ls-max" type="number" min={0} step={50000} inputMode="numeric" value={maxP} onChange={(e) => setMaxP(e.target.value)} /></div>
       </div>
-      <div><button type="button" className="btn" disabled={state.loading} onClick={run}>{state.loading ? "Buscando…" : "Buscar en València"}</button></div>
+      <div><button type="button" className="btn" disabled={state.loading} onClick={run}>{state.loading ? "Buscando…" : "Buscar en " + (ciudad === "valencia" ? "València" : ciudad)}</button></div>
       {state.err && <p className="warn" role="alert">{state.err}</p>}
       {state.res && (
         <>

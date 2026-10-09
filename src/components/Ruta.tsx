@@ -1,5 +1,5 @@
 "use client";
-import { PH, ENT, TERMS } from "@/lib/content";
+import { PH, REGIONS, entitiesFor, TERMS } from "@/lib/content";
 import { useStore } from "@/lib/store";
 import { Rich, useHelp } from "./Rich";
 import { plain } from "@/lib/format";
@@ -19,7 +19,7 @@ export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
     <section className="hero" aria-label="Presentación">
       <svg className="tiles" aria-hidden="true"><defs><pattern id="az" width="44" height="44" patternUnits="userSpaceOnUse"><path className="tp" d="M22 3L41 22L22 41L3 22Z" /><circle className="tpf" cx="22" cy="22" r="5" /><path className="tp" d="M0 0h7M0 0v7M44 0h-7M44 0v7M0 44h7M0 44v-7M44 44h-7M44 44v-7" /></pattern></defs><rect width="100%" height="100%" fill="url(#az)" /></svg>
       <div className="hero-t">
-        <p className="eyebrow">Vivienda cooperativa en cesión de uso · València</p>
+        <p className="eyebrow">Vivienda cooperativa en cesión de uso · España</p>
         <h1>Camí Cooperatiu</h1>
         <p className="lead">De un grupo de familias a las llaves de un edificio que nadie podrá especular. Sigue la ruta, simula las cuentas y busca oportunidades.</p>
         <p className="next">{fin ? <><b>Ruta completada.</b> Ya podéis vivir en común.</> : <><b>Siguiente paso:</b> {plain(nx!.t)}</>}</p>
@@ -47,12 +47,16 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
     <section className="view">
       <div className="card">
         <h2>Tu grupo</h2>
+        <div className="grp-g loc">
+          <div className="fld"><label className="lb" htmlFor="g-region">Comunidad autónoma</label><select id="g-region" value={s.group.region} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, region: e.target.value } }))}><option value="">Elige tu comunidad…</option>{REGIONS.map((r) => <option key={r[0]} value={r[0]}>{r[1]}</option>)}</select></div>
+          <div className="fld"><label className="lb" htmlFor="g-ciudad">Ciudad o municipio</label><input id="g-ciudad" type="text" autoComplete="off" placeholder="Por ejemplo, Bilbao o València" value={s.group.ciudad} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, ciudad: e.target.value } }))} /></div>
+        </div>
         <div className="grp-g">
           <div className="fld"><label className="lb" htmlFor="g-name">Nombre de la cooperativa</label><input id="g-name" type="text" autoComplete="off" placeholder="Por ejemplo, Llar del Barri" value={s.group.name} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, name: e.target.value } }))} /></div>
           <div className="fld"><label className="lb" htmlFor="g-fam">Familias</label><input id="g-fam" type="number" min={1} max={200} inputMode="numeric" value={s.group.fam} onChange={(e) => { const v = parseInt(e.target.value, 10); if (isNaN(v)) return; set((x) => ({ ...x, group: { ...x.group, fam: Math.max(1, Math.min(200, v)) } })); }} /></div>
           <div className="fld"><label className="lb" htmlFor="g-barrio">Barrio o zona de interés</label><input id="g-barrio" type="text" autoComplete="off" placeholder="Por ejemplo, Cabanyal o Patraix" value={s.group.barrio} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, barrio: e.target.value } }))} /></div>
         </div>
-        <p className="note">Estos datos se usan en las calculadoras y en los mensajes listos para enviar. Se guardan solo en este navegador.</p>
+        <p className="note">Estos datos adaptan las entidades, los enlaces y los mensajes a tu zona, y alimentan las calculadoras. Se guardan solo en este navegador.</p>
       </div>
       <div className="intro">
         <h2>La ruta, en seis estaciones</h2>
@@ -89,7 +93,7 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
                     ))}
                   </div>
                   <div><div className="sub">Conceptos de esta fase</div><div className="chips">{p.terms.map((k) => <button key={k} type="button" className="chip term" onClick={(e) => help(k, e.currentTarget)}>{TERMS[k].t}</button>)}</div></div>
-                  {p.ents.length > 0 && <div><div className="sub">Dónde preguntar</div><div className="chips">{p.ents.map((id) => { const e = ENT.find((x) => x.id === id)!; return <a key={id} className="chip ext" href={e.url} target="_blank" rel="noopener noreferrer">{e.name}</a>; })}</div></div>}
+                  {p.ents.length > 0 && <div><div className="sub">Dónde preguntar</div><div className="chips">{p.ents.map((id) => { const e = entitiesFor(s.group).find((x) => x.id === id); if (!e) return null; return <a key={id} className="chip ext" href={e.url} target="_blank" rel="noopener noreferrer">{e.name}</a>; })}</div></div>}
                 </div>
               )}
             </article>
