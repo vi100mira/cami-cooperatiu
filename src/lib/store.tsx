@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback, ty
 import { CDEF, type CalcInput } from "./calc";
 import type { Group } from "./content";
 
-export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; chk: Record<number, boolean>; }
+export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
 export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; open: number | null; }
 const KEY = "camiCooperatiu.v1";
 

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { eur, fnum } from "@/lib/format";
+import { Photos, MapBox } from "./Media";
 import type { Listing } from "@/lib/parse-fotocasa";
 
 type Tipo = "edificios" | "terrenos";
@@ -43,6 +44,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
           <div className="res-list">
             {items.map((l) => (
               <article key={l.id} className="listing">
+                <Photos fotos={l.fotos ?? []} alt={`${l.titulo} en ${l.zona}`} />
                 <h4>{l.titulo}</h4>
                 <div className="tag">{l.zona}</div>
                 <div className="nums" style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13.5 }}>
@@ -50,6 +52,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
                   <span>Superficie <b>{l.m2 ? fnum(l.m2, 0) + " m²" : "—"}</b></span>
                   {l.precio && l.m2 ? <span>€/m² <b>{eur(l.precio / l.m2)}</b></span> : null}
                 </div>
+                <MapBox query={`${l.titulo} ${l.zona} València`} />
                 {l.resumen && <p className="desc">{l.resumen}</p>}
                 <div className="acts" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <a className="btn ghost sm" href={l.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>

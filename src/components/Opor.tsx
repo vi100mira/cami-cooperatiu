@@ -5,6 +5,7 @@ import { useStore, type Cand } from "@/lib/store";
 import { eur } from "@/lib/format";
 import { Rich } from "./Rich";
 import LiveSearch from "./LiveSearch";
+import { Photos, MapBox } from "./Media";
 
 function Vias({ onAdd }: { onAdd: (id: string) => void }) {
   const [sortK, setSortK] = useState("sum");
@@ -45,13 +46,19 @@ function CandCard({ c, onSim }: { c: Cand; onSim: (c: Cand) => void }) {
   return (
     <article className="cand">
       {c.ejemplo && <span className="ex">Ejemplo, bórralo cuando quieras</span>}
+      {c.fotos && c.fotos.length > 0 && <Photos fotos={c.fotos} alt={c.nombre} />}
       <h4>{c.nombre}</h4>
       <div className="tag">{via ? via.title : "—"}{c.barrio ? " · " + c.barrio : ""}</div>
       <div className="nums"><span>Precio <b>{c.precio > 0 ? eur(c.precio) : "—"}</b></span><span>Viviendas <b>{c.viv > 0 ? c.viv : "—"}</b></span><span>Por vivienda <b>{pv}</b></span></div>
       <div className="fld"><label className="lb" htmlFor={"est-" + c.id}>Estado</label>
         <select id={"est-" + c.id} value={c.estado} onChange={(e) => upd((x) => ({ ...x, estado: e.target.value }))}>{ES.map((e) => <option key={e}>{e}</option>)}</select></div>
       {c.notas && <p className="note">{c.notas}</p>}
-      {c.url && /^https:\/\//.test(c.url) && <p className="note"><a href={c.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a></p>}
+      {(c.direccion || c.barrio) && <MapBox query={(c.direccion || c.nombre + " " + c.barrio).trim()} />}
+      {c.refcat && <p className="note">Ref. catastral: <b style={{ fontFamily: "var(--font-mono)", userSelect: "all" }}>{c.refcat}</b> · pégala en el buscador del Catastro</p>}
+      <div className="note" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        {c.url && /^https:\/\//.test(c.url) && <a href={c.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
+        {c.plano && /^https:\/\//.test(c.plano) && <a href={c.plano} target="_blank" rel="noopener noreferrer">Plano o documentos ↗</a>}
+      </div>
       <details className="dd"><summary>Comprobaciones ({n}/{CHK.length})</summary>
         <div className="chk">{CHK.map((t, i) => <label key={i}><input type="checkbox" checked={!!(c.chk && c.chk[i])} onChange={(e) => upd((x) => ({ ...x, chk: { ...x.chk, [i]: e.target.checked } }))} /> <span>{t}</span></label>)}</div></details>
       <div className="acts"><button type="button" className="btn sm" onClick={() => onSim(c)}>Simular en calculadora</button>
@@ -67,8 +74,8 @@ function CandForm({ viaRef, prefill }: { viaRef: React.RefObject<HTMLSelectEleme
     <form className="card" id="candForm" ref={ref} key={prefill ? prefill.url ?? prefill.nombre : "f"} onSubmit={(e) => {
       e.preventDefault();
       const f = new FormData(e.currentTarget), g = (k: string) => String(f.get(k) ?? "");
-      const url = g("url");
-      set((s) => ({ ...s, cands: [{ id: "c" + Date.now(), nombre: g("nombre").trim(), barrio: g("barrio").trim(), via: g("via"), precio: parseFloat(g("precio")) || 0, viv: parseInt(g("viv"), 10) || 0, estado: g("estado"), notas: g("notas").trim(), url: /^https:\/\//.test(url) ? url : undefined, chk: {} }, ...s.cands] }));
+      const url = g("url"), plano = g("plano"), foto = g("foto");
+      set((s) => ({ ...s, cands: [{ id: "c" + Date.now(), nombre: g("nombre").trim(), barrio: g("barrio").trim(), via: g("via"), precio: parseFloat(g("precio")) || 0, viv: parseInt(g("viv"), 10) || 0, estado: g("estado"), notas: g("notas").trim(), url: /^https:\/\//.test(url) ? url : undefined, direccion: g("direccion").trim() || undefined, refcat: g("refcat").trim() || undefined, plano: /^https:\/\//.test(plano) ? plano : undefined, fotos: [...(prefill?.fotos ?? []), ...(/^https:\/\//.test(foto) ? [foto] : [])].slice(0, 6), chk: {} }, ...s.cands] }));
       ref.current?.reset();
     }}>
       <h3>Añadir un candidato</h3>
@@ -80,6 +87,12 @@ function CandForm({ viaRef, prefill }: { viaRef: React.RefObject<HTMLSelectEleme
         <div className="fld"><label className="lb" htmlFor="cf-precio">Precio o canon (€)</label><input id="cf-precio" name="precio" type="number" min={0} step={1000} inputMode="numeric" defaultValue={prefill?.precio || ""} /></div>
         <div className="fld"><label className="lb" htmlFor="cf-viv">Viviendas posibles</label><input id="cf-viv" name="viv" type="number" min={1} inputMode="numeric" /></div>
         <div className="fld"><label className="lb" htmlFor="cf-estado">Estado</label><select id="cf-estado" name="estado">{ES.map((e) => <option key={e}>{e}</option>)}</select></div>
+      </div>
+      <div className="form-g">
+        <div className="fld"><label className="lb" htmlFor="cf-direccion">Dirección (para el mapa)</label><input id="cf-direccion" name="direccion" type="text" autoComplete="off" /></div>
+        <div className="fld"><label className="lb" htmlFor="cf-refcat">Referencia catastral</label><input id="cf-refcat" name="refcat" type="text" autoComplete="off" /></div>
+        <div className="fld"><label className="lb" htmlFor="cf-plano">Enlace a plano o documentos (https)</label><input id="cf-plano" name="plano" type="url" /></div>
+        <div className="fld"><label className="lb" htmlFor="cf-foto">Enlace a una foto (https)</label><input id="cf-foto" name="foto" type="url" /></div>
       </div>
       <div className="fld"><label className="lb" htmlFor="cf-notas">Notas</label><textarea id="cf-notas" name="notas" rows={2} defaultValue={prefill?.notas} /></div>
       <div><button className="btn" type="submit">Añadir a la lista</button></div>
@@ -133,7 +146,7 @@ export default function Opor() {
 
       <div className="intro" id="buscador"><h2>Buscar edificios y terrenos</h2>
         <p>{live ? "Edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo solo está disponible en algunas ciudades (de momento València). Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los enlaces de «Propietarios y portales» más abajo: abren la búsqueda en los portales."}</p></div>
-      {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ nombre: l.titulo + (l.zona ? " · " + l.zona : ""), barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
+      {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo + (l.zona ? " · " + l.zona : ""), barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
 
       <div className="intro" id="candidatos"><h2>Vuestros candidatos</h2><p>Apunta cada edificio o solar que encontréis, hazle seguimiento y mándalo a la calculadora con un toque. Las tarjetas marcadas como ejemplo se pueden borrar.</p></div>
       <div className="card"><div className="eyebrow">Embudo de candidatos</div>

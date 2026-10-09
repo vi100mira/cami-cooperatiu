@@ -6,9 +6,12 @@ export interface Listing {
   m2: number | null;
   zona: string;
   resumen: string;
+  fotos: string[];
 }
 
 const JUNK_SLUGS = new Set(["ascensor", "todas-las-zonas", "valencia", "valencia-capital"]);
+const IMG = /!\[[^\]]*\]\((https:\/\/static\.fotocasa\.es\/images\/[^)\s]+)\)/;
+const GALLERY = /^\[1\/\d+\]\(/;
 const HEAD = /^### \[\*\*(.+?)\*\*[^\]]*\]\((https:\/\/www\.fotocasa\.es\/[^)\s]+)\)/;
 
 function pretty(slug: string) {
@@ -36,6 +39,13 @@ export function parseFotocasa(md: string, max = 30): Listing[] {
       const p = lines[i].trim().match(/^(\d{1,3}(?:\.\d{3})+)\s?€/);
       if (p) { precio = parseInt(p[1].replace(/\./g, ""), 10); break; }
     }
+    let start = prev;
+    for (let i = h - 1; i > prev; i--) { if (GALLERY.test(lines[i])) { start = i; break; } }
+    const fotos: string[] = [];
+    for (let i = start; i < h && fotos.length < 6; i++) {
+      const im = lines[i].match(IMG);
+      if (im && !fotos.includes(im[1])) fotos.push(im[1]);
+    }
     const end = k + 1 < heads.length ? heads[k + 1] : Math.min(lines.length, h + 80);
     let m2: number | null = null, resumen = "";
     for (let i = h + 1; i < Math.min(end, h + 80); i++) {
@@ -51,7 +61,7 @@ export function parseFotocasa(md: string, max = 30): Listing[] {
     const seg = url.split("/");
     const idx = seg.findIndex((s) => s.startsWith("valencia"));
     const slug = idx >= 0 ? seg[idx + 1] : "";
-    out.push({ id, titulo: m[1].replace(/\*/g, ""), url, precio, m2, zona: slug && !JUNK_SLUGS.has(slug) && !/^\d+$/.test(slug) ? pretty(slug) : "València", resumen });
+    out.push({ id, titulo: m[1].replace(/\*/g, ""), url, precio, m2, zona: slug && !JUNK_SLUGS.has(slug) && !/^\d+$/.test(slug) ? pretty(slug) : "València", resumen, fotos });
   });
   return out;
 }

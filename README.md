@@ -36,6 +36,12 @@ La búsqueda en vivo solo se activa en ciudades de la lista blanca `CITIES` (`sr
 
 Cuentas y trabajo en equipo: ver `docs/USUARIOS-Y-COOPERATIVAS.md`.
 
+## Fotos, mapa y planos
+
+- Las fotos de los resultados vienen del mismo listado que ya se descarga (0 créditos extra) y se cargan desde la CDN de Fotocasa, siempre con enlace al anuncio original.
+- El mapa (Google Maps incrustado, sin clave) solo se carga al pulsar «Ver mapa». «Catastro» abre la Sede Electrónica; cada candidato admite referencia catastral, dirección y enlaces a plano y fotos.
+- Los planos de planta no vienen en el listado, solo en la ficha de cada anuncio. Leer fichas cuesta 1 crédito cada una y no está activado.
+
 ## Fuente de datos y aviso legal
 
 Idealista bloquea el acceso automatizado, por lo que la búsqueda usa **Fotocasa**. Antes de abrirla al público, revisa los términos de uso del portal y valora si el uso (no comercial, caché de 24 h, enlazando siempre al anuncio original) es aceptable. Si prefieres no arriesgar, deja `SEARCH_ENABLED=false`: el resto de la app funciona igual.

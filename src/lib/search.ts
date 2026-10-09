@@ -47,4 +47,4 @@ async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
 
 /** Caché de 24 h: un error lanza excepción y NO se cachea. */
 export const getListings = (tipo: Tipo, ciudad: string) =>
-  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v2", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();
+  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v3", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();

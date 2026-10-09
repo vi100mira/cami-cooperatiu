@@ -10,6 +10,11 @@ describe("parseFotocasa", () => {
     expect(r[0].url).toMatch(/^https:\/\/www\.fotocasa\.es\//);
     expect(r[0].m2).toBe(338);
   });
+  it("extrae fotos solo de la CDN de Fotocasa", () => {
+    expect(r[0].fotos.length).toBeGreaterThan(0);
+    r.forEach((x) => x.fotos.forEach((f) => expect(f).toMatch(/^https:\/\/static\.fotocasa\.es\/images\//)));
+    expect(new Set(r[0].fotos).size).toBe(r[0].fotos.length);
+  });
   it("no duplica ids y respeta el máximo", () => {
     expect(new Set(r.map((x) => x.id)).size).toBe(r.length);
     expect(parseFotocasa(md, 2).length).toBe(2);
