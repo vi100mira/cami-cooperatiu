@@ -21,29 +21,25 @@ export const curIdx = (done: Record<string, boolean>) => { const i = PH.findInde
 export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
   const all = PH.reduce((a, p) => a + p.tasks.length, 0);
   const done = PH.reduce((a, _, i) => a + stats(s.done, i).d, 0);
-  const pct = done / all, cur = curIdx(s.done), fin = done === all;
+  const pct = done / all, cur = curIdx(s.done), fin = done === all, C = 2 * Math.PI * 34;
   const nx = PH[cur].tasks.find((t) => !s.done[t.id]);
   return (
     <section className="hero" aria-label="Presentación">
+      <svg className="tiles" aria-hidden="true"><defs><pattern id="az" width="44" height="44" patternUnits="userSpaceOnUse"><path className="tp" d="M22 3L41 22L22 41L3 22Z" /><circle className="tpf" cx="22" cy="22" r="5" /><path className="tp" d="M0 0h7M0 0v7M44 0h-7M44 0v7M0 44h7M0 44v-7M44 44h-7M44 44v-7" /></pattern></defs><rect width="100%" height="100%" fill="url(#az)" /></svg>
       <div className="hero-t">
         <p className="eyebrow">Vivienda cooperativa en cesión de uso · España</p>
         <h1>Techo Común</h1>
         <p className="lead">De un grupo de familias a las llaves de un edificio que nadie podrá especular. Sigue la ruta, simula las cuentas y busca oportunidades.</p>
-        <div className="hprog" role="img" aria-label={`Progreso total: ${done} de ${all} pasos`}>
-          <span className="hbar"><i style={{ width: Math.round(pct * 100) + "%" }} /></span>
-          <span className="hnum">{done}/{all} pasos</span>
-        </div>
         <p className="next">{fin ? <><b>Ruta completada.</b> Ya podéis vivir en común.</> : <><b>Siguiente paso:</b> {plain(nx!.t)}</>}</p>
       </div>
-      <figure className="hphoto">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/960px-Cases_Cabanyal_-_15.jpeg"
-          srcSet="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/500px-Cases_Cabanyal_-_15.jpeg 500w, https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/960px-Cases_Cabanyal_-_15.jpeg 960w, https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Cases_Cabanyal_-_15.jpeg/1280px-Cases_Cabanyal_-_15.jpeg 1280w"
-          sizes="(max-width: 640px) 100vw, 420px"
-          width={960} height={720} alt="Casa con fachada de azulejos azules en el barrio del Cabanyal, València" fetchPriority="high" decoding="async"
-        />
-        <figcaption><a href="https://commons.wikimedia.org/wiki/File:Cases_Cabanyal_-_15.jpeg" target="_blank" rel="noopener noreferrer">Foto: Coentor · CC BY-SA 3.0 ↗</a></figcaption>
-      </figure>
+      <div className="pring" role="img" aria-label={`Progreso total: ${done} de ${all} pasos`}>
+        <svg viewBox="0 0 84 84" aria-hidden="true">
+          <circle cx="42" cy="42" r="34" fill="none" stroke="var(--surface-2)" strokeWidth="8" />
+          {done > 0 && <circle cx="42" cy="42" r="34" fill="none" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" strokeDasharray={C.toFixed(2)} strokeDashoffset={(C * (1 - pct)).toFixed(2)} transform="rotate(-90 42 42)" />}
+          <text className="tx" x="42" y="42" textAnchor="middle">{Math.round(pct * 100)}%</text>
+          <text className="sm" x="42" y="56" textAnchor="middle">{done}/{all}</text>
+        </svg>
+      </div>
     </section>
   );
 }

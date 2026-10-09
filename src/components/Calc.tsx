@@ -175,11 +175,27 @@ function ResC({ m, c }: { m: Model; c: CalcInput }) {
 }
 
 export default function Calc() {
-  const { s } = useStore();
+  const { s, set } = useStore();
   const m = model(s.calc, s.group.fam);
   return (
     <section className="grid gap-5">
       <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Calculadoras</h2><p className="max-w-[68ch] text-muted-foreground">Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Cambia un dato y las tres calculadoras se actualizan juntas.</p></div>
+      {s.sim && (
+        <Card className="gap-3 sm:flex-row sm:items-center">
+          {s.sim.foto && (/* eslint-disable-next-line @next/next/no-img-element */
+            <img src={s.sim.foto} alt={`Foto del inmueble: ${s.sim.titulo}`} className="aspect-[4/3] w-full rounded-lg object-cover sm:w-52" loading="lazy" referrerPolicy="no-referrer" />
+          )}
+          <div className="grid min-w-0 flex-1 gap-1">
+            <div className="text-xs font-semibold text-muted-foreground">Estás calculando</div>
+            <div className="font-heading text-lg font-bold">{s.sim.titulo}</div>
+            <div className="text-[13px] text-muted-foreground">{[s.sim.zona, s.sim.fuente].filter(Boolean).join(" · ")}. Se han cargado el precio y las viviendas estimadas del anuncio: revísalos.</div>
+            <div className="flex flex-wrap gap-3 text-[13px]">
+              {s.sim.url && /^https:\/\//.test(s.sim.url) && <a className="font-semibold text-primary underline" href={s.sim.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
+              <button type="button" className="text-muted-foreground underline" onClick={() => set((x) => ({ ...x, sim: null }))}>Quitar</button>
+            </div>
+          </div>
+        </Card>
+      )}
       <Card id="cA" className="gap-5"><CardTitle className="text-xl">Cuota mensual de cada vivienda</CardTitle>
         <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></Card>
       <Card id="cB" className="gap-5"><CardTitle className="text-xl">¿Cabe en el presupuesto de cada familia?</CardTitle>

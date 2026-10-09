@@ -199,12 +199,12 @@ export default function Opor() {
   const gs: string[] = []; ENT.forEach((e) => { if (!gs.includes(e.g)) gs.push(e.g); });
   const toForm = (p: Partial<Cand>) => { setPrefill(p); setMixed((n) => n + 1); setTimeout(() => document.getElementById("candForm")?.scrollIntoView({ behavior: "smooth" }), 50); };
   const simular = (c: Cand) => {
-    set((x) => ({ ...x, calc: c.precio > 0 ? { ...x.calc, suelo: c.precio } : x.calc, group: c.viv > 0 ? { ...x.group, fam: c.viv } : x.group }));
+    set((x) => ({ ...x, calc: c.precio > 0 ? { ...x.calc, suelo: c.precio } : x.calc, group: c.viv > 0 ? { ...x.group, fam: c.viv } : x.group, sim: { titulo: c.nombre, zona: c.barrio, foto: c.fotos?.find((f) => /^https:\/\//.test(f)), url: c.url } }));
     window.dispatchEvent(new CustomEvent("cami:goto", { detail: "calc" }));
   };
   const simularListing = (l: Listing, tipo: "edificios" | "terrenos") => {
     const v = viviendasEstimadas(l, tipo);
-    set((x) => ({ ...x, calc: l.precio ? { ...x.calc, suelo: l.precio } : x.calc, group: v ? { ...x.group, fam: v } : x.group }));
+    set((x) => ({ ...x, calc: l.precio ? { ...x.calc, suelo: l.precio } : x.calc, group: v ? { ...x.group, fam: v } : x.group, sim: { titulo: l.titulo, zona: l.zona, foto: l.fotos?.find((f) => /^https:\/\//.test(f)), url: l.url, fuente: l.fuente } }));
     window.dispatchEvent(new CustomEvent("cami:goto", { detail: "calc" }));
   };
   const Intro = ({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) => (

@@ -4,7 +4,8 @@ import { CDEF, type CalcInput } from "./calc";
 import type { Group } from "./content";
 
 export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
-export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; open: number | null; }
+export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; open: number | null; sim?: Sim | null; }
+export interface Sim { titulo: string; zona?: string; foto?: string; url?: string; fuente?: string; }
 const KEY = "camiCooperatiu.v1";
 
 export function examples(): Cand[] {
@@ -29,6 +30,7 @@ function load(): State {
         cands: Array.isArray(sv.cands) ? sv.cands : base.cands,
         calc: { ...base.calc, ...sv.calc },
         open: typeof sv.open === "number" ? sv.open : null,
+        sim: sv.sim && typeof sv.sim.titulo === "string" ? sv.sim : null,
       };
     }
   } catch {}
