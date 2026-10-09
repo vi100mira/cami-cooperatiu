@@ -3,7 +3,7 @@ import { useState } from "react";
 import { eur, fnum } from "@/lib/format";
 import { Photos, MapBox } from "./Media";
 import type { Listing } from "@/lib/parse-fotocasa";
-import { filtrar, viviendasEstimadas, precioPorVivienda, type Orden } from "@/lib/fit";
+import { filtrar, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, tituloLegible, type Orden } from "@/lib/fit";
 
 type Tipo = "edificios" | "terrenos";
 interface Res { tipo: Tipo; fuente: string; actualizado: string; items: Listing[]; }
@@ -22,6 +22,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
   const [minV, setMinV] = useState("");
   const [maxPv, setMaxPv] = useState("");
   const [orden, setOrden] = useState<Orden>("pv");
+  const [verTodo, setVerTodo] = useState(false);
   const run = async () => {
     setState({ loading: true });
     try {
@@ -31,7 +32,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
       else setState({ loading: false, res: j });
     } catch { setState({ loading: false, err: MSG.no_disponible }); }
   };
-  const items = filtrar(state.res?.items ?? [], tipo, { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden });
+  const items = filtrar(state.res?.items ?? [], tipo, { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo });
   return (
     <div className="card">
       <div className="chips" role="group" aria-label="Tipo de inmueble">
@@ -47,6 +48,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
             <option value="precio">Precio más bajo</option><option value="m2">Más superficie</option><option value="relevancia">Orden del portal</option>
           </select></div>
       </div>
+      {tipo === "edificios" && <label className="note" style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" checked={verTodo} onChange={(e) => setVerTodo(e.target.checked)} /> Mostrar también apartamentos turísticos, hoteles, traspasos y solares</label>}
       <div><button type="button" className="btn" disabled={state.loading} onClick={run}>{state.loading ? "Buscando…" : "Buscar en " + (ciudad === "valencia" ? "València" : ciudad)}</button></div>
       {state.err && <p className="warn" role="alert">{state.err}</p>}
       {state.res && (
@@ -56,7 +58,8 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
             {items.map((l) => (
               <article key={l.id} className="listing">
                 <Photos fotos={l.fotos ?? []} alt={`${l.titulo} en ${l.zona}`} />
-                <h4>{l.titulo}</h4>
+                <h4>{tituloLegible(l)}</h4>
+                {etiquetas(l, tipo).map((e) => <span key={e} className="ex">{ETIQUETA_TEXTO[e]}</span>)}
                 <div className="tag">{l.zona}</div>
                 <div className="nums" style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13.5 }}>
                   <span>Precio <b>{l.precio ? eur(l.precio) : "—"}</b></span>
@@ -68,7 +71,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
                 {l.resumen && <p className="desc">{l.resumen}</p>}
                 <div className="acts" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <a className="btn ghost sm" href={l.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>
-                  <button type="button" className="btn sm" onClick={() => onPick(l, state.res!.tipo)}>Apuntar como candidato</button>
+                  <button type="button" className="btn sm" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, state.res!.tipo)}>Apuntar como candidato</button>
                 </div>
               </article>
             ))}

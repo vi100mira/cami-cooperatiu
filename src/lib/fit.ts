@@ -14,12 +14,32 @@ export function precioPorVivienda(l: Pick<Listing, "m2" | "precio">, tipo: "edif
   return v && l.precio ? l.precio / v : null;
 }
 
+export type Etiqueta = "turistico" | "solar";
+
+/** Detecta anuncios que casi nunca encajan con una cooperativa (turísticos, hoteles, traspasos) o que no son edificios (solares). */
+export function etiquetas(l: Pick<Listing, "titulo" | "resumen" | "url">, tipo: "edificios" | "terrenos"): Etiqueta[] {
+  const t = (l.titulo + " " + l.resumen).toLowerCase();
+  const out: Etiqueta[] = [];
+  if (/tur[ií]stic|hotel|hostal|apartamentos? tur|traspaso|residencia de estudiantes|uso hotelero/.test(t)) out.push("turistico");
+  if (tipo === "edificios" && /solar urbano|\bsolar\b.*parcela|parcela de \d/.test(t)) out.push("solar");
+  return out;
+}
+
+export const ETIQUETA_TEXTO: Record<Etiqueta, string> = { turistico: "Turístico / hotel / traspaso", solar: "Parece un solar" };
+
+/** Título legible: los portales ponen solo «Edificio». */
+export function tituloLegible(l: Pick<Listing, "titulo" | "zona" | "m2">): string {
+  const base = l.titulo && l.titulo.length > 12 ? l.titulo : "Edificio";
+  return [base, l.zona && l.zona !== "València" ? l.zona : "", l.m2 ? l.m2 + " m²" : ""].filter(Boolean).join(" · ");
+}
+
 export type Orden = "relevancia" | "pv" | "precio" | "m2";
 
-export interface Filtros { maxPrecio: number; minViv: number; maxPv: number; orden: Orden }
+export interface Filtros { maxPrecio: number; minViv: number; maxPv: number; orden: Orden; verTodo?: boolean }
 
 export function filtrar(items: Listing[], tipo: "edificios" | "terrenos", f: Filtros): Listing[] {
   const out = items.filter((l) => {
+    if (!f.verTodo && etiquetas(l, tipo).length) return false;
     if (f.maxPrecio && !(l.precio != null && l.precio <= f.maxPrecio)) return false;
     if (f.minViv) { const v = viviendasEstimadas(l, tipo); if (v == null || v < f.minViv) return false; }
     if (f.maxPv) { const p = precioPorVivienda(l, tipo); if (p == null || p > f.maxPv) return false; }
