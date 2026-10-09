@@ -5,6 +5,12 @@ import { useStore } from "@/lib/store";
 import { model, series, eligibility, niceTicks, type CalcInput, type Model } from "@/lib/calc";
 import { eur, nf0, fnum, kfmt } from "@/lib/format";
 import { useHelp } from "./Rich";
+import { TriangleAlert, Check, X } from "lucide-react";
+import { Card, CardTitle } from "./ui/card";
+import { Alert } from "./ui/alert";
+import { Badge } from "./ui/badge";
+import { Disclosure } from "./ui/disclosure";
+import { Label } from "./ui/field";
 
 interface Spec { k: string; l: string; u?: string; min?: number; max?: number; step: number; t?: string; r?: boolean; fmt?: (v: number) => string; }
 const SPA: Spec[] = [
@@ -47,11 +53,11 @@ function Field({ sp }: { sp: Spec }) {
   const q = sp.t ? <button type="button" className="q" aria-label={"Ayuda: " + TERMS[sp.t].t} onClick={(e) => help(sp.t!, e.currentTarget)}>?</button> : null;
   const id = "ci-" + sp.k;
   if (sp.r) return (
-    <div className="fld rng"><div className="row"><span className="lb"><label htmlFor={id}>{sp.l}</label>{q}</span><output>{sp.fmt!(val)}</output></div>
-      <input type="range" id={id} min={sp.min} max={sp.max} step={sp.step} value={val} onChange={(e) => change(e.target.value)} /></div>
+    <div className="grid gap-1"><div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1.5"><Label htmlFor={id}>{sp.l}</Label>{q}</span><output className="font-mono text-sm font-medium">{sp.fmt!(val)}</output></div>
+      <input type="range" id={id} min={sp.min} max={sp.max} step={sp.step} value={val} onChange={(e) => change(e.target.value)} className="my-1 w-full cursor-pointer accent-primary" /></div>
   );
   return (
-    <div className="fld"><span className="lb"><label htmlFor={id}>{sp.l}</label>{q}</span>
+    <div className="grid min-w-0 gap-1.5"><span className="flex items-center gap-1.5"><Label htmlFor={id}>{sp.l}</Label>{q}</span>
       <div className="num"><input type="number" id={id} inputMode="decimal" min={sp.min ?? 0} max={sp.max} step={sp.step} value={txt ?? val} onChange={(e) => change(e.target.value)} onBlur={() => setTxt(null)} />{sp.u && <span className="u">{sp.u}</span>}</div></div>
   );
 }
@@ -69,8 +75,8 @@ function ResA({ m, c }: { m: Model; c: CalcInput }) {
       <div className="hero-n"><span className="eyebrow">Cuota por vivienda</span><span className="big">{nf0.format(m.tot)}<small>€ al mes</small></span></div>
       <div className="bar" role="img" aria-label="Reparto de la cuota mensual">{parts.filter((p) => p[1] > 0).map((p) => <i key={p[0]} style={{ flex: `${p[1].toFixed(2)} 1 0`, background: p[2] }} title={`${p[0]}: ${eur(p[1])} al mes`} />)}</div>
       <div className="lg">{parts.map((p) => <div key={p[0]}><span className="sw" style={{ background: p[2] }} /><span>{p[0]}</span><span className="v">{eur(p[1])}</span></div>)}</div>
-      {m.need < 0 && <p className="warn">Con estas aportaciones y ayudas no hace falta préstamo y sobrarían {eur(m.surplus)}.</p>}
-      {m.need >= 0 && m.pct > 0.85 && <p className="warn">El préstamo cubre una parte muy grande del coste. Conviene hablar pronto con la entidad financiera sobre el importe máximo que concedería.</p>}
+      {m.need < 0 && <Alert variant="info"><Check aria-hidden /><span>Con estas aportaciones y ayudas no hace falta préstamo y sobrarían {eur(m.surplus)}.</span></Alert>}
+      {m.need >= 0 && m.pct > 0.85 && <Alert variant="warning"><TriangleAlert aria-hidden /><span>El préstamo cubre una parte muy grande del coste. Conviene hablar pronto con la entidad financiera sobre el importe máximo que concedería.</span></Alert>}
       <div><div className="sub">De dónde sale el dinero</div>
         <div className="donut">
           <svg viewBox="0 0 104 104" role="img" aria-label="De dónde sale el dinero">
@@ -95,7 +101,7 @@ function ResB({ m, c }: { m: Model; c: CalcInput }) {
   return (
     <>
       <div className="hero-n"><span className="eyebrow">Límite de ingresos de referencia</span><span className="big" style={{ fontSize: "clamp(30px,7vw,40px)" }}>{nf0.format(e.lim)}<small>€ al año</small></span></div>
-      <span className={"pill " + (e.ok ? "ok" : "no")}>{e.ok ? "✓ Cumple el límite" : "✕ Supera el límite"}</span>
+      <Badge variant={e.ok ? "success" : "danger"} className="px-3 py-1 text-[13px]">{e.ok ? <><Check aria-hidden /> Cumple el límite</> : <><X aria-hidden /> Supera el límite</>}</Badge>
       <div className="facts">
         <div><span>Ingresos de la familia</span><b>{eur(c.ingresos)}/año</b></div>
         <div><span>{e.ok ? "Margen" : "Exceso"}</span><b>{eur(Math.abs(e.lim - c.ingresos))}</b></div>
@@ -109,7 +115,7 @@ function ResB({ m, c }: { m: Model; c: CalcInput }) {
         </div>
         <p className="note" style={{ marginTop: 6 }}>La cuota es el {Math.round(e.pc)}% de los ingresos. La marca señala el tope del 30%.</p>
       </div>
-      <span className={"pill " + (e.fits ? "ok" : "no")}>{e.fits ? "✓ La cuota cabe" : "✕ La cuota supera el 30%"}</span>
+      <Badge variant={e.fits ? "success" : "danger"} className="px-3 py-1 text-[13px]">{e.fits ? <><Check aria-hidden /> La cuota cabe</> : <><X aria-hidden /> La cuota supera el 30%</>}</Badge>
       <p className="note">En el concurso de la EVha que sirvió de ejemplo, la mitad de las personas socias debían pertenecer a colectivos preferentes. Las bases de cada concurso mandan.</p>
     </>
   );
@@ -161,9 +167,9 @@ function ResC({ m, c }: { m: Model; c: CalcInput }) {
       </div>
       {c.plazo < H && <p className="note">Al acabar el préstamo, en el año {c.plazo}, la cuota baja a solo mantenimiento y reserva: unos {eur((+c.mant + +c.reserva) * Math.pow(1 + c.ipc / 100, c.plazo))} al mes.</p>}
       <p className="note">La aportación inicial ({eur(c.aport)}) se devuelve actualizada al salir. Aquí cuenta como gasto desde el primer día para ser prudentes.</p>
-      <details className="dd"><summary>Ver los datos en tabla</summary><div className="scroll"><table><thead><tr><th>Año</th><th>Cooperativa</th><th>Alquiler</th><th>Diferencia</th></tr></thead><tbody>
+      <Disclosure summary="Ver los datos en tabla"><div className="scroll"><table><thead><tr><th>Año</th><th>Cooperativa</th><th>Alquiler</th><th>Diferencia</th></tr></thead><tbody>
         {rows.map((y) => <tr key={y}><td>{y}</td><td>{eur(ser.coop[y])}</td><td>{eur(ser.alq[y])}</td><td>{eur(ser.alq[y] - ser.coop[y])}</td></tr>)}
-      </tbody></table></div></details>
+      </tbody></table></div></Disclosure>
     </>
   );
 }
@@ -172,14 +178,14 @@ export default function Calc() {
   const { s } = useStore();
   const m = model(s.calc, s.group.fam);
   return (
-    <section className="view">
-      <div className="intro"><h2>Calculadoras</h2><p>Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Cambia un dato y las tres calculadoras se actualizan juntas.</p></div>
-      <article className="card" id="cA"><h3>Cuota mensual de cada vivienda</h3>
-        <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></article>
-      <article className="card" id="cB"><h3>¿Cabe en el presupuesto de cada familia?</h3>
-        <div className="calc-grid"><div className="inputs">{SPB.map((sp) => <Field key={sp.k} sp={sp} />)}<p className="note">Los límites de cada concurso cambian: usa estos valores solo como orientación y revisa las bases.</p></div><div className="res" aria-live="polite"><ResB m={m} c={s.calc} /></div></div></article>
-      <article className="card" id="cC"><h3>Cooperativa frente a alquiler</h3>
-        <div className="calc-grid wide"><div className="inputs">{SPC.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResC m={m} c={s.calc} /></div></div></article>
+    <section className="grid gap-5">
+      <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Calculadoras</h2><p className="max-w-[68ch] text-muted-foreground">Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Cambia un dato y las tres calculadoras se actualizan juntas.</p></div>
+      <Card id="cA" className="gap-5"><CardTitle className="text-xl">Cuota mensual de cada vivienda</CardTitle>
+        <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></Card>
+      <Card id="cB" className="gap-5"><CardTitle className="text-xl">¿Cabe en el presupuesto de cada familia?</CardTitle>
+        <div className="calc-grid"><div className="inputs">{SPB.map((sp) => <Field key={sp.k} sp={sp} />)}<p className="note">Los límites de cada concurso cambian: usa estos valores solo como orientación y revisa las bases.</p></div><div className="res" aria-live="polite"><ResB m={m} c={s.calc} /></div></div></Card>
+      <Card id="cC" className="gap-5"><CardTitle className="text-xl">Cooperativa frente a alquiler</CardTitle>
+        <div className="calc-grid wide"><div className="inputs">{SPC.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResC m={m} c={s.calc} /></div></div></Card>
     </section>
   );
 }

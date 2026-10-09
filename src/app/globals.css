@@ -1,3 +1,39 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Tokens de shadcn/ui enlazados a la paleta propia (claro y oscuro la cambian en :root) */
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-ink);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--ink-2);
+  --color-accent: var(--accent-soft);
+  --color-accent-foreground: var(--accent);
+  --color-destructive: var(--bad);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--accent);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-bad-soft: var(--bad-soft);
+  --radius-sm: 8px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+@layer base { *, ::before, ::after { border-color: var(--line); } }
+
 /* Concepto: una línea de metro cobalto sobre papel azulado. La ruta de seis estaciones es el hilo de toda la app; el azulejo valenciano solo aparece en la cabecera. */
 :root{
   --bg:#f2f5f9; --surface:#ffffff; --surface-2:#e8eef7;
@@ -59,10 +95,10 @@ button{font:inherit;color:inherit}
 .hero .lead{max-width:52ch;color:var(--ink-2)}
 .next{margin-top:12px;font-size:14px;max-width:56ch}
 .next b{font-weight:600}
-.ring{width:84px;height:84px;display:grid;place-items:center}
-.ring svg{width:84px;height:84px}
-.ring .tx{font:700 17px var(--font-display);fill:var(--ink)}
-.ring .sm{font:500 9px var(--font-body);fill:var(--ink-2);letter-spacing:.06em}
+.pring{width:84px;height:84px;display:grid;place-items:center}
+.pring svg{width:84px;height:84px}
+.pring .tx{font:700 17px var(--font-display);fill:var(--ink)}
+.pring .sm{font:500 9px var(--font-body);fill:var(--ink-2);letter-spacing:.06em}
 
 /* Pestañas */
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:6px;overflow-x:auto;background:var(--bg);margin-inline:-16px;padding:8px 16px;border-bottom:1px solid var(--line);scrollbar-width:none}
@@ -246,7 +282,7 @@ details.dd>summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--a
 footer{font-size:13px;color:var(--ink-3);display:grid;gap:6px;max-width:72ch}
 @media (max-width:640px){
   .grp-g{grid-template-columns:1fr 1fr}.grp-g .fld:first-child,.grp-g .fld:last-child{grid-column:1/-1}
-  .hero{grid-template-columns:1fr;padding:18px 16px}.ring{position:absolute;top:14px;right:14px;width:64px;height:64px}.ring svg{width:64px;height:64px}
+  .hero{grid-template-columns:1fr;padding:18px 16px}.pring{position:absolute;top:14px;right:14px;width:64px;height:64px}.pring svg{width:64px;height:64px}
   .hero .eyebrow{max-width:calc(100% - 76px)}
   .st{font-size:11px}
   .meter{grid-template-columns:96px 1fr}

@@ -8,8 +8,11 @@ import Calc from "./Calc";
 import Opor from "./Opor";
 import Glos from "./Glos";
 import Faq from "./Faq";
+import { Route, Calculator, Building2, CircleHelp, BookOpen } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["faq", "Preguntas"], ["glos", "Glosario"]];
+const ICONS: Record<string, React.ReactNode> = { ruta: <Route aria-hidden />, calc: <Calculator aria-hidden />, opor: <Building2 aria-hidden />, faq: <CircleHelp aria-hidden />, glos: <BookOpen aria-hidden /> };
 
 function Shell() {
   const { s } = useStore();
@@ -39,9 +42,11 @@ function Shell() {
     <HelpCtx.Provider value={help}>
       <div className="wrap">
         <Hero s={s} />
-        <nav className="tabs" aria-label="Secciones">
-          {TABS.map(([k, l]) => <button key={k} type="button" aria-current={tab === k ? "page" : undefined} onClick={() => go(k)}>{l}</button>)}
-        </nav>
+        <Tabs value={tab} onValueChange={(v) => go(v)} className="min-w-0 sticky top-[env(safe-area-inset-top,0px)] z-20 -mx-4 border-b bg-background/90 px-4 py-2 backdrop-blur">
+          <TabsList aria-label="Secciones">
+            {TABS.map(([k, l]) => <TabsTrigger key={k} value={k}>{ICONS[k]}{l}</TabsTrigger>)}
+          </TabsList>
+        </Tabs>
         <main>
           {tab === "ruta" && <Ruta goTo={goTo} />}
           {tab === "calc" && <Calc />}
