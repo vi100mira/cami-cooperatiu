@@ -5,6 +5,7 @@ import { useStore, type Cand } from "@/lib/store";
 import { eur } from "@/lib/format";
 import { Rich } from "./Rich";
 import LiveSearch from "./LiveSearch";
+import PortalSearch from "./PortalSearch";
 import { Photos, MapBox } from "./Media";
 
 function Vias({ onAdd }: { onAdd: (id: string) => void }) {
@@ -39,7 +40,8 @@ function Vias({ onAdd }: { onAdd: (id: string) => void }) {
 }
 
 function CandCard({ c, onSim }: { c: Cand; onSim: (c: Cand) => void }) {
-  const { set } = useStore();
+  const { s, set } = useStore();
+  const ciudad = s.group.ciudad.trim();
   const via = VIAS.find((v) => v.id === c.via), pv = c.precio > 0 && c.viv > 0 ? eur(c.precio / c.viv) : "—";
   const upd = (f: (x: Cand) => Cand) => set((s) => ({ ...s, cands: s.cands.map((x) => (x.id === c.id ? f(x) : x)) }));
   const n = CHK.filter((_, i) => c.chk && c.chk[i]).length;
@@ -53,7 +55,7 @@ function CandCard({ c, onSim }: { c: Cand; onSim: (c: Cand) => void }) {
       <div className="fld"><label className="lb" htmlFor={"est-" + c.id}>Estado</label>
         <select id={"est-" + c.id} value={c.estado} onChange={(e) => upd((x) => ({ ...x, estado: e.target.value }))}>{ES.map((e) => <option key={e}>{e}</option>)}</select></div>
       {c.notas && <p className="note">{c.notas}</p>}
-      {(c.direccion || c.barrio) && <MapBox query={(c.direccion || c.nombre + " " + c.barrio).trim()} />}
+      {(c.direccion || (!c.ejemplo && c.barrio)) && <MapBox query={((c.direccion || c.nombre + " " + c.barrio) + " " + (ciudad || "")).trim()} />}
       {c.refcat && <p className="note">Ref. catastral: <b style={{ fontFamily: "var(--font-mono)", userSelect: "all" }}>{c.refcat}</b> · pégala en el buscador del Catastro</p>}
       <div className="note" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         {c.url && /^https:\/\//.test(c.url) && <a href={c.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
@@ -145,7 +147,8 @@ export default function Opor() {
       <Vias onAdd={(id) => toForm({ via: id })} />
 
       <div className="intro" id="buscador"><h2>Buscar edificios y terrenos</h2>
-        <p>{live ? "Edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo solo está disponible en algunas ciudades (de momento València). Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los enlaces de «Propietarios y portales» más abajo: abren la búsqueda en los portales."}</p></div>
+        <p>{live ? "Edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo solo está disponible en algunas ciudades (de momento València). Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los botones de portales de aquí abajo."}</p></div>
+      <PortalSearch ciudad={s.group.ciudad} />
       {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo + (l.zona ? " · " + l.zona : ""), barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
 
       <div className="intro" id="candidatos"><h2>Vuestros candidatos</h2><p>Apunta cada edificio o solar que encontréis, hazle seguimiento y mándalo a la calculadora con un toque. Las tarjetas marcadas como ejemplo se pueden borrar.</p></div>
