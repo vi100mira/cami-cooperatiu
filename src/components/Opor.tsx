@@ -147,7 +147,7 @@ export default function Opor() {
       <Vias onAdd={(id) => toForm({ via: id })} />
 
       <div className="intro" id="buscador"><h2>Buscar edificios y terrenos</h2>
-        <p>{live ? "Edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo solo está disponible en algunas ciudades (de momento València). Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los botones de portales de aquí abajo."}</p></div>
+        <p>{live ? "Función en pruebas: edificios y terrenos en venta en València. Los resultados se actualizan como mucho una vez al día para no gastar recursos compartidos." : "La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que no aparece para tu ciudad. Para " + (s.group.ciudad.trim() || "tu ciudad") + ", usa los botones de portales de aquí abajo."}</p></div>
       <PortalSearch ciudad={s.group.ciudad} />
       {live && <LiveSearch ciudad="valencia" onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: "Anuncio encontrado en Fotocasa. Verifica todos los datos." })} />}
 

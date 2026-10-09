@@ -10,9 +10,9 @@ interface Res { tipo: Tipo; fuente: string; actualizado: string; items: Listing[
 const CIUDAD_NOMBRE: Record<string, string> = { valencia: "València" };
 const MSG: Record<string, string> = {
   desactivada: "La búsqueda en vivo está apagada ahora mismo. Puedes usar los enlaces de portales de la sección de entidades.",
-  limite_diario: "Se ha alcanzado el límite diario de consultas. Vuelve a intentarlo mañana.",
-  demasiadas_peticiones: "Demasiadas consultas seguidas. Espera un rato.",
-  no_disponible: "El portal no ha respondido. Inténtalo más tarde.",
+  limite_diario: "Se ha alcanzado el límite diario de consultas de la búsqueda en vivo. Es un límite compartido entre todas las personas que prueban la app, para no generar costes. Vuelve a intentarlo mañana; mientras tanto puedes usar los botones de portales de arriba.",
+  demasiadas_peticiones: "Has hecho demasiadas consultas seguidas desde tu conexión. Espera un rato y vuelve a probar.",
+  no_disponible: "El portal no ha respondido, o ha cambiado su web y no hemos podido leerla. Inténtalo más tarde y, si sigue fallando, usa los botones de portales de arriba.",
 };
 
 export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t: Tipo) => void; ciudad: string }) {
@@ -49,10 +49,12 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
           </select></div>
       </div>
       {tipo === "edificios" && <label className="note" style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" checked={verTodo} onChange={(e) => setVerTodo(e.target.checked)} /> Mostrar también apartamentos turísticos, hoteles, traspasos y solares</label>}
+      <p className="note"><b>Función en pruebas.</b> Solo cubre València y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</p>
       <div><button type="button" className="btn" disabled={state.loading} onClick={run}>{state.loading ? "Buscando…" : "Buscar en " + (ciudad === "valencia" ? "València" : ciudad)}</button></div>
       {state.err && <p className="warn" role="alert">{state.err}</p>}
       {state.res && (
         <>
+          <p className="warn" role="note">Aviso: las viviendas estimadas y el precio por vivienda salen de los m² construidos del anuncio (suponiendo unos 80 m² por vivienda) y <b>pueden no ser exactos</b>. Confirma siempre los datos en el anuncio original.</p>
           <p className="note">{items.length} de {state.res.items.length} resultados · Fuente: {state.res.fuente} · Actualizado {new Date(state.res.actualizado).toLocaleString("es-ES")}. Las viviendas estimadas suponen unos 80 m² construidos por vivienda: es solo una pista, confirma siempre en el anuncio.</p>
           <div className="res-list">
             {items.map((l) => (
@@ -65,7 +67,7 @@ export default function LiveSearch({ onPick, ciudad }: { onPick: (l: Listing, t:
                   <span>Precio <b>{l.precio ? eur(l.precio) : "—"}</b></span>
                   <span>Superficie <b>{l.m2 ? fnum(l.m2, 0) + " m²" : "—"}</b></span>
                   {l.precio && l.m2 ? <span>€/m² <b>{eur(l.precio / l.m2)}</b></span> : null}
-                  {viviendasEstimadas(l, tipo) ? <span>≈ <b>{viviendasEstimadas(l, tipo)}</b> viviendas · <b>{eur(precioPorVivienda(l, tipo)!)}</b>/vivienda</span> : null}
+                  {viviendasEstimadas(l, tipo) ? <span title="Estimación orientativa a partir de los m² del anuncio">≈ <b>{viviendasEstimadas(l, tipo)}</b> viviendas · <b>{eur(precioPorVivienda(l, tipo)!)}</b>/vivienda <i>(estimado)</i></span> : null}
                 </div>
                 <MapBox query={`${l.zona} ${CIUDAD_NOMBRE[ciudad] ?? ciudad}`} />
                 {l.resumen && <p className="desc">{l.resumen}</p>}
