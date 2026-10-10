@@ -22,6 +22,35 @@ import { Alert } from "./ui/alert";
 import { Disclosure } from "./ui/disclosure";
 import { ToggleChips } from "./ui/toggle-chips";
 
+const CASA47 = [
+  { nombre: "VALENCIA-7-2026", zona: "Valencia/València", viv: 88, url: "https://portal.casa47.es/#/listado-convocatorias/1005" },
+  { nombre: "CASTELLON-7-2026", zona: "Castellón/Castelló", viv: 157, url: "https://portal.casa47.es/#/listado-convocatorias/1004" },
+  { nombre: "ALICANTE-7-2026", zona: "Alicante/Alacant", viv: 153, url: "https://portal.casa47.es/#/listado-convocatorias/1006" },
+];
+/** Sección aparte: no son oportunidades para la cooperativa, sino otra vía de acceso individual. */
+function Casa47Socias({ intro }: { intro: React.ReactNode }) {
+  return (
+    <>
+      {intro}
+      <Card>
+        <CardContent className="gap-3">
+          <Alert variant="warning"><TriangleAlert aria-hidden /><span><b>No es una vía para la cooperativa.</b> Son sorteos de alquiler asequible para <b>particulares</b> que cumplan los requisitos. No dan suelo ni edificios a un grupo, no sirven para comprar ni para recibir en cesión de uso, y no se mezclan con los resultados de la búsqueda de edificios y terrenos.</span></Alert>
+          <p className="text-sm text-muted-foreground">Cada persona se apunta por su cuenta, dentro de un plazo concreto, y la adjudicación es por sorteo. Lo normal es que no coincida con vuestro proyecto cooperativo, pero puede servir a quien del grupo necesite una solución de alquiler mientras tanto.</p>
+          <ul className="grid gap-2">
+            {CASA47.map((c) => (
+              <li key={c.url} className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                <span><b>{c.nombre}</b> · {c.zona} · {c.viv} viviendas</span>
+                <a className="font-medium text-primary underline" href={c.url} target="_blank" rel="noopener noreferrer">Ver convocatoria ↗</a>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[13px] text-muted-foreground">Datos leídos del portal el 10 de octubre de 2026: las tres convocatorias de la Comunitat Valenciana cerraron solicitudes el 21 de septiembre de 2026 y estaban «en evaluación». No se actualizan solas: consulta siempre el <a className="font-semibold text-primary underline" href="https://portal.casa47.es/#/listado-convocatorias" target="_blank" rel="noopener noreferrer">portal de convocatorias de Casa 47 ↗</a> y su <a className="font-semibold text-primary underline" href="https://portal.casa47.es/#/viviendas/listado" target="_blank" rel="noopener noreferrer">listado de viviendas ↗</a> (se puede filtrar por provincia).</p>
+        </CardContent>
+      </Card>
+    </>
+  );
+}
+
 function Vias({ onAdd }: { onAdd: (id: string) => void }) {
   const [sortK, setSortK] = useState("sum");
   const sorts: [string, string][] = [["sum", "Mejor equilibrio"], ...CRIT];
@@ -243,6 +272,7 @@ export default function Opor() {
 
       <Intro id="entidades" title="A quién preguntar y dónde mirar">Cada botón abre la web de la entidad en otra pestaña. Los mensajes ya llevan los datos de vuestro grupo; revísalos y envíalos tú.</Intro>
       <div className="grid gap-5">{gs.map((g) => <div key={g} className="grid gap-2.5"><h3 className="font-heading text-lg font-bold">{g}</h3><div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">{ENT.filter((e) => e.g === g).map((e) => <EntCard key={e.id} e={e} />)}</div></div>)}</div>
+      <Casa47Socias intro={<Intro id="socias" title="Para las personas socias: sorteos de alquiler de Casa 47">Otra forma de acceder a una vivienda, distinta de todo lo anterior.</Intro>} />
     </section>
   );
 }
