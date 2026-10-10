@@ -2,7 +2,7 @@ export interface Term{t:string;d:string;rel?:string[];link?:[string,string]}
 export interface Task{id:string;t:string;go?:string;goL?:string}
 export interface Phase{id:string;short:string;title:string;lead:string;hard?:string;terms:string[];ents:string[];tasks:Task[]}
 export interface Scores{c:number;r:number;z:number;l:number}
-export interface Via{id:string;title:string;tag:string;s:Scores;que:string;pro:string[];con:string[];ver:string;link?:{url:string;label:string;nota:string}[]}
+export interface Via{id:string;title:string;tag:string;s:Scores;que:string;pro:string[];con:string[];ver:string;link?:{url:string;label:string;nota:string;acciones?:{label:string;url:string}[]}[]}
 export interface Entity{g:string;id:string;name:string;desc:string;url:string;ul:string;ct?:string[];ctn?:string;tpl?:string}
 export interface Group{name:string;fam:number;barrio:string;ciudad:string;region:string}
 
@@ -77,7 +77,7 @@ export const VIAS:Via[]=[
  pro:["Evitas pagar suelo de mercado","La administración ya reconoce el modelo"],
  con:["Requisitos de renta y colectivos preferentes","Depende de que se abra una convocatoria","Comprueba si hay alguno abierto en tu ciudad: no siempre los hay (en València ciudad no se vio ninguno en el concurso de la EVha)"],
  ver:"Pregunta al Ayuntamiento por su inventario de solares municipales y al organismo autonómico de vivienda por nuevas convocatorias.",
- link:[{url:"https://fecovi.es/plan-base-viva-colaboracion-publico-cooperativa-vivienda/",label:"Plan Base Viva (FECOVI)",nota:"Esto no es una convocatoria abierta ni una vía garantizada. FECOVI, la federación valenciana de cooperativas de vivienda, busca ayuntamientos dispuestos a ceder suelo (ha hablado con más de 30, entre ellos València, Sagunto y Alcublas). Puedes escribirles a fecovi@fecovi.es o llamar al 963 74 32 27 / 722 177 830 para preguntar qué ayuntamientos tienen suelo en marcha. Atienden en C/ de los Caballeros 26 (València) solo con cita previa. Atienden mejor a grupos ya constituidos o en formación que a personas sueltas."}]},
+ link:[{url:"https://fecovi.es/plan-base-viva-colaboracion-publico-cooperativa-vivienda/",label:"Plan Base Viva (FECOVI)",nota:"Esto no es una convocatoria abierta ni una vía garantizada. FECOVI, la federación valenciana de cooperativas de vivienda, busca ayuntamientos dispuestos a ceder suelo (ha hablado con más de 30, entre ellos València, Sagunto y Alcublas). Puedes escribirles a fecovi@fecovi.es o llamar al 963 74 32 27 / 722 177 830 para preguntar qué ayuntamientos tienen suelo en marcha. Atienden en C/ de los Caballeros 26 (València) solo con cita previa. Atienden mejor a grupos ya constituidos o en formación que a personas sueltas.",acciones:[{label:"Escribir a FECOVI",url:"mailto:fecovi@fecovi.es"},{label:"Llamar al 963 74 32 27",url:"tel:+34963743227"},{label:"Llamar al 722 177 830",url:"tel:+34722177830"}]}]},
 {id:"edificio",title:"Edificio existente a rehabilitar",tag:"Compra",s:{c:2,r:3,z:3,l:4},
  que:"La cooperativa compra una finca, o la recibe cedida, y la rehabilita. En Olesa de Montserrat un edificio abandonado de una promoción fallida se convirtió en 25 viviendas cooperativas.",
  pro:["Menos riesgo urbanístico que el suelo vacío","Podéis decidir el proyecto y quién entra"],
