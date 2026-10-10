@@ -31,6 +31,9 @@ describe("gestoras de Sareb", () => {
   it("reconoce Hipoges por el id de agencia de yaencontre", () => {
     expect(detectGestora("https://www.yaencontre.com/venta/piso/inmueble-21204-112757163")).toBe("Hipoges");
   });
+  it("reconoce Aliseda por su id de agencia (65243)", () => {
+    expect(detectGestora("https://www.yaencontre.com/venta/piso/inmueble-65243-111249267")).toBe("Aliseda");
+  });
   it("reconoce por el nombre del anunciante y no confunde otras agencias", () => {
     expect(detectGestora("https://x.es/a", "ALISEDA Servicios Inmobiliarios")).toBe("Aliseda");
     expect(detectGestora("https://www.yaencontre.com/venta/edificio/inmueble-69432-1", "SUNSTAY")).toBeUndefined();

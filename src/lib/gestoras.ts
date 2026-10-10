@@ -1,7 +1,7 @@
 /** Gestoras inmobiliarias de Sareb (según su web) y cómo se reconocen en los anuncios. */
 const GESTORAS: { nombre: string; re: RegExp; yaencontreId?: string }[] = [
   { nombre: "Hipoges", re: /\bhipoges\b/i, yaencontreId: "21204" },
-  { nombre: "Aliseda", re: /\baliseda\b|\banticipa\b/i },
+  { nombre: "Aliseda", re: /\baliseda\b|\banticipa\b/i, yaencontreId: "65243" },
   { nombre: "Servihabitat", re: /\bservihabitat\b|\bserviland\b/i },
   { nombre: "Aelca", re: /\baelca\b|\b[áa]rqura\b/i },
 ];
