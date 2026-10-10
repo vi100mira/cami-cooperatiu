@@ -212,7 +212,7 @@ export default function Opor() {
   );
   return (
     <section className="grid gap-5">
-      <Intro id="buscador" title="Buscar edificios y terrenos">Indica en qué ciudad buscáis y usa los portales o, en València, la búsqueda en vivo (función en pruebas).</Intro>
+      <Intro id="buscador" title="Buscar edificios y terrenos">Indica en qué ciudad buscáis y usa los portales o, en la provincia de València, la búsqueda en vivo (función en pruebas).</Intro>
       <Card>
         <Field label={<><MapPin className="size-3.5" aria-hidden /> Ciudad o municipio donde buscáis</>} htmlFor="bs-ciudad">
           <Input id="bs-ciudad" type="text" autoComplete="off" placeholder="Por ejemplo, València" value={s.group.ciudad} onChange={(e) => { const v = e.target.value; set((x) => ({ ...x, group: { ...x.group, ciudad: v } })); }} />
