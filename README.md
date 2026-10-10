@@ -22,7 +22,7 @@ npm run build
 - **Firecrawl**: solo la búsqueda en vivo lo usa. Cada llamada es un scrape simple (**1 crédito**), nunca modo JSON ni proxy de pago.
   1. `SEARCH_ENABLED` distinto de `true` ⇒ búsqueda apagada, 0 créditos (valor por defecto).
   2. Lista blanca: solo 2 URLs fijas (edificios, terrenos). Nadie puede pedir otra URL.
-  3. Caché de 24 h: con visitas ilimitadas, el gasto máximo teórico son ~2 créditos al día.
+  3. Caché de 24 h: con visitas ilimitadas, el gasto máximo teórico son 14 créditos al día (2 alcances × 7 lecturas), y el tope diario lo recorta a `SEARCH_DAILY_CAP`.
   4. Tope diario `SEARCH_DAILY_CAP` (por defecto 12, máximo absoluto 50) por instancia.
   5. Límite de 20 consultas por hora y por IP.
   6. Enfriamiento de 10 min tras un fallo; los errores no se cachean ni se reintentan en bucle.
@@ -69,4 +69,4 @@ Guía de orientación; no es asesoría jurídica ni financiera.
 
 ## Portales de la búsqueda en vivo
 
-Fotocasa, Pisos.com y yaencontre (edificios y terrenos), unidos sin duplicados por precio y m². Idealista bloquea la lectura automática y no se usa: la vía legítima es pedir su API oficial. Cada consulta no cacheada cuesta 3 créditos (uno por portal); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.
+Fotocasa, Pisos.com y yaencontre (edificios y terrenos), unidos sin duplicados por precio y m². Idealista bloquea la lectura automática y no se usa: la vía legítima es pedir su API oficial. Alcance: València ciudad o toda la provincia. Cada consulta no cacheada de edificios cuesta 3 créditos (uno por portal) y la de terrenos 4 (añade el filtro «de bancos» de yaencontre); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.

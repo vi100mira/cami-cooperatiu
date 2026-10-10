@@ -17,7 +17,7 @@ import { filtrar, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEX
 
 type Tipo = "edificios" | "terrenos";
 interface Res { tipo: Tipo; fuente: string; fallidos?: string[]; actualizado: string; items: Listing[]; }
-const CIUDAD_NOMBRE: Record<string, string> = { valencia: "València" };
+const CIUDAD_NOMBRE: Record<string, string> = { valencia: "València", "valencia-provincia": "provincia de València" };
 const MSG: Record<string, string> = {
   desactivada: "La búsqueda en vivo está apagada ahora mismo. Puedes usar los enlaces de portales de la sección de entidades.",
   limite_diario: "Se ha alcanzado el límite diario de consultas de la búsqueda en vivo. Es un límite compartido entre todas las personas que prueban la app, para no generar costes. Vuelve a intentarlo mañana; mientras tanto puedes usar los botones de portales de arriba.",
@@ -25,8 +25,10 @@ const MSG: Record<string, string> = {
   no_disponible: "El portal no ha respondido, o ha cambiado su web y no hemos podido leerla. Inténtalo más tarde y, si sigue fallando, usa los botones de portales de arriba.",
 };
 
-export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
+export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
   const [tipo, setTipo] = useState<Tipo>("edificios");
+  const [provincia, setProvincia] = useState(false);
+  const ciudad = provincia ? ciudadBase + "-provincia" : ciudadBase;
   const [state, setState] = useState<{ loading: boolean; res?: Res; err?: string }>({ loading: false });
   const [maxP, setMaxP] = useState("");
   const [minV, setMinV] = useState("");
@@ -43,10 +45,11 @@ export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: List
     } catch { setState({ loading: false, err: MSG.no_disponible }); }
   };
   const items = filtrar(state.res?.items ?? [], tipo, { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo });
-  const nombreCiudad = ciudad === "valencia" ? "València" : ciudad;
+  const nombreCiudad = CIUDAD_NOMBRE[ciudad] ?? ciudad;
   return (
     <Card>
       <ToggleChips label="Tipo de inmueble" value={tipo} options={[["edificios", "Edificios"], ["terrenos", "Terrenos"]]} onChange={(t) => { setTipo(t); setState({ loading: false }); }} />
+      <ToggleChips label="Alcance" value={provincia ? "provincia" : "ciudad"} options={[["ciudad", "Ciudad de València"], ["provincia", "Toda la provincia"]]} onChange={(a) => { setProvincia(a === "provincia"); setState({ loading: false }); }} />
       <FormGrid>
         <Field label="Precio máximo (€)" htmlFor="ls-max"><Input id="ls-max" type="number" min={0} step={50000} inputMode="numeric" value={maxP} onChange={(e) => setMaxP(e.target.value)} /></Field>
         {tipo === "edificios" && <Field label="Viviendas mínimas (estimadas)" htmlFor="ls-minv"><Input id="ls-minv" type="number" min={0} step={1} inputMode="numeric" value={minV} onChange={(e) => setMinV(e.target.value)} /></Field>}
@@ -62,7 +65,7 @@ export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: List
           <Checkbox checked={verTodo} onCheckedChange={(v) => setVerTodo(v === true)} /> Mostrar también apartamentos turísticos, hoteles, traspasos y solares
         </label>
       )}
-      <Alert variant="info"><Info aria-hidden /><span><b>Función en pruebas.</b> Solo cubre València y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</span></Alert>
+      <Alert variant="info"><Info aria-hidden /><span><b>Función en pruebas.</b> Cubre València ciudad o su provincia (más resultados, incluidos terrenos de bancos) y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</span></Alert>
       <div><Button disabled={state.loading} onClick={run}>{state.loading ? <><Loader2 className="animate-spin" aria-hidden /> Buscando…</> : <><Search aria-hidden /> Buscar en {nombreCiudad}</>}</Button></div>
       {state.err && <Alert variant="danger" role="alert"><TriangleAlert aria-hidden /><span>{state.err}</span></Alert>}
       {state.res && (
@@ -92,7 +95,7 @@ export default function LiveSearch({ onPick, onSim, ciudad }: { onPick: (l: List
                       {l.precio && l.m2 ? <div className="flex items-center gap-1.5"><Euro className="size-3.5" aria-hidden /><dt className="sr-only">Precio por m²</dt><dd><b className="font-mono font-medium text-foreground">{eur(l.precio / l.m2)}</b>/m²</dd></div> : null}
                     </dl>
                     {viv ? <p className="rounded-lg bg-accent px-3 py-2 text-[13px]" title="Estimación orientativa a partir de los m² del anuncio">≈ <b>{viv}</b> viviendas · <b>{eur(precioPorVivienda(l, tipo)!)}</b>/vivienda <i className="text-muted-foreground">(estimado)</i></p> : null}
-                    <MapBox query={`${l.zona} ${CIUDAD_NOMBRE[ciudad] ?? ciudad}`} />
+                    <MapBox query={`${l.zona} ${CIUDAD_NOMBRE[ciudadBase] ?? ciudadBase}`} />
                     {l.resumen && <p className="text-[13.5px] text-muted-foreground">{l.resumen}</p>}
                     <div className="flex flex-wrap gap-2">
                       <Button size="sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, state.res!.tipo)}><Calculator aria-hidden /> Simular en calculadora</Button>

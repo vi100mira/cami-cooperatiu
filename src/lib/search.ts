@@ -14,6 +14,7 @@ export type Tipo = "edificios" | "terrenos";
  */
 export const CITIES: Record<string, { slug: string; pisos: string; yaencontre: string; nombre: string }> = {
   valencia: { slug: "valencia-capital", pisos: "valencia_capital", yaencontre: "valencia", nombre: "València" },
+  "valencia-provincia": { slug: "valencia-provincia", pisos: "valencia", yaencontre: "valencia-valencia-provincia", nombre: "provincia de València" },
 };
 export function isCity(x: unknown): x is string { return typeof x === "string" && Object.prototype.hasOwnProperty.call(CITIES, x); }
 export function sourceUrl(tipo: Tipo, ciudad: string) { return `https://www.fotocasa.es/es/comprar/${tipo}/${CITIES[ciudad].slug}/todas-las-zonas/l`; }
@@ -27,6 +28,8 @@ const PORTALES: Portal[] = [
   { id: "fotocasa", nombre: "Fotocasa", tipos: ["edificios", "terrenos"], url: sourceUrl, parse: (md) => parseFotocasa(md, 30).map((l) => ({ ...l, fuente: "Fotocasa" })) },
   { id: "pisos", nombre: "Pisos.com", tipos: ["edificios", "terrenos"], url: (t, c) => `https://www.pisos.com/venta/${t}-${CITIES[c].pisos}/`, parse: (md) => parsePisos(md, 30) },
   { id: "yaencontre", nombre: "yaencontre", tipos: ["edificios", "terrenos"], url: (t, c) => `https://www.yaencontre.com/venta/${t}/${CITIES[c].yaencontre}`, parse: (md) => parseYaencontre(md, 30) },
+  // Terrenos que publican bancos y gestoras (filtro «de bancos» de yaencontre). Un crédito más por consulta.
+  { id: "yaencontre-bancos", nombre: "yaencontre (de bancos)", tipos: ["terrenos"], url: (t, c) => `https://www.yaencontre.com/venta/${t}/${CITIES[c].yaencontre}/e-de-bancos`, parse: (md) => parseYaencontre(md, 30) },
 ];
 
 async function leerPortal(p: Portal, tipo: Tipo, ciudad: string): Promise<Listing[]> {
@@ -74,4 +77,4 @@ async function fetchFresh(tipo: Tipo, ciudad: string): Promise<SearchResult> {
 
 /** Caché de 24 h: un error lanza excepción y NO se cachea. */
 export const getListings = (tipo: Tipo, ciudad: string) =>
-  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v6", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();
+  unstable_cache(() => fetchFresh(tipo, ciudad), ["listings-v7", ciudad, tipo], { revalidate: 86400, tags: ["listings"] })();
