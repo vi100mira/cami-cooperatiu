@@ -46,7 +46,7 @@ function Vias({ onAdd }: { onAdd: (id: string) => void }) {
               <div><div className="mb-1 text-xs font-semibold uppercase tracking-wider text-good">A favor</div><ul className="grid list-disc gap-1 pl-5 text-sm marker:text-good">{v.pro.map((x, i) => <li key={i}><Rich text={x} /></li>)}</ul></div>
               <div><div className="mb-1 text-xs font-semibold uppercase tracking-wider text-destructive">En contra</div><ul className="grid list-disc gap-1 pl-5 text-sm marker:text-destructive">{v.con.map((x, i) => <li key={i}><Rich text={x} /></li>)}</ul></div>
               <p className="text-[13px] text-muted-foreground"><b className="text-foreground">Para comprobar:</b> <Rich text={v.ver} /></p>
-              {v.link && <p className="text-[13px] text-muted-foreground"><a className="font-semibold text-primary underline" href={v.link.url} target="_blank" rel="noopener noreferrer">{v.link.label} ↗</a> {v.link.nota}</p>}
+              {v.link?.map((k) => <p key={k.url} className="text-[13px] text-muted-foreground"><a className="font-semibold text-primary underline" href={k.url} target="_blank" rel="noopener noreferrer">{k.label} ↗</a> {k.nota}</p>)}
             </Disclosure>
             <div><Button size="sm" variant="outline" onClick={() => onAdd(v.id)}><Plus aria-hidden /> Apuntar un candidato de esta vía</Button></div>
           </Card>

@@ -2,7 +2,7 @@ export interface Term{t:string;d:string;rel?:string[];link?:[string,string]}
 export interface Task{id:string;t:string;go?:string;goL?:string}
 export interface Phase{id:string;short:string;title:string;lead:string;hard?:string;terms:string[];ents:string[];tasks:Task[]}
 export interface Scores{c:number;r:number;z:number;l:number}
-export interface Via{id:string;title:string;tag:string;s:Scores;que:string;pro:string[];con:string[];ver:string;link?:{url:string;label:string;nota:string}}
+export interface Via{id:string;title:string;tag:string;s:Scores;que:string;pro:string[];con:string[];ver:string;link?:{url:string;label:string;nota:string}[]}
 export interface Entity{g:string;id:string;name:string;desc:string;url:string;ul:string;ct?:string[];ctn?:string;tpl?:string}
 export interface Group{name:string;fam:number;barrio:string;ciudad:string;region:string}
 
@@ -87,7 +87,7 @@ export const VIAS:Via[]=[
  pro:["Parte de la estructura ya existe"],
  con:["Hay que revisar a fondo la obra hecha y la licencia","Las grandes propietarias son lentas","Un concurso de suelo para alquiler asequible de la Sareb quedó desierto en Alicante (ejemplo): puede indicar dificultad o margen para negociar"],
  ver:"Pregunta a los servicers y a Casa 47 qué promociones inacabadas tienen en tu ciudad y si venden a cooperativas.",
- link:{url:"https://www.sareb.es/inmuebles/comunitat-valenciana/",label:"Buscador de inmuebles de Sareb",nota:"Una vez dentro, aplica tú el filtro de Valencia y busca en «Suelos» y «Obra en curso»: el filtro no se puede pasar por el enlace. Casa 47 no tiene de momento listados ni buscador de inmuebles para cooperativas: solo gestiona convocatorias de alquiler asequible para particulares, adjudicadas por sorteo. Como Sareb está traspasando su cartera a Casa 47, cada vez habrá menos en su buscador."}},
+ link:[{url:"https://www.sareb.es/inmuebles/comunitat-valenciana/",label:"Buscador de inmuebles de Sareb",nota:"Una vez dentro, aplica tú el filtro de Valencia y busca en «Suelos» y «Obra en curso»: el filtro no se puede pasar por el enlace. Casa 47 no tiene listados de inmuebles ni suelo para cooperativas. Como Sareb está traspasando su cartera a Casa 47, cada vez habrá menos en su buscador."}},{url:"https://portal.casa47.es/#/listado-convocatorias",label:"Convocatorias de Casa 47",nota:"Es un listado real y actualizable, pero de sorteos de alquiler asequible para particulares que cumplan requisitos (por ejemplo, la convocatoria VALENCIA-7-2026, con 88 viviendas, cerró en septiembre de 2026). No es una vía de acceso a suelo o edificios para una cooperativa: sirve como información complementaria para las personas socias a título individual."}],
 {id:"tanteo",title:"Edificio que la administración rechaza",tag:"Idea sin contrastar",s:{c:2,r:3,z:1,l:4},
  que:"Cuando alguien vende un edificio, la administración puede ejercer {{tanteo|tanteo y retracto}}. Como ejemplo, una moción del Ayuntamiento de València de 2025 recoge que descartó algunos edificios ofrecidos, como San Jacinto 22. Podrían interesar a una cooperativa. Es una idea de este asistente y no está contrastada.",
  pro:["Edificios completos ya identificados"],
