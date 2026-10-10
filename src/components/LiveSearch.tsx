@@ -27,7 +27,8 @@ const MSG: Record<string, string> = {
 
 export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
   const [tipo, setTipo] = useState<Tipo>("edificios");
-  const [provincia, setProvincia] = useState(false);
+  const [provincia, setProvincia] = useState(true);
+  const [lugar, setLugar] = useState("");
   const ciudad = provincia ? ciudadBase + "-provincia" : ciudadBase;
   const [state, setState] = useState<{ loading: boolean; res?: Res; err?: string }>({ loading: false });
   const [maxP, setMaxP] = useState("");
@@ -44,13 +45,17 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
       else setState({ loading: false, res: j });
     } catch { setState({ loading: false, err: MSG.no_disponible }); }
   };
-  const items = filtrar(state.res?.items ?? [], tipo, { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo });
+  const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const q = norm(lugar.trim());
+  const base = q ? (state.res?.items ?? []).filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : (state.res?.items ?? []);
+  const items = filtrar(base, tipo, { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo });
   const nombreCiudad = CIUDAD_NOMBRE[ciudad] ?? ciudad;
   return (
     <Card>
       <ToggleChips label="Tipo de inmueble" value={tipo} options={[["edificios", "Edificios"], ["terrenos", "Terrenos"]]} onChange={(t) => { setTipo(t); setState({ loading: false }); }} />
-      <ToggleChips label="Alcance" value={provincia ? "provincia" : "ciudad"} options={[["ciudad", "Ciudad de València"], ["provincia", "Toda la provincia"]]} onChange={(a) => { setProvincia(a === "provincia"); setState({ loading: false }); }} />
+      <ToggleChips label="Alcance" value={provincia ? "provincia" : "ciudad"} options={[["provincia", "Toda la provincia"], ["ciudad", "Solo la ciudad de València"]]} onChange={(a) => { setProvincia(a === "provincia"); setState({ loading: false }); }} />
       <FormGrid>
+        <Field label="Municipio o barrio (opcional)" htmlFor="ls-lugar"><Input id="ls-lugar" type="text" autoComplete="off" placeholder="Por ejemplo, Torrent" value={lugar} onChange={(e) => setLugar(e.target.value)} /></Field>
         <Field label="Precio máximo (€)" htmlFor="ls-max"><Input id="ls-max" type="number" min={0} step={50000} inputMode="numeric" value={maxP} onChange={(e) => setMaxP(e.target.value)} /></Field>
         {tipo === "edificios" && <Field label="Viviendas mínimas (estimadas)" htmlFor="ls-minv"><Input id="ls-minv" type="number" min={0} step={1} inputMode="numeric" value={minV} onChange={(e) => setMinV(e.target.value)} /></Field>}
         {tipo === "edificios" && <Field label="Máximo por vivienda (€)" htmlFor="ls-pv"><Input id="ls-pv" type="number" min={0} step={10000} inputMode="numeric" value={maxPv} onChange={(e) => setMaxPv(e.target.value)} /></Field>}
