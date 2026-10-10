@@ -27,9 +27,9 @@ const MSG: Record<string, string> = {
 
 export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
   const [tipo, setTipo] = useState<Tipo>("edificios");
-  const [provincia, setProvincia] = useState(true);
   const [lugar, setLugar] = useState("");
-  const ciudad = provincia ? ciudadBase + "-provincia" : ciudadBase;
+  // Siempre se busca en toda la provincia; el municipio o barrio se afina después sobre los resultados.
+  const ciudad = ciudadBase + "-provincia";
   const [state, setState] = useState<{ loading: boolean; res?: Res; err?: string }>({ loading: false });
   const [maxP, setMaxP] = useState("");
   const [minV, setMinV] = useState("");
@@ -53,9 +53,14 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   return (
     <Card>
       <ToggleChips label="Tipo de inmueble" value={tipo} options={[["edificios", "Edificios"], ["terrenos", "Terrenos"]]} onChange={(t) => { setTipo(t); setState({ loading: false }); }} />
-      <ToggleChips label="Alcance" value={provincia ? "provincia" : "ciudad"} options={[["provincia", "Toda la provincia"], ["ciudad", "Solo la ciudad de València"]]} onChange={(a) => { setProvincia(a === "provincia"); setState({ loading: false }); }} />
+      <Alert variant="info"><Info aria-hidden /><span><b>Función en pruebas.</b> Busca en toda la {nombreCiudad}, incluidos terrenos de bancos, y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</span></Alert>
+      <div><Button disabled={state.loading} onClick={run}>{state.loading ? <><Loader2 className="animate-spin" aria-hidden /> Buscando…</> : <><Search aria-hidden /> Buscar en la {nombreCiudad}</>}</Button></div>
+      {state.err && <Alert variant="danger" role="alert"><TriangleAlert aria-hidden /><span>{state.err}</span></Alert>}
+      {state.res && (
+        <>
+      <div className="grid gap-1"><div className="font-heading text-base font-bold">Afina los resultados</div><p className="text-[13px] text-muted-foreground">Los filtros se aplican al momento sobre lo encontrado, sin gastar nuevas consultas.</p></div>
       <FormGrid>
-        <Field label="Municipio o barrio (opcional)" htmlFor="ls-lugar"><Input id="ls-lugar" type="text" autoComplete="off" placeholder="Por ejemplo, Torrent" value={lugar} onChange={(e) => setLugar(e.target.value)} /></Field>
+        <Field label="Municipio o barrio (opcional)" htmlFor="ls-lugar"><Input id="ls-lugar" type="text" autoComplete="off" placeholder="Por ejemplo, València, Torrent o Russafa" value={lugar} onChange={(e) => setLugar(e.target.value)} /></Field>
         <Field label="Precio máximo (€)" htmlFor="ls-max"><Input id="ls-max" type="number" min={0} step={50000} inputMode="numeric" value={maxP} onChange={(e) => setMaxP(e.target.value)} /></Field>
         {tipo === "edificios" && <Field label="Viviendas mínimas (estimadas)" htmlFor="ls-minv"><Input id="ls-minv" type="number" min={0} step={1} inputMode="numeric" value={minV} onChange={(e) => setMinV(e.target.value)} /></Field>}
         {tipo === "edificios" && <Field label="Máximo por vivienda (€)" htmlFor="ls-pv"><Input id="ls-pv" type="number" min={0} step={10000} inputMode="numeric" value={maxPv} onChange={(e) => setMaxPv(e.target.value)} /></Field>}
@@ -70,11 +75,6 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
           <Checkbox checked={verTodo} onCheckedChange={(v) => setVerTodo(v === true)} /> Mostrar también apartamentos turísticos, hoteles, traspasos y solares
         </label>
       )}
-      <Alert variant="info"><Info aria-hidden /><span><b>Función en pruebas.</b> Cubre València ciudad o su provincia (más resultados, incluidos terrenos de bancos) y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</span></Alert>
-      <div><Button disabled={state.loading} onClick={run}>{state.loading ? <><Loader2 className="animate-spin" aria-hidden /> Buscando…</> : <><Search aria-hidden /> Buscar en {nombreCiudad}</>}</Button></div>
-      {state.err && <Alert variant="danger" role="alert"><TriangleAlert aria-hidden /><span>{state.err}</span></Alert>}
-      {state.res && (
-        <>
           <Alert variant="warning"><TriangleAlert aria-hidden /><span>Las viviendas estimadas y el precio por vivienda salen de los m² construidos del anuncio (suponiendo unos 80 m² por vivienda) y <b>pueden no ser exactos</b>. Confirma siempre los datos en el anuncio original.</span></Alert>
           {!!state.res.fallidos?.length && <Alert variant="warning"><TriangleAlert aria-hidden /><span>No hemos podido leer {state.res.fallidos.join(", ")} en esta consulta, así que faltan sus anuncios. Prueba mañana o usa los botones de portales.</span></Alert>}
           <p className="text-[13px] text-muted-foreground"><b className="text-foreground">{items.length}</b> de {state.res.items.length} resultados · Fuente: {state.res.fuente} · Actualizado {new Date(state.res.actualizado).toLocaleString("es-ES")}.</p>

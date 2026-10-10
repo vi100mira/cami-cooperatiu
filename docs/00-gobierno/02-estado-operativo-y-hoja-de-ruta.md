@@ -39,10 +39,12 @@ Revisión de las calculadoras tras detectar que confundían lo comunitario con l
 - Presupuesto: recuerda de dónde sale la cuota y separa «¿Puede optar a un concurso?» de «¿Puede pagar la cuota?», con aviso si no es asumible.
 - Cooperativa frente a alquiler: pasa de gasto acumulado a cuota mensual (tabla de momentos clave y gráfico con el fin del préstamo marcado); el campo pasa a «Alquiler de un piso parecido, ya reformado» y se explica por qué la comparación es válida; horizonte por defecto de 40 años.
 
+- Búsqueda en vivo: siempre en toda la provincia; el selector «Toda la provincia / Solo la ciudad» se retira y los filtros (municipio o barrio, precio, viviendas, orden) aparecen después, como ajuste fino sin gastar consultas. Gasto máximo teórico: 7 créditos/día.
+
 ## Pendiente de confirmar
 
-- Si la búsqueda en vivo está activa en producción y con qué tope diario.
-- Objetivo y destinatarios del producto (grupo concreto, FECOVI o público general).
+- Si la búsqueda en vivo está activa en producción: `SEARCH_ENABLED` y `FIRECRAWL_API_KEY` existen en Vercel (producción), valor del interruptor no leído.
+- Si una sola página por portal da suficientes anuncios al filtrar por municipio.
 
 ## Hoja de ruta
 
@@ -51,4 +53,4 @@ Revisión de las calculadoras tras detectar que confundían lo comunitario con l
 3. Revisar términos de uso de los portales antes de abrir la búsqueda al público.
 4. Primeros testers externos.
 5. Datos propios de otras comunidades autónomas en `entitiesFor`.
-6. Fase 2 (solo con demanda): cuentas y grupos con Supabase y RLS.
+6. Fase 2: cuentas y grupos con Supabase y RLS. Con el objetivo de gestionar grupos, deja de ser opcional; falta decidir cuándo.

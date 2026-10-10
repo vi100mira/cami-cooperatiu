@@ -11,6 +11,10 @@ ultima_revision: 2026-10-10
 
 Guía web gratuita y sin ánimo de lucro para que un grupo de personas cree una cooperativa de vivienda en cesión de uso en España. Nombre inicial: Camí Cooperatiu (de ahí el repositorio `cami-cooperatiu`); renombrado a Techo Común el 9/10/2026.
 
+## Objetivo (confirmado por el autor, 10/10/2026)
+
+Herramienta para **gestionar grupos cooperativistas** y generar alternativas a las formas habituales de acceder a la vivienda. No es solo una guía informativa: el grupo es el centro del producto.
+
 ## Usuarios
 
 Grupos que quieren formar una cooperativa de vivienda. Ámbito estatal, con datos propios de la Comunitat Valenciana. A 10/10/2026 el único desarrollador y usuario de pruebas es el autor.
