@@ -32,10 +32,10 @@ const SPB: Spec[] = [
   { k: "mult", l: "Veces el IPREM permitidas", u: "veces", step: 0.1, t: "vpo" },
 ];
 const SPC: Spec[] = [
-  { k: "alq", l: "Alquiler de mercado equivalente", u: "€/mes", step: 10 },
+  { k: "alq", l: "Alquiler de un piso parecido, ya reformado", u: "€/mes", step: 10 },
   { k: "sube", l: "Subida anual del alquiler", u: "% al año", step: 0.5 },
   { k: "ipc", l: "Subida anual de mantenimiento y reserva", u: "% al año", step: 0.5 },
-  { k: "hor", l: "Horizonte", r: true, min: 5, max: 40, step: 1, fmt: (v) => v + " años" },
+  { k: "hor", l: "Horizonte", r: true, min: 5, max: 60, step: 1, fmt: (v) => v + " años" },
 ];
 
 function Field({ sp }: { sp: Spec }) {
@@ -72,7 +72,7 @@ function ResA({ m, c }: { m: Model; c: CalcInput }) {
   const diff = c.alq - m.tot;
   return (
     <>
-      <div className="hero-n"><span className="eyebrow">Cuota por vivienda</span><span className="big">{nf0.format(m.tot)}<small>€ al mes</small></span></div>
+      <div className="hero-n"><span className="eyebrow">Cuota de cada familia (por vivienda)</span><span className="big">{nf0.format(m.tot)}<small>€ al mes</small></span></div>
       <div className="bar" role="img" aria-label="Reparto de la cuota mensual">{parts.filter((p) => p[1] > 0).map((p) => <i key={p[0]} style={{ flex: `${p[1].toFixed(2)} 1 0`, background: p[2] }} title={`${p[0]}: ${eur(p[1])} al mes`} />)}</div>
       <div className="lg">{parts.map((p) => <div key={p[0]}><span className="sw" style={{ background: p[2] }} /><span>{p[0]}</span><span className="v">{eur(p[1])}</span></div>)}</div>
       {m.need < 0 && <Alert variant="info"><Check aria-hidden /><span>Con estas aportaciones y ayudas no hace falta préstamo y sobrarían {eur(m.surplus)}.</span></Alert>}
@@ -85,13 +85,18 @@ function ResA({ m, c }: { m: Model; c: CalcInput }) {
           </svg>
           <div className="lg">{src.map((x) => <div key={x[0]}><span className="sw" style={{ background: x[2] }} /><span>{x[0]}</span><span className="v">{Math.round((x[1] / sum) * 100)}%</span></div>)}</div>
         </div></div>
-      <div className="facts">
-        <div><span>Coste total del proyecto</span><b>{eur(m.total)}</b></div>
-        <div><span>Préstamo necesario</span><b>{eur(m.fin)} ({Math.round(m.pct * 100)}%)</b></div>
-        <div><span>Cuota del préstamo, toda la cooperativa</span><b>{eur(m.pm)}/mes</b></div>
-        <div><span>Ingresos mínimos para que la cuota sea el 30%</span><b>{eur(m.ing30)}/mes</b></div>
-        <div><span>Frente al alquiler de mercado</span><b>{diff >= 0 ? "ahorras " + eur(diff) : "pagas " + eur(-diff) + " más"}/mes</b></div>
-      </div>
+      <div><div className="sub">Toda la cooperativa ({m.v} {m.v === 1 ? "vivienda" : "viviendas"})</div>
+        <div className="facts">
+          <div><span>Coste total del proyecto</span><b>{eur(m.total)}</b></div>
+          <div><span>Préstamo necesario</span><b>{eur(m.fin)} ({Math.round(m.pct * 100)}%)</b></div>
+          <div><span>Cuota del préstamo</span><b>{eur(m.pm)}/mes</b></div>
+        </div></div>
+      <div><div className="sub">Cada familia</div>
+        <div className="facts">
+          <div><span>Su parte del coste del edificio</span><b>{eur(m.total / m.v)}</b></div>
+          <div><span>Ingresos mínimos para que la cuota sea el 30%</span><b>{eur(m.ing30)}/mes</b></div>
+          <div><span>Frente al alquiler de un piso parecido ({eur(c.alq)}/mes)</span><b>{diff >= 0 ? "ahorra " + eur(diff) : "paga " + eur(-diff) + " más"}/mes</b></div>
+        </div></div>
     </>
   );
 }
@@ -100,22 +105,30 @@ function ResB({ m, c }: { m: Model; c: CalcInput }) {
   const e = eligibility(c, m), fill = Math.min(100, (e.pc / 60) * 100);
   return (
     <>
-      <div className="hero-n"><span className="eyebrow">Límite de ingresos de referencia</span><span className="big" style={{ fontSize: "clamp(30px,7vw,40px)" }}>{nf0.format(e.lim)}<small>€ al año</small></span></div>
-      <Badge variant={e.ok ? "success" : "danger"} className="px-3 py-1 text-[13px]">{e.ok ? <><Check aria-hidden /> Cumple el límite</> : <><X aria-hidden /> Supera el límite</>}</Badge>
-      <div className="facts">
-        <div><span>Ingresos de la familia</span><b>{eur(c.ingresos)}/año</b></div>
-        <div><span>{e.ok ? "Margen" : "Exceso"}</span><b>{eur(Math.abs(e.lim - c.ingresos))}</b></div>
-        <div><span>Cuota máxima al 30% de los ingresos</span><b>{eur(e.maxq)}/mes</b></div>
-        <div><span>Cuota de esta cooperativa</span><b>{eur(m.tot)}/mes</b></div>
+      <p className="note" style={{ marginTop: 0 }}>Todo este bloque es para <b>una familia</b>. Su cuota, <b>{eur(m.tot)}/mes</b>, viene de la calculadora de arriba: {m.v} {m.v === 1 ? "vivienda" : "viviendas"} y un coste total de {eur(m.total)}.</p>
+      <div><div className="sub">1. ¿Puede optar a un concurso de vivienda protegida?</div>
+        <div className="hero-n"><span className="eyebrow">Límite de ingresos de referencia</span><span className="big" style={{ fontSize: "clamp(30px,7vw,40px)" }}>{nf0.format(e.lim)}<small>€ al año</small></span></div>
+        <div className="facts">
+          <div><span>Ingresos de la familia</span><b>{eur(c.ingresos)}/año</b></div>
+          <div><span>{e.ok ? "Margen" : "Exceso"}</span><b>{eur(Math.abs(e.lim - c.ingresos))}</b></div>
+        </div>
+        <Badge variant={e.ok ? "success" : "danger"} className="mt-2 px-3 py-1 text-[13px]">{e.ok ? <><Check aria-hidden /> Sí: sus ingresos están dentro del límite</> : <><X aria-hidden /> No: sus ingresos superan el límite</>}</Badge>
       </div>
-      <div>
+      <div><div className="sub">2. ¿Puede pagar la cuota?</div>
+      <div className="facts">
+        <div><span>Cuota máxima recomendable (30% de sus ingresos)</span><b>{eur(e.maxq)}/mes</b></div>
+        <div><span>Cuota de su vivienda en la cooperativa</span><b>{eur(m.tot)}/mes</b></div>
+      </div>
+      <div style={{ marginTop: 10 }}>
         <div style={{ position: "relative", height: 10, background: "var(--line)", borderRadius: 5 }} role="img" aria-label={`La cuota es el ${Math.round(e.pc)}% de los ingresos`}>
           <i style={{ display: "block", height: "100%", width: fill.toFixed(1) + "%", borderRadius: 5, background: e.fits ? "var(--good)" : "var(--bad)" }} />
           <i style={{ position: "absolute", left: "50%", top: -4, width: 2, height: 18, background: "var(--ink)" }} />
         </div>
         <p className="note" style={{ marginTop: 6 }}>La cuota es el {Math.round(e.pc)}% de los ingresos. La marca señala el tope del 30%.</p>
       </div>
-      <Badge variant={e.fits ? "success" : "danger"} className="px-3 py-1 text-[13px]">{e.fits ? <><Check aria-hidden /> La cuota cabe</> : <><X aria-hidden /> La cuota supera el 30%</>}</Badge>
+      <Badge variant={e.fits ? "success" : "danger"} className="mt-2 px-3 py-1 text-[13px]">{e.fits ? <><Check aria-hidden /> Sí: la cuota cabe en su presupuesto</> : <><X aria-hidden /> No: la cuota supera el 30% de sus ingresos</>}</Badge>
+      </div>
+      {!e.fits && <Alert variant="warning"><TriangleAlert aria-hidden /><span>Con estos datos el proyecto no es asumible para esta familia. Prueba con más viviendas, un edificio más barato, más ayudas o un plazo de préstamo más largo.</span></Alert>}
       <p className="note">En el concurso de la EVha que sirvió de ejemplo, la mitad de las personas socias debían pertenecer a colectivos preferentes. Las bases de cada concurso mandan.</p>
     </>
   );
@@ -123,52 +136,68 @@ function ResB({ m, c }: { m: Model; c: CalcInput }) {
 
 function LineChart({ ser }: { ser: ReturnType<typeof series> }) {
   const [hov, setHov] = useState<{ i: number; x: number; y: number } | null>(null);
-  const W = 480, HT = 290, ml = 54, mr = 14, mt = 14, mb = 36, H = ser.H;
-  const maxV = Math.max(ser.coop[H], ser.alq[H], 1), tk = niceTicks(maxV, 4), top = tk[tk.length - 1];
-  const x = (i: number) => ml + ((W - ml - mr) * i) / H, y = (v: number) => mt + (HT - mt - mb) * (1 - v / top);
+  const W = 480, HT = 290, ml = 54, mr = 14, mt = 14, mb = 36, H = ser.H, last = H - 1;
+  const maxV = Math.max(...ser.coop, ...ser.alq, 1), tk = niceTicks(maxV, 4), top = tk[tk.length - 1];
+  // Índice i = año i + 1.
+  const x = (i: number) => ml + ((W - ml - mr) * i) / Math.max(1, last), y = (v: number) => mt + (HT - mt - mb) * (1 - v / top);
   const step = H <= 10 ? 1 : H <= 20 ? 2 : 5;
-  const xs: number[] = []; for (let i = 0; i <= H; i += step) xs.push(i);
+  const xs: number[] = [0]; for (let yr = step; yr <= H; yr += step) xs.push(yr - 1);
   const path = (a: number[]) => a.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
   const d = hov ? ser.alq[hov.i] - ser.coop[hov.i] : 0;
   return (
     <div style={{ position: "relative" }}>
-      <svg className="chart" viewBox={`0 0 ${W} ${HT}`} role="img" aria-label="Gasto acumulado por vivienda: cooperativa frente a alquiler"
-        onPointerMove={(e) => { const r = e.currentTarget.getBoundingClientRect(), px = ((e.clientX - r.left) / r.width) * W; const i = Math.max(0, Math.min(H, Math.round(((px - ml) / (W - ml - mr)) * H))); setHov({ i, x: e.clientX - r.left, y: e.clientY - r.top }); }}
+      <svg className="chart" viewBox={`0 0 ${W} ${HT}`} role="img" aria-label="Lo que paga una familia cada mes: cooperativa frente a alquiler"
+        onPointerMove={(e) => { const r = e.currentTarget.getBoundingClientRect(), px = ((e.clientX - r.left) / r.width) * W; const i = Math.max(0, Math.min(last, Math.round(((px - ml) / (W - ml - mr)) * last))); setHov({ i, x: e.clientX - r.left, y: e.clientY - r.top }); }}
         onPointerLeave={() => setHov(null)}>
         {tk.map((v) => <g key={v}><line className="gr" x1={ml} x2={W - mr} y1={y(v)} y2={y(v)} /><text x={ml - 8} y={y(v) + 4} textAnchor="end">{kfmt(v)}</text></g>)}
-        {xs.map((i) => <text key={i} x={x(i)} y={HT - mb + 17} textAnchor="middle">{i}</text>)}
-        <text x={ml + (W - ml - mr) / 2} y={HT - 4} textAnchor="middle">años</text>
+        {xs.map((i) => <text key={i} x={x(i)} y={HT - mb + 17} textAnchor="middle">{i + 1}</text>)}
+        <text x={ml + (W - ml - mr) / 2} y={HT - 4} textAnchor="middle">año</text>
         <line className="ax" x1={ml} x2={W - mr} y1={y(0)} y2={y(0)} />
+        {ser.paid !== null && <g><line x1={x(ser.paid - 0.5)} x2={x(ser.paid - 0.5)} y1={mt} y2={y(0)} stroke="var(--ink)" strokeOpacity="0.35" strokeDasharray="4 4" /><text x={x(ser.paid - 0.5) - 6} y={mt + 12} textAnchor="end">Préstamo pagado</text></g>}
         <path d={path(ser.alq)} fill="none" stroke="var(--s2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         <path d={path(ser.coop)} fill="none" stroke="var(--s1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx={x(H)} cy={y(ser.alq[H])} r="4" fill="var(--s2)" stroke="var(--surface-2)" strokeWidth="2" />
-        <circle cx={x(H)} cy={y(ser.coop[H])} r="4" fill="var(--s1)" stroke="var(--surface-2)" strokeWidth="2" />
+        <circle cx={x(last)} cy={y(ser.alq[last])} r="4" fill="var(--s2)" stroke="var(--surface-2)" strokeWidth="2" />
+        <circle cx={x(last)} cy={y(ser.coop[last])} r="4" fill="var(--s1)" stroke="var(--surface-2)" strokeWidth="2" />
         {hov && <g><line className="ax" x1={x(hov.i)} x2={x(hov.i)} y1={mt} y2={y(0)} /><circle cx={x(hov.i)} cy={y(ser.coop[hov.i])} r="4" fill="var(--s1)" stroke="var(--surface-2)" strokeWidth="2" /><circle cx={x(hov.i)} cy={y(ser.alq[hov.i])} r="4" fill="var(--s2)" stroke="var(--surface-2)" strokeWidth="2" /></g>}
       </svg>
       {hov && <div className="tip" style={{ position: "absolute", left: Math.min(hov.x + 14, 200), top: Math.max(0, hov.y - 70) }}>
-        <b>Año {hov.i}</b><br />Cooperativa: {eur(ser.coop[hov.i])}<br />Alquiler: {eur(ser.alq[hov.i])}<br />{d >= 0 ? "La cooperativa lleva " + eur(d) + " menos" : "La cooperativa lleva " + eur(-d) + " más"}
+        <b>Año {hov.i + 1}, cada mes</b><br />Cooperativa: {eur(ser.coop[hov.i])}<br />Alquiler: {eur(ser.alq[hov.i])}<br />{d >= 0 ? "La cooperativa cuesta " + eur(d) + " menos" : "La cooperativa cuesta " + eur(-d) + " más"}
       </div>}
     </div>
   );
 }
 
 function ResC({ m, c }: { m: Model; c: CalcInput }) {
-  const ser = series(c, m), H = ser.H;
-  const rows: number[] = []; for (let y = 0; y <= H; y += H > 20 ? 5 : H > 10 ? 2 : 1) rows.push(y);
-  if (rows[rows.length - 1] !== H) rows.push(H);
-  const msg = ser.be ? `Con estos datos, la cooperativa acumula menos gasto que el alquiler a partir del año ${ser.be}.` : `Con estos datos, en ${H} años la cooperativa cuesta ${eur(ser.coop[H] - ser.alq[H])} más que el alquiler acumulado.`;
+  const ser = series(c, m), H = ser.H, at = (yr: number) => yr - 1;
+  const moments: [string, number][] = [["Hoy (año 1)", 1]];
+  const pz = Math.round(c.plazo);
+  if (pz > 1 && pz <= H) moments.push([`Año ${pz}, último del préstamo`, pz]);
+  if (ser.paid !== null) moments.push([`Año ${pz + 1}, préstamo pagado`, pz + 1]);
+  if (H > (ser.paid !== null ? pz + 1 : pz)) moments.push([`Año ${H}`, H]);
+  const rows: number[] = [1]; for (let yr = 5; yr <= H; yr += 5) rows.push(yr);
+  if (ser.paid !== null && !rows.includes(pz + 1)) rows.push(pz + 1);
+  if (!rows.includes(H)) rows.push(H);
+  rows.sort((a, b) => a - b);
+  const msg = ser.be === 1 ? `Con estos datos, cada familia paga menos en la cooperativa que de alquiler desde el primer mes.`
+    : ser.be ? `Con estos datos, la cooperativa empieza siendo más cara, pero a partir del año ${ser.be} cada familia paga menos que de alquiler.`
+    : `Con estos datos, en ${H} años la cooperativa no llega a ser más barata que el alquiler.`;
+  const hint = ser.be !== 1 && m.tot > c.alq ? `Al principio la cuota (${eur(m.tot)}/mes) es más alta que el alquiler (${eur(c.alq)}/mes). Revisa arriba el número de viviendas, el precio o las ayudas.` : null;
   return (
     <>
-      <div><span className="eyebrow">Gasto acumulado por vivienda</span><p style={{ font: "700 20px var(--font-display)", marginTop: 4 }}>{msg}</p></div>
+      <div><span className="eyebrow">Lo que paga una familia cada mes</span><p style={{ font: "700 20px var(--font-display)", marginTop: 4 }}>{msg}</p>{hint && <p className="note" style={{ marginTop: 4 }}>{hint}</p>}</div>
+      <div className="scroll"><table><thead><tr><th>Cada mes</th><th>Cooperativa</th><th>Alquiler</th></tr></thead><tbody>
+        {moments.map(([l, yr]) => <tr key={l}><td>{l}</td><td><b>{eur(ser.coop[at(yr)])}</b></td><td><b>{eur(ser.alq[at(yr)])}</b></td></tr>)}
+      </tbody></table></div>
       <LineChart ser={ser} />
       <div className="lg">
-        <div><span className="sw" style={{ background: "var(--s1)" }} /><span>Cooperativa: aportación y cuotas</span><span className="v">{eur(ser.coop[H])}</span></div>
-        <div><span className="sw" style={{ background: "var(--s2)" }} /><span>Alquiler de mercado</span><span className="v">{eur(ser.alq[H])}</span></div>
+        <div><span className="sw" style={{ background: "var(--s1)" }} /><span>Cooperativa: su parte del préstamo, mantenimiento y reserva</span></div>
+        <div><span className="sw" style={{ background: "var(--s2)" }} /><span>Alquiler de un piso parecido, ya reformado</span></div>
       </div>
-      {c.plazo < H && <p className="note">Al acabar el préstamo, en el año {c.plazo}, la cuota baja a solo mantenimiento y reserva: unos {eur((+c.mant + +c.reserva) * Math.pow(1 + c.ipc / 100, c.plazo))} al mes.</p>}
-      <p className="note">La aportación inicial ({eur(c.aport)}) se devuelve actualizada al salir. Aquí cuenta como gasto desde el primer día para ser prudentes.</p>
-      <Disclosure summary="Ver los datos en tabla"><div className="scroll"><table><thead><tr><th>Año</th><th>Cooperativa</th><th>Alquiler</th><th>Diferencia</th></tr></thead><tbody>
-        {rows.map((y) => <tr key={y}><td>{y}</td><td>{eur(ser.coop[y])}</td><td>{eur(ser.alq[y])}</td><td>{eur(ser.alq[y] - ser.coop[y])}</td></tr>)}
+      <p className="note"><b>¿Por qué se puede comparar?</b> El alquiler también incluye la compra y la reforma del piso: las pagó el propietario y las recupera, con beneficio, cobrando la renta. En la cooperativa hacéis ese papel vosotros y lo pagáis al banco, sin beneficio para nadie. La diferencia es que el préstamo se acaba y el alquiler no.</p>
+      {ser.paid === null && <p className="note">El préstamo dura {c.plazo} años: amplía el horizonte por encima de {c.plazo} para ver qué pasa cuando se termina de pagar.</p>}
+      <p className="note">Además, al entrar cada familia pone una aportación inicial de {eur(c.aport)}, que se le devuelve actualizada al salir.</p>
+      <Disclosure summary="Ver todos los años"><div className="scroll"><table><thead><tr><th>Año</th><th>Cooperativa (€/mes)</th><th>Alquiler (€/mes)</th><th>Diferencia</th></tr></thead><tbody>
+        {rows.map((yr) => <tr key={yr}><td>{yr}</td><td>{eur(ser.coop[at(yr)])}</td><td>{eur(ser.alq[at(yr)])}</td><td>{eur(ser.alq[at(yr)] - ser.coop[at(yr)])}</td></tr>)}
       </tbody></table></div></Disclosure>
     </>
   );

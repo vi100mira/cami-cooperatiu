@@ -6,7 +6,7 @@ export interface CalcInput {
 }
 export const CDEF: CalcInput = {
   suelo: 1000000, obra: 2200000, gastos: 12, subv: 0, aport: 15000,
-  interes: 3.5, plazo: 30, mant: 60, reserva: 25, alq: 900, sube: 3, ipc: 2, hor: 25,
+  interes: 3.5, plazo: 30, mant: 60, reserva: 25, alq: 900, sube: 3, ipc: 2, hor: 40,
   ingresos: 36000, iprem: 600, pagas: 14, mult: 4.5,
 };
 
@@ -25,19 +25,21 @@ export function model(c: CalcInput, fam: number) {
 }
 export type Model = ReturnType<typeof model>;
 
+// Lo que paga una familia cada mes, año a año (índice 0 = año 1).
+// Cooperativa: su parte del préstamo mientras dure, más mantenimiento y reserva.
+// Alquiler: la renta de un piso parecido ya reformado (el propietario ya repercute en ella compra y obra).
 export function series(c: CalcInput, m: Model) {
-  const H = Math.round(c.hor);
-  const coop = [+c.aport || 0];
-  const alq = [0];
+  const H = Math.max(1, Math.round(c.hor));
+  const coop: number[] = [];
+  const alq: number[] = [];
   for (let y = 1; y <= H; y++) {
-    const am = y <= c.plazo ? m.am * 12 : 0;
-    const run = ((+c.mant || 0) + (+c.reserva || 0)) * 12 * Math.pow(1 + c.ipc / 100, y - 1);
-    coop.push(coop[y - 1] + am + run);
-    alq.push(alq[y - 1] + c.alq * 12 * Math.pow(1 + c.sube / 100, y - 1));
+    const run = ((+c.mant || 0) + (+c.reserva || 0)) * Math.pow(1 + c.ipc / 100, y - 1);
+    coop.push((y <= c.plazo ? m.am : 0) + run);
+    alq.push(c.alq * Math.pow(1 + c.sube / 100, y - 1));
   }
   let be: number | null = null;
-  for (let y = 1; y <= H; y++) if (coop[y] <= alq[y]) { be = y; break; }
-  return { H, coop, alq, be };
+  for (let y = 1; y <= H; y++) if (coop[y - 1] <= alq[y - 1]) { be = y; break; }
+  return { H, coop, alq, be, paid: c.plazo < H ? Math.round(c.plazo) : null };
 }
 
 export function eligibility(c: CalcInput, m: Model) {
