@@ -49,7 +49,7 @@ ultima_revision: 2026-10-11
 - **Sin recuperación de contraseña:** no hay correo; una contraseña perdida no se recupera.
 - **Límite de intentos en memoria**, por instancia serverless y por IP: es un freno, no una garantía contra fuerza bruta.
 - **Sesión de una persona borrada:** su cookie sigue firmada hasta 12 horas, aunque `/api/sesion` ya la degrada a «grupo» y las escrituras fallan.
-- **Datos personales en servidor** (nombres o alias): aplican las obligaciones del RGPD. Falta identificar al responsable con un contacto y una revisión jurídica antes de abrirlo al público.
+- **Datos personales en servidor** (nombres o alias): aplican las obligaciones del RGPD. El responsable (Leida cooperativa) y su contacto constan en el aviso desde el 11/10/2026; falta la revisión jurídica.
 - El plan gratuito de Supabase puede pausar proyectos inactivos: comprobar la política vigente antes de depender de él.
 
 ## Estado de implementación (11/10/2026)
@@ -65,7 +65,7 @@ Límites de la verificación: la búsqueda en vivo está apagada en local, así 
 
 ## Pendiente
 
-1. Identificar al responsable del tratamiento y su contacto en el aviso de privacidad; revisión jurídica.
+1. Revisión jurídica del aviso de privacidad y de las garantías de transferencia internacional (Vercel), y decidir una caducidad para grupos inactivos (no se guarda la fecha de última actividad). Responsable y contacto: hechos el 11/10/2026.
 2. Variables en Vercel: hechas el 11/10/2026 en Production (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` con valor distinto del local, sin prefijo `NEXT_PUBLIC_`). Falta decidir si se añaden a Preview: hacerlo haría que los despliegues de prueba escribieran en la misma base que producción, porque solo hay un proyecto de Supabase.
 3. Llevar el script de extremo a extremo al repositorio como prueba de integración.
 4. Decidir si se añade administración del grupo (hoy no hay roles) y recuperación de contraseña.

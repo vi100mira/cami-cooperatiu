@@ -60,7 +60,7 @@ Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se c
 ## Pendiente de confirmar
 
 - Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development. Prueba de humo en producción el 11/10/2026 (10 comprobaciones: portada, base alcanzable, alta, cookie `httpOnly` y `Secure`, sesión firmada, favorito, borrado de perfil y de grupo) con datos de prueba que se borraron; la base quedó con 0 filas. La interfaz no se recorrió en el navegador en producción.
-- Responsable del tratamiento y contacto en el aviso de privacidad, y revisión jurídica, antes de abrir los grupos al público.
+- Revisión jurídica del aviso de privacidad y de las garantías de las transferencias internacionales (Vercel). El responsable (Leida cooperativa) y su contacto constan en el aviso desde el 11/10/2026.
 - Si la búsqueda en vivo está activa en producción: `SEARCH_ENABLED` y `FIRECRAWL_API_KEY` existen en Vercel (producción), valor del interruptor no leído.
 - Si una sola página por portal da suficientes anuncios al filtrar por municipio.
 
@@ -71,6 +71,6 @@ Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se c
 3. Revisar términos de uso de los portales antes de abrir la búsqueda al público.
 4. Primeros testers externos.
 5. Datos propios de otras comunidades autónomas en `entitiesFor`.
-6. Datos del responsable en el aviso de privacidad y revisión jurídica antes de abrir los grupos al público (ver ADR-0001). Los grupos ya están desplegados desde el 11/10/2026.
+6. Revisión jurídica del aviso de privacidad y de las transferencias internacionales, y decidir un plazo de caducidad para grupos inactivos (hoy no se guarda la fecha de última actividad). Ver ADR-0001. Los grupos están desplegados desde el 11/10/2026.
 7. Llevar la prueba de extremo a extremo al repositorio y decidir roles de grupo y recuperación de contraseña.
 8. Valorar Supabase Auth (enlace mágico y RLS por usuario) cuando haya usuarios reales. Es la evolución prevista en `USUARIOS-Y-COOPERATIVAS.md`.

@@ -32,7 +32,7 @@ ultima_revision: 2026-10-11
 | Fuerza bruta sobre contraseñas de grupo o de persona | Mínimo de 8 caracteres, bcrypt coste 12 y límite por IP cada 15 min (10 intentos en alta y entrada al grupo, 20 al confirmar persona). El contador está en memoria de cada instancia: es un freno, no una garantía |
 | Sistema basado en confianza: quien conozca las dos contraseñas entra como la persona | Aceptado en el MVP; el aviso lo explica y recomienda contraseñas no reutilizadas. Evolución: Supabase Auth |
 | Contraseña perdida sin recuperación (no hay correo) | Aceptado en el MVP; la persona puede añadirse de nuevo con otro nombre |
-| Datos personales (nombres o alias) en servidor sin responsable identificado ni revisión jurídica | **Pendiente antes de abrirlo al público**: nombre y contacto del responsable en el aviso de privacidad y revisión jurídica |
+| Datos personales (nombres o alias) en servidor | Responsable (Leida cooperativa) y contacto en el aviso desde el 11/10/2026. **Pendiente:** revisión jurídica, garantías de las transferencias internacionales (Vercel) y plazo de caducidad de grupos inactivos |
 | Sesión de una persona borrada válida hasta 12 h | `/api/sesion` la degrada a «grupo» y las escrituras fallan por clave foránea; impacto limitado a su propio navegador |
 | El plan gratuito de Supabase puede pausar proyectos inactivos | Comprobar la política vigente; si se pausa, la pestaña «Grupo» avisa y el resto de la guía sigue funcionando |
 

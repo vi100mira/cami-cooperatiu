@@ -45,7 +45,7 @@ La sesión es una cookie firmada (`httpOnly`, `sameSite=strict`, 12 h) que lleva
 
 ### Datos personales
 
-Solo el nombre del grupo, el nombre o alias de cada persona, las contraseñas cifradas y los favoritos. No se piden correo, teléfono, DNI, ingresos ni datos bancarios, y los ingresos de las calculadoras siguen siendo locales. Hay aviso de privacidad visible y cada persona puede borrar su perfil desde la pestaña «Grupo»; si es la última, el grupo también se borra. **Pendiente antes de abrirlo al público:** identificar al responsable con un contacto y revisión jurídica.
+Solo el nombre del grupo, el nombre o alias de cada persona, las contraseñas cifradas y los favoritos. No se piden correo, teléfono, DNI, ingresos ni datos bancarios, y los ingresos de las calculadoras siguen siendo locales. Hay aviso de privacidad visible y cada persona puede borrar su perfil desde la pestaña «Grupo»; si es la última, el grupo también se borra. El responsable es Leida cooperativa y su contacto consta en el aviso desde el 11/10/2026. **Pendiente:** revisión jurídica del aviso.
 
 ## Fase 1b: exportar e importar el estado local (pendiente, sin servidor)
 
