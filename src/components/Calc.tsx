@@ -11,6 +11,7 @@ import { Alert } from "./ui/alert";
 import { Badge } from "./ui/badge";
 import { Disclosure } from "./ui/disclosure";
 import { Label } from "./ui/field";
+import Terreno from "./Terreno";
 
 interface Spec { k: string; l: string; u?: string; min?: number; max?: number; step: number; t?: string; r?: boolean; fmt?: (v: number) => string; }
 const SPA: Spec[] = [
@@ -208,7 +209,7 @@ export default function Calc() {
   const m = model(s.calc, s.group.fam);
   return (
     <section className="grid gap-5">
-      <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Calculadoras</h2><p className="max-w-[68ch] text-muted-foreground">Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Cambia un dato y las tres calculadoras se actualizan juntas.</p></div>
+      <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Calculadoras</h2><p className="max-w-[68ch] text-muted-foreground">Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Si aún no tenéis terreno cerrado, empieza por «Del terreno a las viviendas»: te dice cuánto se puede construir y cuánto cuesta, y lo carga en las otras tres, que se actualizan juntas.</p></div>
       {s.sim && (
         <Card className="gap-3 sm:flex-row sm:items-center">
           {s.sim.foto && (/* eslint-disable-next-line @next/next/no-img-element */
@@ -225,6 +226,7 @@ export default function Calc() {
           </div>
         </Card>
       )}
+      <Terreno />
       <Card id="cA" className="gap-5"><CardTitle className="text-xl">Cuota mensual de cada vivienda</CardTitle>
         <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></Card>
       <Card id="cB" className="gap-5"><CardTitle className="text-xl">¿Cabe en el presupuesto de cada familia?</CardTitle>

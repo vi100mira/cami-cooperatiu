@@ -2,9 +2,10 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import { CDEF, type CalcInput } from "./calc";
 import type { Group } from "./content";
+import { TDEF, CLASES, type TerrenoInput } from "./terreno";
 
 export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
-export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; open: number | null; sim?: Sim | null; }
+export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; terreno: TerrenoInput; open: number | null; sim?: Sim | null; }
 export interface Sim { titulo: string; zona?: string; foto?: string; url?: string; fuente?: string; }
 const KEY = "camiCooperatiu.v1";
 
@@ -14,7 +15,15 @@ export function examples(): Cand[] {
     { id: "ex2", ejemplo: true, nombre: "Promoción inacabada de 20 viviendas", barrio: "Barrio a elegir", via: "parada", precio: 1800000, viv: 20, estado: "Contactado", notas: "Datos inventados para ver cómo funciona la lista.", chk: { 0: true } },
   ];
 }
-export const initial = (): State => ({ group: { name: "", fam: 20, barrio: "", ciudad: "València", region: "cv" }, done: {}, cands: examples(), calc: { ...CDEF }, open: null });
+export const initial = (): State => ({ group: { name: "", fam: 20, barrio: "", ciudad: "València", region: "cv" }, done: {}, cands: examples(), calc: { ...CDEF }, terreno: { ...TDEF }, open: null });
+
+// Quien guardó el estado antes de existir la calculadora de terreno no tiene este campo; si falta o es raro, parte del ejemplo.
+function terrenoGuardado(x: unknown, base: TerrenoInput): TerrenoInput {
+  if (!x || typeof x !== "object") return base;
+  const t = { ...base, ...(x as Partial<TerrenoInput>) };
+  if (!CLASES.some((c) => c.id === t.clase)) t.clase = base.clase;
+  return t;
+}
 
 function load(): State {
   const base = initial();
@@ -29,6 +38,7 @@ function load(): State {
         done: sv.done && typeof sv.done === "object" ? sv.done : {},
         cands: Array.isArray(sv.cands) ? sv.cands : base.cands,
         calc: { ...base.calc, ...sv.calc },
+        terreno: terrenoGuardado(sv.terreno, base.terreno),
         open: typeof sv.open === "number" ? sv.open : null,
         sim: sv.sim && typeof sv.sim.titulo === "string" ? sv.sim : null,
       };
