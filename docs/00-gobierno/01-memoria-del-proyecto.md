@@ -28,7 +28,7 @@ Grupos que quieren formar una cooperativa de vivienda. Ámbito estatal, con dato
 - **Búsqueda en portales**: enlaces preparados para cualquier ciudad.
 - **Candidatos**: fotos, mapa bajo demanda, Catastro (referencia por dirección) y enlaces a planos.
 - **Entidades**: directorio adaptado por comunidad autónoma con mensajes listos.
-- **Grupo y favoritos** (desde el 11/10/2026, aún no desplegado): cualquier grupo puede darse de alta con contraseña de grupo y contraseñas personales, sin correo ni OAuth. Cada persona marca ofertas con un corazón en la búsqueda en vivo y el grupo ve todos los favoritos con el nombre de quien los marcó, con filtro «todos / solo los míos». Aviso de privacidad visible y borrado del propio perfil. Ver [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md).
+- **Grupo y favoritos** (desplegado el 11/10/2026): cualquier grupo puede darse de alta con contraseña de grupo y contraseñas personales, sin correo ni OAuth. Cada persona marca ofertas con un corazón en la búsqueda en vivo y el grupo ve todos los favoritos con el nombre de quien los marcó, con filtro «todos / solo los míos». Aviso de privacidad visible y borrado del propio perfil. Ver [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md).
 - **Preguntas frecuentes y glosario.**
 
 ## Arquitectura

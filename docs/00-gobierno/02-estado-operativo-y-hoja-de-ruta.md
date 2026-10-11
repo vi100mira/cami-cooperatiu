@@ -43,15 +43,15 @@ Revisión de las calculadoras tras detectar que confundían lo comunitario con l
 
 ## Cambios del 11/10/2026: grupos y favoritos con Supabase
 
-Decisión en [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md). Todo está en la copia local, **sin commit y sin desplegar**.
+Decisión en [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md). Commits `ce485ab` (código) y `3e5bf21` (documentación) en `main`; desplegado en producción el 11/10/2026 (despliegue Ready en `cami-cooperatiu.vercel.app`, commit `3e5bf21`).
 
 | Capacidad | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
 | Esquema y RLS en Supabase (`techo-comun`, `eu-west-3`) | Sí | Aviso informativo «RLS sin política» (intencionado); la clave pública recibe `42501` al leer y escribir | Sí (base de datos) |
-| Alta, entrada, miembros y sesión (`/api/grupos`, `/api/miembros`, `/api/sesion`) | Sí | 29 comprobaciones de extremo a extremo contra la base real; tests de `auth` y `validate` | **No** |
-| Favoritos con corazón y filtro «todos / solo los míos» (`/api/favoritos`) | Sí | Navegador contra la base real (persiste tras recargar, aislamiento entre grupos) con la búsqueda simulada | **No** |
-| Pestaña «Grupo» y aviso de privacidad | Sí | Navegador en escritorio y móvil (sin desbordamiento horizontal) | **No** |
-| Borrar mi perfil (cascada; borra el grupo si era la última persona) | Sí | Navegador contra la base real | **No** |
+| Alta, entrada, miembros y sesión (`/api/grupos`, `/api/miembros`, `/api/sesion`) | Sí | 29 comprobaciones de extremo a extremo contra la base real; tests de `auth` y `validate` | Sí (11/10/2026) |
+| Favoritos con corazón y filtro «todos / solo los míos» (`/api/favoritos`) | Sí | Navegador contra la base real (persiste tras recargar, aislamiento entre grupos) con la búsqueda simulada | Sí (11/10/2026) |
+| Pestaña «Grupo» y aviso de privacidad | Sí | Navegador en escritorio y móvil (sin desbordamiento horizontal) | Sí (11/10/2026) |
+| Borrar mi perfil (cascada; borra el grupo si era la última persona) | Sí | Navegador contra la base real | Sí (11/10/2026) |
 
 Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 63 tests en 13 archivos, `npm run typecheck` sin errores y `npm run build` correcto (añade `/api/favoritos`, `/api/grupos`, `/api/grupos/entrar`, `/api/miembros`, `/api/miembros/entrar`, `/api/miembros/yo` y `/api/sesion`).
 
@@ -59,7 +59,7 @@ Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se c
 
 ## Pendiente de confirmar
 
-- Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development, y el código de los grupos sigue sin desplegar: las variables no tienen efecto hasta el próximo despliegue.
+- Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development. Prueba de humo en producción el 11/10/2026 (10 comprobaciones: portada, base alcanzable, alta, cookie `httpOnly` y `Secure`, sesión firmada, favorito, borrado de perfil y de grupo) con datos de prueba que se borraron; la base quedó con 0 filas. La interfaz no se recorrió en el navegador en producción.
 - Responsable del tratamiento y contacto en el aviso de privacidad, y revisión jurídica, antes de abrir los grupos al público.
 - Si la búsqueda en vivo está activa en producción: `SEARCH_ENABLED` y `FIRECRAWL_API_KEY` existen en Vercel (producción), valor del interruptor no leído.
 - Si una sola página por portal da suficientes anuncios al filtrar por municipio.
@@ -71,6 +71,6 @@ Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se c
 3. Revisar términos de uso de los portales antes de abrir la búsqueda al público.
 4. Primeros testers externos.
 5. Datos propios de otras comunidades autónomas en `entitiesFor`.
-6. Desplegar grupos y favoritos: commit, variables en Vercel y datos del responsable en el aviso de privacidad (ver ADR-0001).
+6. Datos del responsable en el aviso de privacidad y revisión jurídica antes de abrir los grupos al público (ver ADR-0001). Los grupos ya están desplegados desde el 11/10/2026.
 7. Llevar la prueba de extremo a extremo al repositorio y decidir roles de grupo y recuperación de contraseña.
 8. Valorar Supabase Auth (enlace mágico y RLS por usuario) cuando haya usuarios reales. Es la evolución prevista en `USUARIOS-Y-COOPERATIVAS.md`.

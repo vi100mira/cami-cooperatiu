@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0001
-estado: aceptada; implementada y verificada en local; no desplegada (a 11/10/2026)
+estado: aceptada; implementada, verificada y desplegada en producción (11/10/2026, commit 3e5bf21)
 fecha: 2026-10-11
 supera: decisión «Sin cuentas en fase 1» y el modelo de «Fase 2» de USUARIOS-Y-COOPERATIVAS.md
 ultima_revision: 2026-10-11
@@ -57,8 +57,8 @@ ultima_revision: 2026-10-11
 | Aspecto | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
 | Esquema y RLS en Supabase | Sí | Aviso informativo «RLS sin política» (intencionado); la clave pública recibe `42501` al leer y escribir las tres tablas | Sí (base de datos) |
-| Rutas de servidor | Sí | 29 comprobaciones de extremo a extremo contra la base real (aislamiento entre grupos, cookie falsificada, favoritos ajenos, hashes bcrypt, lista blanca de datos) | **No** |
-| Interfaz (pestaña, corazón, privacidad) | Sí | Navegador contra la base real: alta, favorito persistente tras recargar, cambio de persona, borrar perfil, corazón sin sesión, vista móvil | **No** |
+| Rutas de servidor | Sí | 29 comprobaciones de extremo a extremo contra la base real (aislamiento entre grupos, cookie falsificada, favoritos ajenos, hashes bcrypt, lista blanca de datos). En producción, 10 comprobaciones del ciclo completo: alta, cookie `httpOnly` y `Secure`, sesión firmada, favorito, borrado de perfil y de grupo | Sí (11/10/2026) |
+| Interfaz (pestaña, corazón, privacidad) | Sí | Navegador contra la base real: alta, favorito persistente tras recargar, cambio de persona, borrar perfil, corazón sin sesión, vista móvil. En producción solo se comprobó que la portada carga con la pestaña «Grupo»; la interfaz no se recorrió en el navegador | Sí (11/10/2026) |
 | Tests unitarios | Sí | 63 tests en 13 archivos, `typecheck` y `build` correctos | — |
 
 Límites de la verificación: la búsqueda en vivo está apagada en local, así que la respuesta de `/api/buscar` se simuló con dos anuncios de prueba. El script de extremo a extremo no está en el repositorio.

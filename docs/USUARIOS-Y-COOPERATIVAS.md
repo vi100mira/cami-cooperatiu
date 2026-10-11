@@ -1,6 +1,6 @@
 # Modelo de usuarios y cooperativas (decisión de arquitectura)
 
-> Actualizado el 11/10/2026. Este documento describe el modelo **vigente** y la evolución prevista. La decisión, las alternativas y los riesgos están en [ADR-0001](00-gobierno/05-adr-0001-grupos-y-favoritos-con-supabase.md). Estado: implementado y verificado en local; **no desplegado**.
+> Actualizado el 11/10/2026. Este documento describe el modelo **vigente** y la evolución prevista. La decisión, las alternativas y los riesgos están en [ADR-0001](00-gobierno/05-adr-0001-grupos-y-favoritos-con-supabase.md). Estado: implementado, verificado y desplegado en producción el 11/10/2026.
 
 ## Modelo vigente: grupos con contraseña (MVP basado en confianza)
 
