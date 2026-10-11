@@ -14,6 +14,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Alert } from "./ui/alert";
 import { ToggleChips } from "./ui/toggle-chips";
 import { filtrar, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, tituloLegible, type Orden } from "@/lib/fit";
+import { FavButton } from "./FavButton";
 
 type Tipo = "edificios" | "terrenos";
 interface Res { tipo: Tipo; fuente: string; fallidos?: string[]; actualizado: string; items: Listing[]; }
@@ -85,10 +86,13 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                 <Card key={l.id} className="gap-3 p-3.5 shadow-none transition hover:shadow-md" >
                   <article className="grid gap-2.5">
                     <Photos fotos={l.fotos ?? []} alt={`${l.titulo} en ${l.zona}`} />
-                    <div className="flex flex-wrap gap-1.5">
-                      {l.fuente && <Badge variant="outline">{l.fuente}</Badge>}
-                      {l.gestora && <Badge variant="warning" title="Gestora de activos de Sareb. No todo lo que publica es de Sareb: también gestiona carteras de bancos y cesiones de remate. Pregunta por el origen y la situación del inmueble.">Gestora de Sareb · {l.gestora}</Badge>}
-                      {etiquetas(l, tipo).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {l.fuente && <Badge variant="outline">{l.fuente}</Badge>}
+                        {l.gestora && <Badge variant="warning" title="Gestora de activos de Sareb. No todo lo que publica es de Sareb: también gestiona carteras de bancos y cesiones de remate. Pregunta por el origen y la situación del inmueble.">Gestora de Sareb · {l.gestora}</Badge>}
+                        {etiquetas(l, tipo).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}
+                      </div>
+                      <FavButton l={l} tipo={state.res!.tipo} />
                     </div>
                     <h4 className="font-heading text-base font-bold leading-snug">{tituloLegible(l)}</h4>
                     <div className="flex items-baseline justify-between gap-3">

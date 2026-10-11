@@ -1,18 +1,20 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { StoreProvider, useStore } from "@/lib/store";
+import { GrupoProvider } from "@/lib/grupo";
 import { HelpCtx } from "./Rich";
 import Sheet from "./Sheet";
 import Ruta, { Hero } from "./Ruta";
 import Calc from "./Calc";
 import Opor from "./Opor";
+import Grupo from "./Grupo";
 import Glos from "./Glos";
 import Faq from "./Faq";
-import { Route, Calculator, Building2, CircleHelp, BookOpen } from "lucide-react";
+import { Route, Calculator, Building2, CircleHelp, BookOpen, Users } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
-const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["faq", "Preguntas"], ["glos", "Glosario"]];
-const ICONS: Record<string, React.ReactNode> = { ruta: <Route aria-hidden />, calc: <Calculator aria-hidden />, opor: <Building2 aria-hidden />, faq: <CircleHelp aria-hidden />, glos: <BookOpen aria-hidden /> };
+const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["grupo", "Grupo"], ["faq", "Preguntas"], ["glos", "Glosario"]];
+const ICONS: Record<string, React.ReactNode> = { ruta: <Route aria-hidden />, calc: <Calculator aria-hidden />, opor: <Building2 aria-hidden />, grupo: <Users aria-hidden />, faq: <CircleHelp aria-hidden />, glos: <BookOpen aria-hidden /> };
 
 function Shell() {
   const { s } = useStore();
@@ -29,7 +31,7 @@ function Shell() {
   useEffect(() => {
     const h = location.hash.slice(1);
     if (TABS.some((t) => t[0] === h)) setTab(h);
-    const ev = (e: Event) => go((e as CustomEvent).detail, "cA");
+    const ev = (e: Event) => { const t = (e as CustomEvent).detail as string; go(t, t === "calc" ? "cA" : undefined); };
     window.addEventListener("cami:goto", ev);
     return () => window.removeEventListener("cami:goto", ev);
   }, [go]);
@@ -51,6 +53,7 @@ function Shell() {
           {tab === "ruta" && <Ruta goTo={goTo} />}
           {tab === "calc" && <Calc />}
           {tab === "opor" && <Opor />}
+          {tab === "grupo" && <Grupo />}
           {tab === "faq" && <Faq />}
           {tab === "glos" && <Glos />}
         </main>
@@ -59,6 +62,7 @@ function Shell() {
           <div className="sf-cols">
             <p><b>Orientación, no asesoría.</b> No es asesoría jurídica ni financiera: antes de firmar estatutos, préstamos o compras, consulta con una persona profesional y con una federación como Fecovi.</p>
             <p><b>Datos orientativos.</b> Las cifras de las calculadoras son ejemplos editables. Los anuncios de la búsqueda en vivo proceden de portales externos y pueden no estar actualizados. Las condiciones de cada concurso cambian: lee siempre sus bases.</p>
+            <p><b>Privacidad.</b> Solo si creas o entras a un grupo guardamos tu nombre o alias, contraseñas cifradas y los favoritos que marques. Sin correo, teléfono ni datos bancarios. <button type="button" className="font-semibold text-primary underline" onClick={() => go("grupo", "privacidad")}>Leer el aviso completo</button></p>
           </div>
         </footer>
       </div>
@@ -67,4 +71,4 @@ function Shell() {
   );
 }
 
-export default function App() { return <StoreProvider><Shell /></StoreProvider>; }
+export default function App() { return <StoreProvider><GrupoProvider><Shell /></GrupoProvider></StoreProvider>; }
