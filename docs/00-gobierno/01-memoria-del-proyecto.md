@@ -23,7 +23,7 @@ Grupos que quieren formar una cooperativa de vivienda. Ámbito estatal, con dato
 
 - **Ruta**: 6 fases con progreso marcable.
 - **Calculadoras**: 3 calculadoras de viabilidad; se precargan desde un resultado de búsqueda («Simular»).
-- **Del terreno a las viviendas** (11/10/2026, aún no desplegado): calculadora de terreno que, según la clase de suelo (solar, urbano por urbanizar, urbanizable o no urbanizable), calcula cuánto suelo es edificable tras viales, dotaciones y cesiones, las viviendas posibles y el coste del suelo urbanizado, y los carga en las de cuota. Cada cifra normativa sale de un registro por comunidad (hoy solo la Comunitat Valenciana) con su artículo, fuente, fecha y fiabilidad. Ver [ADR-0002](06-adr-0002-normativa-por-comunidad.md).
+- **Del terreno a las viviendas** (desplegado el 11/10/2026): calculadora de terreno que, según la clase de suelo (solar, urbano por urbanizar, urbanizable o no urbanizable), calcula cuánto suelo es edificable tras viales, dotaciones y cesiones, las viviendas posibles y el coste del suelo urbanizado, y los carga en las de cuota. Cada cifra normativa sale de un registro por comunidad (hoy solo la Comunitat Valenciana) con su artículo, fuente, fecha y fiabilidad. Ver [ADR-0002](06-adr-0002-normativa-por-comunidad.md).
 - **Oportunidades**: vías de acceso a suelo o edificio (concurso, promoción parada, Sareb/Casa 47…), con contacto directo a FECOVI y sección de sorteos de alquiler de Casa 47 para personas socias.
 - **Búsqueda en vivo**: edificios y terrenos en Fotocasa, Pisos.com y yaencontre (también terrenos de bancos), València ciudad o provincia, unión sin duplicados, filtros y detección de gestoras de Sareb (Hipoges, Aliseda).
 - **Búsqueda en portales**: enlaces preparados para cualquier ciudad.

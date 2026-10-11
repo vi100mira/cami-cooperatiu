@@ -57,16 +57,16 @@ Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 63 tests en 13
 
 Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se conserva junto al corazón, porque alimenta el embudo de candidatos y no es un favorito. Los datos de ruta, calculadoras y candidatos siguen sin sincronizarse entre personas.
 
-Conexión entre Ruta y Grupo (11/10/2026, implementada y verificada en local; pendiente de desplegar): la tarjeta «Tu grupo» de Ruta pasa a llamarse «Tu cooperativa» para no confundirla con la pestaña «Grupo» y muestra una franja con el estado de la conexión y un botón a la pestaña. Al crear un grupo se propone el nombre que figura en Ruta, y si Ruta tiene el nombre vacío adopta el del grupo al entrar, solo una vez por grupo. Región, ciudad, familias y barrio siguen solo en el navegador: compartirlos entre las personas del grupo exigiría ampliar el esquema y el aviso de privacidad, y está sin decidir.
+Conexión entre Ruta y Grupo (11/10/2026, implementada, verificada en local y desplegada el 11/10/2026): la tarjeta «Tu grupo» de Ruta pasa a llamarse «Tu cooperativa» para no confundirla con la pestaña «Grupo» y muestra una franja con el estado de la conexión y un botón a la pestaña. Al crear un grupo se propone el nombre que figura en Ruta, y si Ruta tiene el nombre vacío adopta el del grupo al entrar, solo una vez por grupo. Región, ciudad, familias y barrio siguen solo en el navegador: compartirlos entre las personas del grupo exigiría ampliar el esquema y el aviso de privacidad, y está sin decidir.
 
-Calculadora «Del terreno a las viviendas» (11/10/2026, implementada y verificada en local; pendiente de desplegar), decisión en [ADR-0002](06-adr-0002-normativa-por-comunidad.md):
+Calculadora «Del terreno a las viviendas» (11/10/2026, implementada, verificada en local y desplegada), decisión en [ADR-0002](06-adr-0002-normativa-por-comunidad.md):
 
 | Capacidad | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
-| Registro de normativa por comunidad y cálculo (clases de suelo, cesiones, dotaciones, viales, costes) | Sí | Pruebas unitarias y de calidad de las fuentes; ejemplo de 1 ha cuadrado a mano | No |
-| Calculadora con cascada, costes y tabla de normas aplicadas | Sí | Navegador en local: no urbanizable, Andalucía (sin normativa cargada), botón de carga a las calculadoras de cuota y móvil sin desbordamiento | No |
+| Registro de normativa por comunidad y cálculo (clases de suelo, cesiones, dotaciones, viales, costes) | Sí | Pruebas unitarias y de calidad de las fuentes; ejemplo de 1 ha cuadrado a mano | Sí (11/10/2026) |
+| Calculadora con cascada, costes y tabla de normas aplicadas | Sí | Navegador en local: no urbanizable, Andalucía (sin normativa cargada), botón de carga a las calculadoras de cuota y móvil sin desbordamiento | Sí (11/10/2026) |
 
-Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 87 tests en 15 archivos, `npm run typecheck` sin errores y `npm run build` correcto. Solo la Comunitat Valenciana tiene normativa cargada. Los artículos 36 y 82 de la LOTUP se leyeron en una fuente secundaria, la reserva de vivienda protegida del 30 % está marcada «comprobar vigencia» frente al 40 % estatal, y los costes de urbanización son estimaciones editables de un informe de València cuyo año no se confirmó.
+Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 87 tests en 15 archivos, `npm run typecheck` sin errores y `npm run build` correcto. Solo la Comunitat Valenciana tiene normativa cargada. Los artículos 36 y 82 de la LOTUP se leyeron en una fuente secundaria, la reserva de vivienda protegida del 30 % está marcada «comprobar vigencia» frente al 40 % estatal, y los costes de urbanización son estimaciones editables de un informe de València cuyo año no se confirmó. Despliegue en producción el 11/10/2026 (commit `3390738`, Ready): se comprobó que está servido el código de la calculadora de terreno, la franja Ruta–Grupo, las etiquetas nuevas de acceso y el aviso con responsable, y que la API de grupos y de sesión responden; la interfaz no se recorrió en el navegador en producción.
 
 ## Pendiente de confirmar
 

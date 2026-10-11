@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0002
-estado: aceptada; implementada y verificada en local; no desplegada (a 11/10/2026)
+estado: aceptada; implementada, verificada en local y desplegada en producción (11/10/2026, commit 3390738)
 fecha: 2026-10-11
 ultima_revision: 2026-10-11
 ---
@@ -55,8 +55,8 @@ ultima_revision: 2026-10-11
 
 | Aspecto | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
-| Registro de normativa y cálculo | Sí | Pruebas unitarias del cálculo (ejemplo de 1 ha: 45 % edificable, 90 viviendas, 660.000 € de urbanización) y de la calidad de las fuentes | No |
-| Calculadora «Del terreno a las viviendas» | Sí | Navegador en local: suelo no urbanizable, comunidad sin cargar (Andalucía), botón de carga a las calculadoras de cuota y vista de móvil sin desbordamiento | No |
+| Registro de normativa y cálculo | Sí | Pruebas unitarias del cálculo (ejemplo de 1 ha: 45 % edificable, 90 viviendas, 660.000 € de urbanización) y de la calidad de las fuentes | Sí (11/10/2026) |
+| Calculadora «Del terreno a las viviendas» | Sí | Navegador en local: suelo no urbanizable, comunidad sin cargar (Andalucía), botón de carga a las calculadoras de cuota y vista de móvil sin desbordamiento. En producción solo se comprobó que el código nuevo está servido; la interfaz no se recorrió en el navegador | Sí (11/10/2026) |
 
 ## Pendiente
 
