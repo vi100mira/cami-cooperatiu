@@ -11,6 +11,7 @@ import { Field } from "./ui/field";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { GrupoConexion } from "./GrupoConexion";
 
 export const stats = (done: Record<string, boolean>, i: number) => {
   const p = PH[i], n = p.tasks.length, d = p.tasks.filter((t) => done[t.id]).length;
@@ -54,7 +55,7 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
   return (
     <section className="grid gap-5">
       <Card>
-        <CardTitle className="flex items-center gap-2 text-2xl"><Users className="size-5 text-primary" aria-hidden /> Tu grupo</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-2xl"><Users className="size-5 text-primary" aria-hidden /> Tu cooperativa</CardTitle>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Comunidad autónoma" htmlFor="g-region"><NativeSelect id="g-region" value={s.group.region} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, region: e.target.value } }))}><option value="">Elige tu comunidad…</option>{REGIONS.map((r) => <option key={r[0]} value={r[0]}>{r[1]}</option>)}</NativeSelect></Field>
           <Field label="Ciudad o municipio" htmlFor="g-ciudad"><Input id="g-ciudad" type="text" autoComplete="off" placeholder="Por ejemplo, Bilbao o València" value={s.group.ciudad} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, ciudad: e.target.value } }))} /></Field>
@@ -65,6 +66,7 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
           <Field label="Barrio o zona de interés" htmlFor="g-barrio"><Input id="g-barrio" type="text" autoComplete="off" placeholder="Por ejemplo, Cabanyal o Patraix" value={s.group.barrio} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, barrio: e.target.value } }))} /></Field>
         </div>
         <p className="text-[13px] text-muted-foreground">Estos datos adaptan las entidades, los enlaces y los mensajes a tu zona, y alimentan las calculadoras. Se guardan solo en este navegador.</p>
+        <GrupoConexion />
       </Card>
       <div className="grid gap-1.5">
         <h2 className="font-heading text-2xl font-bold">La ruta, en seis estaciones</h2>

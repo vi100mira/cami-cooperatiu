@@ -1,7 +1,7 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { StoreProvider, useStore } from "@/lib/store";
-import { GrupoProvider } from "@/lib/grupo";
+import { GrupoProvider, useGrupo } from "@/lib/grupo";
 import { HelpCtx } from "./Rich";
 import Sheet from "./Sheet";
 import Ruta, { Hero } from "./Ruta";
@@ -17,10 +17,19 @@ const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["
 const ICONS: Record<string, React.ReactNode> = { ruta: <Route aria-hidden />, calc: <Calculator aria-hidden />, opor: <Building2 aria-hidden />, grupo: <Users aria-hidden />, faq: <CircleHelp aria-hidden />, glos: <BookOpen aria-hidden /> };
 
 function Shell() {
-  const { s } = useStore();
+  const { s, set } = useStore();
   const [tab, setTab] = useState("ruta");
   const [term, setTerm] = useState<string | null>(null);
   const [from, setFrom] = useState<HTMLElement | null>(null);
+  // Si la cooperativa aún no tiene nombre en Ruta, adopta el del grupo al que se entra. Solo una vez por grupo,
+  // para que después se pueda vaciar o cambiar el campo sin que se rellene de nuevo.
+  const nombreGrupo = useGrupo().grupo?.nombre;
+  const adoptado = useRef<string | null>(null);
+  useEffect(() => {
+    if (!nombreGrupo || adoptado.current === nombreGrupo) return;
+    adoptado.current = nombreGrupo;
+    if (!s.group.name.trim()) set((x) => ({ ...x, group: { ...x.group, name: nombreGrupo } }));
+  }, [nombreGrupo, s.group.name, set]);
 
   const scrollTo = (id: string) => setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   const go = useCallback((t: string, id?: string) => {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Heart, LogOut, UserPlus, ExternalLink, Trash2, Loader2, TriangleAlert, Info, ArrowLeftRight } from "lucide-react";
 import { useGrupo, type Fav } from "@/lib/grupo";
 import { slugDesde } from "@/lib/validate";
+import { useStore } from "@/lib/store";
 import { eur, fnum } from "@/lib/format";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -36,14 +37,15 @@ function FormEntrar() {
         <Field label="Contraseña del grupo" htmlFor="gr-pw"><Input id="gr-pw" type="password" autoComplete="off" required maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
       </FormGrid>
       <Error_ texto={e.err} />
-      <Enviar busy={e.busy}>Entrar al grupo</Enviar>
+      <Enviar busy={e.busy}>Entrar</Enviar>
     </form>
   );
 }
 
 function FormCrear() {
   const g = useGrupo(); const e = useEnvio();
-  const [nombre, setNombre] = useState(""); const [slug, setSlug] = useState(""); const [tocado, setTocado] = useState(false);
+  const { s } = useStore(); const previo = s.group.name.trim();
+  const [nombre, setNombre] = useState(previo); const [slug, setSlug] = useState(slugDesde(previo)); const [tocado, setTocado] = useState(false);
   const [pw, setPw] = useState(""); const [miembro, setMiembro] = useState(""); const [mpw, setMpw] = useState(""); const [ok, setOk] = useState(false);
   return (
     <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); e.run(() => g.crearGrupo({ nombre, slug, password: pw, miembro, miembroPassword: mpw })); }}>
@@ -54,6 +56,7 @@ function FormCrear() {
         <Field label="Tu nombre o alias" htmlFor="cr-miembro"><Input id="cr-miembro" autoComplete="off" required maxLength={60} value={miembro} onChange={(ev) => setMiembro(ev.target.value)} /></Field>
         <Field label="Tu contraseña personal (mín. 8)" htmlFor="cr-mpw"><Input id="cr-mpw" type="password" autoComplete="new-password" required minLength={8} maxLength={200} value={mpw} onChange={(ev) => setMpw(ev.target.value)} /></Field>
       </FormGrid>
+      {previo && <p className="text-[13px] text-muted-foreground">Hemos propuesto el nombre de tu cooperativa de la pestaña Ruta; puedes cambiarlo.</p>}
       <p className="text-[13px] text-muted-foreground">La contraseña del grupo la compartes con el resto de personas; la personal es solo tuya. Si se pierden no se pueden recuperar.</p>
       <label className="flex cursor-pointer items-start gap-2.5 text-[13.5px]"><Checkbox className="mt-0.5" checked={ok} onCheckedChange={(v) => setOk(v === true)} /> <span>He leído el <a className="font-semibold text-primary underline" href="#privacidad">aviso de privacidad</a> y acepto que se guarden estos datos.</span></label>
       <Error_ texto={e.err} />
@@ -66,7 +69,7 @@ function Acceso() {
   const [modo, setModo] = useState<"entrar" | "crear">("entrar");
   return (
     <Card>
-      <ToggleChips label="Qué quieres hacer" value={modo} options={[["entrar", "Entrar a mi grupo"], ["crear", "Crear un grupo"]]} onChange={setModo} />
+      <ToggleChips label="Qué quieres hacer" value={modo} options={[["entrar", "Ya tengo un grupo"], ["crear", "Crear un grupo nuevo"]]} onChange={setModo} />
       {modo === "entrar" ? <FormEntrar /> : <FormCrear />}
     </Card>
   );

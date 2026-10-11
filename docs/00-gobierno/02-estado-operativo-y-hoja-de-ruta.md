@@ -57,6 +57,8 @@ Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 63 tests en 13
 
 Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se conserva junto al corazón, porque alimenta el embudo de candidatos y no es un favorito. Los datos de ruta, calculadoras y candidatos siguen sin sincronizarse entre personas.
 
+Conexión entre Ruta y Grupo (11/10/2026, implementada y verificada en local; pendiente de desplegar): la tarjeta «Tu grupo» de Ruta pasa a llamarse «Tu cooperativa» para no confundirla con la pestaña «Grupo» y muestra una franja con el estado de la conexión y un botón a la pestaña. Al crear un grupo se propone el nombre que figura en Ruta, y si Ruta tiene el nombre vacío adopta el del grupo al entrar, solo una vez por grupo. Región, ciudad, familias y barrio siguen solo en el navegador: compartirlos entre las personas del grupo exigiría ampliar el esquema y el aviso de privacidad, y está sin decidir.
+
 ## Pendiente de confirmar
 
 - Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development. Prueba de humo en producción el 11/10/2026 (10 comprobaciones: portada, base alcanzable, alta, cookie `httpOnly` y `Secure`, sesión firmada, favorito, borrado de perfil y de grupo) con datos de prueba que se borraron; la base quedó con 0 filas. La interfaz no se recorrió en el navegador en producción.
