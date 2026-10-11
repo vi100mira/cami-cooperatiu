@@ -2,7 +2,7 @@
 tipo: estado-operativo
 estado_documental: vigente
 proyecto: Techo Común
-ultima_revision: 2026-10-10
+ultima_revision: 2026-10-11
 ---
 
 # Estado operativo y hoja de ruta
@@ -41,8 +41,26 @@ Revisión de las calculadoras tras detectar que confundían lo comunitario con l
 
 - Búsqueda en vivo: siempre en toda la provincia; el selector «Toda la provincia / Solo la ciudad» se retira y los filtros (municipio o barrio, precio, viviendas, orden) aparecen después, como ajuste fino sin gastar consultas. Gasto máximo teórico: 7 créditos/día.
 
+## Cambios del 11/10/2026: grupos y favoritos con Supabase
+
+Decisión en [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md). Todo está en la copia local, **sin commit y sin desplegar**.
+
+| Capacidad | Implementado | Verificado | Desplegado |
+| --- | --- | --- | --- |
+| Esquema y RLS en Supabase (`techo-comun`, `eu-west-3`) | Sí | Aviso informativo «RLS sin política» (intencionado); la clave pública recibe `42501` al leer y escribir | Sí (base de datos) |
+| Alta, entrada, miembros y sesión (`/api/grupos`, `/api/miembros`, `/api/sesion`) | Sí | 29 comprobaciones de extremo a extremo contra la base real; tests de `auth` y `validate` | **No** |
+| Favoritos con corazón y filtro «todos / solo los míos» (`/api/favoritos`) | Sí | Navegador contra la base real (persiste tras recargar, aislamiento entre grupos) con la búsqueda simulada | **No** |
+| Pestaña «Grupo» y aviso de privacidad | Sí | Navegador en escritorio y móvil (sin desbordamiento horizontal) | **No** |
+| Borrar mi perfil (cascada; borra el grupo si era la última persona) | Sí | Navegador contra la base real | **No** |
+
+Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 63 tests en 13 archivos, `npm run typecheck` sin errores y `npm run build` correcto (añade `/api/favoritos`, `/api/grupos`, `/api/grupos/entrar`, `/api/miembros`, `/api/miembros/entrar`, `/api/miembros/yo` y `/api/sesion`).
+
+Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se conserva junto al corazón, porque alimenta el embudo de candidatos y no es un favorito. Los datos de ruta, calculadoras y candidatos siguen sin sincronizarse entre personas.
+
 ## Pendiente de confirmar
 
+- Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development, y el código de los grupos sigue sin desplegar: las variables no tienen efecto hasta el próximo despliegue.
+- Responsable del tratamiento y contacto en el aviso de privacidad, y revisión jurídica, antes de abrir los grupos al público.
 - Si la búsqueda en vivo está activa en producción: `SEARCH_ENABLED` y `FIRECRAWL_API_KEY` existen en Vercel (producción), valor del interruptor no leído.
 - Si una sola página por portal da suficientes anuncios al filtrar por municipio.
 
@@ -53,4 +71,6 @@ Revisión de las calculadoras tras detectar que confundían lo comunitario con l
 3. Revisar términos de uso de los portales antes de abrir la búsqueda al público.
 4. Primeros testers externos.
 5. Datos propios de otras comunidades autónomas en `entitiesFor`.
-6. Fase 2: cuentas y grupos con Supabase y RLS. Con el objetivo de gestionar grupos, deja de ser opcional; falta decidir cuándo.
+6. Desplegar grupos y favoritos: commit, variables en Vercel y datos del responsable en el aviso de privacidad (ver ADR-0001).
+7. Llevar la prueba de extremo a extremo al repositorio y decidir roles de grupo y recuperación de contraseña.
+8. Valorar Supabase Auth (enlace mágico y RLS por usuario) cuando haya usuarios reales. Es la evolución prevista en `USUARIOS-Y-COOPERATIVAS.md`.

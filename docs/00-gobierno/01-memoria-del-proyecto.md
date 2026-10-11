@@ -2,7 +2,7 @@
 tipo: memoria-proyecto
 estado_documental: vigente
 proyecto: Techo Común
-ultima_revision: 2026-10-10
+ultima_revision: 2026-10-11
 ---
 
 # Memoria del proyecto Techo Común
@@ -28,19 +28,22 @@ Grupos que quieren formar una cooperativa de vivienda. Ámbito estatal, con dato
 - **Búsqueda en portales**: enlaces preparados para cualquier ciudad.
 - **Candidatos**: fotos, mapa bajo demanda, Catastro (referencia por dirección) y enlaces a planos.
 - **Entidades**: directorio adaptado por comunidad autónoma con mensajes listos.
+- **Grupo y favoritos** (desde el 11/10/2026, aún no desplegado): cualquier grupo puede darse de alta con contraseña de grupo y contraseñas personales, sin correo ni OAuth. Cada persona marca ofertas con un corazón en la búsqueda en vivo y el grupo ve todos los favoritos con el nombre de quien los marcó, con filtro «todos / solo los míos». Aviso de privacidad visible y borrado del propio perfil. Ver [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md).
 - **Preguntas frecuentes y glosario.**
 
 ## Arquitectura
 
 ```text
-Navegador (estado en localStorage)
+Navegador (ruta, calculadoras y candidatos en localStorage; cookie de sesión del grupo)
   → Next.js 16 en Vercel (Hobby)
       ├ /api/buscar   → Firecrawl → Fotocasa, Pisos.com, yaencontre
       │                 (lista blanca, caché 24 h, tope diario, límite por IP, enfriamiento)
-      └ /api/catastro → Sede Electrónica del Catastro
+      ├ /api/catastro → Sede Electrónica del Catastro
+      └ /api/{grupos,miembros,favoritos,sesion}
+                      → Supabase (Postgres en la UE; RLS sin políticas, solo clave de servidor)
 ```
 
-Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, componentes estilo shadcn/ui, Lucide, Vitest. Sin base de datos ni cuentas.
+Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, componentes estilo shadcn/ui, Lucide, Vitest, Supabase (grupos y favoritos) y bcryptjs. Sin cuentas externas ni OAuth: el acceso es por contraseña de grupo y personal.
 
 ## Forma de trabajo
 

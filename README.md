@@ -4,13 +4,13 @@
 
 Guía gratuita y sin ánimo de lucro para crear una **cooperativa de vivienda en cesión de uso** en España: ruta de 6 fases, 3 calculadoras, vías de oportunidad, candidatos, directorio de entidades con mensajes listos, glosario y búsqueda en vivo de edificios y terrenos en venta.
 
-Next.js (App Router) + TypeScript. Los datos del grupo se guardan solo en el navegador (localStorage). No hay base de datos ni cuentas.
+Next.js (App Router) + TypeScript. La ruta, las calculadoras y los candidatos se guardan solo en el navegador (localStorage). Los grupos y sus favoritos, opcionales, usan Supabase (ver «Grupos y favoritos»). No hay cuentas externas ni OAuth.
 
 ## Desarrollo
 
 ```bash
 npm install
-cp .env.example .env.local   # opcional: solo para la búsqueda en vivo
+cp .env.example .env.local   # opcional: búsqueda en vivo y grupos (Supabase)
 npm run dev                  # http://localhost:3000
 npm test                     # cálculos, parser y protecciones de coste
 npm run build
@@ -28,6 +28,23 @@ npm run build
   6. Enfriamiento de 10 min tras un fallo; los errores no se cachean ni se reintentan en bucle.
   7. **Importante**: en tu cuenta de Firecrawl usa el plan gratuito y **no actives la recarga automática**. Así el límite real lo pone la cuenta.
 - Los contadores 4–6 viven en memoria de cada instancia serverless; son un freno extra. La garantía real son la caché (3) y el tope de créditos de la cuenta (7).
+
+## Grupos y favoritos (Supabase)
+
+Opcional. Cada grupo se da de alta con una contraseña de grupo y cada persona tiene su contraseña personal. Los favoritos (el corazón de la búsqueda en vivo) se guardan en Supabase y los ve todo el grupo, con el nombre de quien los marcó. Si Supabase no está configurado, la pestaña «Grupo» avisa de que no está disponible y el resto de la app funciona igual.
+
+- **Variables** (solo de servidor; `.env.local` está en `.gitignore`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` (mínimo 32 caracteres aleatorios). Ninguna lleva prefijo `NEXT_PUBLIC_`: la clave `service_role` da acceso total y nunca debe llegar al navegador.
+- **Generar `AUTH_SECRET`:**
+
+  ```bash
+  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  ```
+
+- **Esquema:** `supabase/migrations/20261011_create_techo_comun_schema.sql`. Aplícalo en tu propio proyecto de Supabase (editor SQL o CLI).
+- **Seguridad:** RLS activado y sin políticas en las tres tablas, y todo acceso por las rutas `src/app/api/{grupos,miembros,favoritos,sesion}`. No añadas políticas para `anon` o `authenticated` sin leer antes el ADR. Contraseñas con bcrypt; sesión en cookie firmada de 12 h.
+- **Privacidad:** se guardan solo nombre del grupo, nombre o alias, contraseñas cifradas y favoritos. Aviso visible en la pestaña «Grupo»; cada persona puede borrar su perfil desde ahí.
+- **Coste:** plan gratuito de Supabase. No pases a un plan de pago ni actives complementos de pago.
+- **Decisión, alternativas y límites:** `docs/00-gobierno/05-adr-0001-grupos-y-favoritos-con-supabase.md`.
 
 ## Alcance geográfico
 
@@ -51,7 +68,7 @@ Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser e
 
 1. Sube el repo a GitHub (`git remote add origin … && git push -u origin main`).
 2. En vercel.com ⇒ *Add New… ⇒ Project* ⇒ importa el repo (plan **Hobby**). Framework: Next.js (automático).
-3. *Settings ⇒ Environment Variables*: añade `FIRECRAWL_API_KEY`, `SEARCH_ENABLED=true` y `SEARCH_DAILY_CAP=12` solo si quieres la búsqueda. Redespliega.
+3. *Settings ⇒ Environment Variables*: añade `FIRECRAWL_API_KEY`, `SEARCH_ENABLED=true` y `SEARCH_DAILY_CAP=12` solo si quieres la búsqueda, y `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` (valor distinto del local) solo si quieres los grupos. Redespliega.
 4. Cada `git push` a `main` despliega solo.
 
 ## Dominio propio
@@ -63,6 +80,9 @@ Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser e
 - `src/lib/content.ts`: fases, glosario, vías, entidades y plantillas de mensajes.
 - `src/lib/calc.ts`: matemáticas de las calculadoras (con tests).
 - `src/lib/{guards,search,parse-fotocasa}.ts` y `src/app/api/buscar/route.ts`: búsqueda con protecciones.
+- `src/lib/{auth,session,supabase,validate,favoritos,http}.ts` y `src/app/api/{grupos,miembros,favoritos,sesion}`: grupos, sesión y favoritos (con tests de `auth`, `validate` y `favoritos`).
+- `src/lib/grupo.tsx`, `src/components/{Grupo,FavButton,Privacidad}.tsx`: estado del grupo en el cliente, pestaña «Grupo», corazón y aviso de privacidad.
+- `supabase/migrations/`: esquema de la base de datos.
 - `src/components/*`: interfaz.
 
 Guía de orientación; no es asesoría jurídica ni financiera.
