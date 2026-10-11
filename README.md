@@ -2,7 +2,7 @@
 
 (Repositorio: `cami-cooperatiu`, nombre inicial del proyecto.)
 
-Guía gratuita y sin ánimo de lucro para crear una **cooperativa de vivienda en cesión de uso** en España: ruta de 6 fases, 3 calculadoras, vías de oportunidad, candidatos, directorio de entidades con mensajes listos, glosario y búsqueda en vivo de edificios y terrenos en venta.
+Guía gratuita y sin ánimo de lucro para crear una **cooperativa de vivienda en cesión de uso** en España: ruta de 6 fases, 4 calculadoras (una de ellas de terreno, con la normativa urbanística de cada comunidad), vías de oportunidad, candidatos, directorio de entidades con mensajes listos, glosario y búsqueda en vivo de edificios y terrenos en venta.
 
 Next.js (App Router) + TypeScript. La ruta, las calculadoras y los candidatos se guardan solo en el navegador (localStorage). Los grupos y sus favoritos, opcionales, usan Supabase (ver «Grupos y favoritos»). No hay cuentas externas ni OAuth.
 
@@ -79,6 +79,7 @@ Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser e
 
 - `src/lib/content.ts`: fases, glosario, vías, entidades y plantillas de mensajes.
 - `src/lib/calc.ts`: matemáticas de las calculadoras (con tests).
+- `src/lib/normativa.ts`, `src/lib/terreno.ts` y `src/components/Terreno.tsx`: calculadora «Del terreno a las viviendas». La normativa urbanística es un registro por comunidad con la fuente, la fecha y la fiabilidad de cada cifra; para añadir una comunidad se añaden datos en `REGISTRO` (con tests de calidad de las fuentes). Ver el ADR-0002.
 - `src/lib/{guards,search,parse-fotocasa}.ts` y `src/app/api/buscar/route.ts`: búsqueda con protecciones.
 - `src/lib/{auth,session,supabase,validate,favoritos,http}.ts` y `src/app/api/{grupos,miembros,favoritos,sesion}`: grupos, sesión y favoritos (con tests de `auth`, `validate` y `favoritos`).
 - `src/lib/grupo.tsx`, `src/components/{Grupo,FavButton,Privacidad}.tsx`: estado del grupo en el cliente, pestaña «Grupo», corazón y aviso de privacidad.

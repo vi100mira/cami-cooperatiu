@@ -12,7 +12,8 @@ ultima_revision: 2026-10-11
 - `docs/00-gobierno/`: verdad ejecutiva y estado fechado.
 - Código y tests: evidencia de implementación y comportamiento.
 - `README.md`: desarrollo, coste y despliegue.
-- `docs/00-gobierno/05-adr-NNNN-*.md`: decisiones de arquitectura con alternativas y consecuencias (una por archivo, numeradas).
+- `docs/00-gobierno/NN-adr-NNNN-*.md`: decisiones de arquitectura con alternativas y consecuencias (una por archivo; el prefijo continúa la numeración de los documentos de gobierno).
+- `src/lib/normativa.ts`: normativa urbanística por comunidad. Es dato con fuente: cada cifra lleva artículo, enlace, fecha de consulta y fiabilidad.
 - `supabase/migrations/`: esquema de la base de datos, tal como se aplicó.
 - `docs/USUARIOS-Y-COOPERATIVAS.md`: modelo de usuarios y grupos, y su evolución.
 - Cúpula Profesional: ficha resumen; no copia del repositorio.
@@ -33,6 +34,7 @@ ultima_revision: 2026-10-11
 | Cuentas, datos o privacidad | Decisiones/riesgos, `USUARIOS-Y-COOPERATIVAS.md` y el ADR correspondiente |
 | Cambio en el esquema de la base de datos | Nueva migración en `supabase/migrations/`, ADR si cambia el modelo de acceso, y README |
 | Decisión de arquitectura nueva | Nuevo ADR y entrada en el índice |
+| Nueva comunidad o cambio de una cifra urbanística | Datos en `normativa.ts` con artículo, enlace y fecha de consulta, estado en la memoria y revisión de la fecha en el ADR-0002 |
 
 ## Revisión mínima
 

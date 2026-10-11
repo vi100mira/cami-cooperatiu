@@ -14,6 +14,7 @@ ultima_revision: 2026-10-11
 3. [Decisiones, riesgos y deuda](03-decisiones-riesgos-y-deuda.md)
 4. [Norma documental](04-norma-documental.md)
 5. [ADR-0001: grupos y favoritos con Supabase](05-adr-0001-grupos-y-favoritos-con-supabase.md)
+6. [ADR-0002: normativa por comunidad](06-adr-0002-normativa-por-comunidad.md)
 
 ## Fuentes canónicas por pregunta
 
@@ -25,5 +26,6 @@ ultima_revision: 2026-10-11
 | ¿Qué documento se actualiza? | [Norma](04-norma-documental.md) | Mantenimiento de la memoria |
 | Desarrollo, coste y despliegue | [README](../../README.md) | Instrucciones y protecciones de coste |
 | ¿Por qué hay base de datos y cómo se protege? | [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md) | Decisión, alternativas, riesgos y estado de los grupos con Supabase |
+| ¿De dónde salen las cifras urbanísticas de la calculadora de terreno? | [ADR-0002](06-adr-0002-normativa-por-comunidad.md) y `src/lib/normativa.ts` | Registro de normativa por comunidad, con fuente, fecha y fiabilidad de cada cifra |
 | Cuentas y trabajo en equipo | [Modelo de usuarios](../USUARIOS-Y-COOPERATIVAS.md) | Modelo vigente (grupos con contraseña) y evolución prevista |
 | ¿Qué demuestra el código? | `src/lib/*.test.ts`, `src/components/`, `src/app/api/` | Evidencia de implementación |

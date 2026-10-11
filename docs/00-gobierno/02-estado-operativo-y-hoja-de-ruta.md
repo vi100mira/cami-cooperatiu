@@ -59,6 +59,15 @@ Decisiones de interfaz del 11/10/2026: el botón «Apuntar como candidato» se c
 
 Conexión entre Ruta y Grupo (11/10/2026, implementada y verificada en local; pendiente de desplegar): la tarjeta «Tu grupo» de Ruta pasa a llamarse «Tu cooperativa» para no confundirla con la pestaña «Grupo» y muestra una franja con el estado de la conexión y un botón a la pestaña. Al crear un grupo se propone el nombre que figura en Ruta, y si Ruta tiene el nombre vacío adopta el del grupo al entrar, solo una vez por grupo. Región, ciudad, familias y barrio siguen solo en el navegador: compartirlos entre las personas del grupo exigiría ampliar el esquema y el aviso de privacidad, y está sin decidir.
 
+Calculadora «Del terreno a las viviendas» (11/10/2026, implementada y verificada en local; pendiente de desplegar), decisión en [ADR-0002](06-adr-0002-normativa-por-comunidad.md):
+
+| Capacidad | Implementado | Verificado | Desplegado |
+| --- | --- | --- | --- |
+| Registro de normativa por comunidad y cálculo (clases de suelo, cesiones, dotaciones, viales, costes) | Sí | Pruebas unitarias y de calidad de las fuentes; ejemplo de 1 ha cuadrado a mano | No |
+| Calculadora con cascada, costes y tabla de normas aplicadas | Sí | Navegador en local: no urbanizable, Andalucía (sin normativa cargada), botón de carga a las calculadoras de cuota y móvil sin desbordamiento | No |
+
+Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 87 tests en 15 archivos, `npm run typecheck` sin errores y `npm run build` correcto. Solo la Comunitat Valenciana tiene normativa cargada. Los artículos 36 y 82 de la LOTUP se leyeron en una fuente secundaria, la reserva de vivienda protegida del 30 % está marcada «comprobar vigencia» frente al 40 % estatal, y los costes de urbanización son estimaciones editables de un informe de València cuyo año no se confirmó.
+
 ## Pendiente de confirmar
 
 - Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development. Prueba de humo en producción el 11/10/2026 (10 comprobaciones: portada, base alcanzable, alta, cookie `httpOnly` y `Secure`, sesión firmada, favorito, borrado de perfil y de grupo) con datos de prueba que se borraron; la base quedó con 0 filas. La interfaz no se recorrió en el navegador en producción.
@@ -76,3 +85,4 @@ Conexión entre Ruta y Grupo (11/10/2026, implementada y verificada en local; pe
 6. Revisión jurídica del aviso de privacidad y de las transferencias internacionales, y decidir un plazo de caducidad para grupos inactivos (hoy no se guarda la fecha de última actividad). Ver ADR-0001. Los grupos están desplegados desde el 11/10/2026.
 7. Llevar la prueba de extremo a extremo al repositorio y decidir roles de grupo y recuperación de contraseña.
 8. Valorar Supabase Auth (enlace mágico y RLS por usuario) cuando haya usuarios reales. Es la evolución prevista en `USUARIOS-Y-COOPERATIVAS.md`.
+9. Calculadora de terreno: verificar los artículos 36 y 82 de la LOTUP en el diario oficial, resolver el 30 % frente al 40 % de vivienda protegida, cargar más comunidades y fijar una revisión periódica de la normativa (ver ADR-0002).
