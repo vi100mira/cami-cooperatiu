@@ -47,41 +47,41 @@ export const PARAMS: Record<ParamKey, { etiqueta: string; regla: (v: number) => 
   costeVerdes: { etiqueta: "Coste de urbanizar zonas verdes", regla: (v) => `${fnum(v, 0)} € por m²` },
 };
 
-const HOY = "2026-10-11";
-const IBERLEY_36 = "https://www.iberley.es/legislacion/articulo-36-ordenacion-territorio-urbanismo-paisaje";
-const IBERLEY_82 = "https://www.iberley.es/legislacion/articulo-82-tr-ley-ordenacion-territorio-urbanismo-paisaje";
+const D11 = "2026-10-11";
+const D12 = "2026-10-12";
 const BOE_TRLOTUP = "https://www.boe.es/buscar/act.php?id=DOGV-r-2021-90283";
 const BOE_TRLS = "https://www.boe.es/buscar/act.php?id=BOE-A-2015-11723";
-const LOTUP = "LOTUP (Ley 5/2014, texto refundido D. Leg. 1/2021)";
+const PEPRI_VALENCIA = "https://mhv.valencia.es/ayuntamiento/urbanismo2.nsf/0/CA6E7A9E264EC5E0C1258E12002B63A9/$FILE/2IP.%208_PEPRI%20SMR.%20MEMORIA%20VIABILIDAD%20ECON%C3%93MICA_firmado_firmado.pdf?OpenElement";
+const LOTUP = "LOTUP, texto refundido (Decreto Legislativo 1/2021), texto consolidado del BOE actualizado el 10/08/2026";
 
 export interface Normativa { nombre: string; revisada: string; params: Partial<Record<ParamKey, Param>> }
 
 const CV: Normativa = {
   nombre: "Comunitat Valenciana",
-  revisada: HOY,
+  revisada: D12,
   params: {
-    dotPublica: { valor: 35, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.2.a", url: IBERLEY_36, consultada: HOY, secundaria: true }, nota: "Es la regla para sectores de uso residencial. En suelo industrial o terciario las reglas son otras." },
-    dotVerde: { valor: 15, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.2.a", url: IBERLEY_36, consultada: HOY, secundaria: true } },
-    edifMax: { valor: 1, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.3", url: IBERLEY_36, consultada: HOY, secundaria: true }, nota: "Es el tope para sectores de suelo urbanizable residencial." },
-    densMax: { valor: 100, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.3", url: IBERLEY_36, consultada: HOY, secundaria: true } },
-    cesionUrbanizable: { valor: 10, verif: "verificada", fuente: { norma: LOTUP, articulo: "82.1.a", url: IBERLEY_82, consultada: HOY, secundaria: true }, nota: "Excepcionalmente puede subir hasta el 20 % si la rentabilidad del sector es sensiblemente superior." },
-    cesionUrbanoUE: { valor: 5, verif: "verificada", fuente: { norma: LOTUP, articulo: "82.1.c", url: IBERLEY_82, consultada: HOY, secundaria: true }, nota: "Para suelo urbano por urbanizar en unidades de ejecución, sin incremento de aprovechamiento." },
+    dotPublica: { valor: 35, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.2.a", url: BOE_TRLOTUP, consultada: D12 }, nota: "Es la regla para sectores de uso residencial. En suelo industrial o terciario las reglas son otras." },
+    dotVerde: { valor: 15, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.2.a", url: BOE_TRLOTUP, consultada: D12 } },
+    edifMax: { valor: 1, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.3", url: BOE_TRLOTUP, consultada: D12 }, nota: "Es el tope para sectores de suelo urbanizable residencial." },
+    densMax: { valor: 100, verif: "verificada", fuente: { norma: LOTUP, articulo: "36.3", url: BOE_TRLOTUP, consultada: D12 } },
+    cesionUrbanizable: { valor: 10, verif: "verificada", fuente: { norma: LOTUP, articulo: "82.1.a", url: BOE_TRLOTUP, consultada: D12 }, nota: "Excepcionalmente puede subir hasta el 20 % si la rentabilidad del sector es sensiblemente superior." },
+    cesionUrbanoUE: { valor: 5, verif: "verificada", fuente: { norma: LOTUP, articulo: "82.1.c", url: BOE_TRLOTUP, consultada: D12 }, nota: "Para suelo urbano por urbanizar en unidades de ejecución, sin incremento de aprovechamiento." },
     reservaVPP: {
       valor: 30, verif: "comprobar",
-      fuente: { norma: LOTUP, articulo: "33.a", url: BOE_TRLOTUP, consultada: HOY },
-      nota: "El Estado fija un mínimo del 40 % (RDL 7/2015, art. 20.1), con posibilidad de una reserva inferior por ley autonómica. El texto refundido tiene una modificación publicada el 02/07/2026: confirma la vigencia del 30 %.",
+      fuente: { norma: LOTUP, articulo: "33.1.a", url: BOE_TRLOTUP, consultada: D12 },
+      nota: "El texto valenciano dice 30 %, pero el Estado fija un mínimo del 40 % (RDL 7/2015, art. 20.1, tras la Ley 12/2023), con posibilidad de una reserva inferior por ley autonómica: la cifra queda por comprobar. Están exentos de esta reserva los planes de municipios de menos de 10.000 habitantes con menos de cinco viviendas autorizadas por cada mil habitantes y año en los dos últimos años, siempre que no ordenen más de 100 viviendas nuevas, y las reformas de la urbanización con menos de 200 viviendas (art. 33.3, en vigor desde el 10/12/2024).",
     },
   },
 };
 
 const ESTADO: Normativa = {
   nombre: "Marco estatal",
-  revisada: HOY,
+  revisada: D11,
   params: {
-    reservaVPP: { valor: 40, verif: "verificada", fuente: { norma: "Texto refundido de la Ley de Suelo y Rehabilitación Urbana (RDL 7/2015)", articulo: "20.1", url: BOE_TRLS, consultada: HOY }, nota: "Mínimo general en nueva urbanización. La ley de cada comunidad puede fijar una reserva inferior." },
+    reservaVPP: { valor: 40, verif: "verificada", fuente: { norma: "Texto refundido de la Ley de Suelo y Rehabilitación Urbana (RDL 7/2015)", articulo: "20.1", url: BOE_TRLS, consultada: D11 }, nota: "Mínimo general en nueva urbanización. La ley de cada comunidad puede fijar una reserva inferior." },
     cesionUrbanizable: {
       valor: 10, rango: [5, 15], verif: "comprobar",
-      fuente: { norma: "Texto refundido de la Ley de Suelo y Rehabilitación Urbana (RDL 7/2015)", articulo: "18", url: BOE_TRLS, consultada: HOY },
+      fuente: { norma: "Texto refundido de la Ley de Suelo y Rehabilitación Urbana (RDL 7/2015)", articulo: "18", url: BOE_TRLS, consultada: D11 },
       nota: "El Estado marca un rango (entre el 5 % y el 15 %, y hasta el 20 % de forma excepcional): el 10 % es un valor intermedio de ejemplo.",
     },
   },
@@ -89,11 +89,19 @@ const ESTADO: Normativa = {
 
 const REFERENCIA: Normativa = {
   nombre: "Referencias de coste",
-  revisada: HOY,
+  revisada: D12,
   params: {
-    vialesPor100: { valor: 20, verif: "estimacion", fuente: { norma: "Fundación CIEC, método de la superficie de viales", articulo: "parámetro orientativo", url: "https://fundacionciec.net/incec/visorurbanizaciones.wgx", consultada: HOY }, nota: "Es un método de estimación, no una norma: cada plan fija sus viales." },
-    costeViales: { valor: 240, verif: "estimacion", fuente: { norma: "Ayuntamiento de València, informe de sostenibilidad económica", articulo: "módulos de urbanización", url: "https://www.valencia.es/documents/20142/629631/8.8+Estudio+Sostenibilidad+Econ%F3mica_firmado.pdf/d6be1ec5-ece9-b98d-d473-2d13f8e658d3", consultada: HOY }, nota: "Precio medio de contrata sin IVA. No se ha podido confirmar el año del informe." },
-    costeVerdes: { valor: 120, verif: "estimacion", fuente: { norma: "Ayuntamiento de València, informe de sostenibilidad económica", articulo: "módulos de urbanización", url: "https://www.valencia.es/documents/20142/629631/8.8+Estudio+Sostenibilidad+Econ%F3mica_firmado.pdf/d6be1ec5-ece9-b98d-d473-2d13f8e658d3", consultada: HOY }, nota: "Precio medio de contrata sin IVA. No se ha podido confirmar el año del informe." },
+    vialesPor100: { valor: 20, verif: "estimacion", fuente: { norma: "Fundación CIEC, método de la superficie de viales", articulo: "parámetro orientativo", url: "https://fundacionciec.net/incec/visorurbanizaciones.wgx", consultada: D11 }, nota: "Es un método de estimación, no una norma: cada plan fija sus viales." },
+    costeViales: {
+      valor: 125, verif: "estimacion",
+      fuente: { norma: "Ayuntamiento de València, PEPRI del ámbito T-1 San Miguel de los Reyes, memoria de viabilidad económica (abril de 2026)", articulo: "coste de urbanización, módulos IVE con coeficiente 1,50", url: PEPRI_VALENCIA, consultada: D12 },
+      nota: "125 €/m² para urbanizar (100 €/m² en reurbanización). Contraste: un documento de Olocau de enero de 2018, también con módulos del IVE, daba entre 122 y 161 €/m² de viales; el Ayuntamiento de València usaba 240 €/m² en 2010. Varía mucho según el plan y el ámbito.",
+    },
+    costeVerdes: {
+      valor: 55, verif: "estimacion",
+      fuente: { norma: "Ayuntamiento de València, PEPRI del ámbito T-1 San Miguel de los Reyes, memoria de viabilidad económica (abril de 2026)", articulo: "coste de urbanización, módulos IVE con coeficiente 1,50", url: PEPRI_VALENCIA, consultada: D12 },
+      nota: "55 €/m² de zona verde (70 la plaza ajardinada). Contraste: Olocau, enero de 2018, entre 44 y 52 €/m². Varía mucho según el plan y el ámbito.",
+    },
   },
 };
 

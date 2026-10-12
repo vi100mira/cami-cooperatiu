@@ -28,12 +28,12 @@ describe("suelo urbanizable en la Comunitat Valenciana (ejemplo de 1 ha)", () =>
     expect(r.viviendas).toBe(90);
   });
   it("suma el coste de urbanizar viales y zonas verdes con las referencias", () => {
-    expect(r.costes.viales).toBe(2000 * 240);
-    expect(r.costes.verdes).toBe(1500 * 120);
-    expect(r.costes.urbanizacion).toBe(660000);
-    expect(r.costes.total).toBe(600000 + 660000);
-    expect(r.porM2Techo).toBeCloseTo(1260000 / 9000, 6);
-    expect(r.porVivienda).toBeCloseTo(1260000 / 90, 6);
+    expect(r.costes.viales).toBe(2000 * 125);
+    expect(r.costes.verdes).toBe(1500 * 55);
+    expect(r.costes.urbanizacion).toBe(332500);
+    expect(r.costes.total).toBe(600000 + 332500);
+    expect(r.porM2Techo).toBeCloseTo(932500 / 9000, 6);
+    expect(r.porVivienda).toBeCloseTo(932500 / 90, 6);
   });
   it("recorta una edificabilidad superior al tope y lo avisa", () => {
     const x = run({ edif: 2.5 });

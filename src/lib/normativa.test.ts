@@ -16,6 +16,18 @@ describe("normativaPara", () => {
     expect(r.nota).toMatch(/40 %/);
   });
 
+  it("la reserva valenciana avisa de la exención de los municipios pequeños (art. 33.3)", () => {
+    expect(normativaPara("cv").params.reservaVPP.nota).toMatch(/10\.000 habitantes/);
+  });
+
+  it("los costes de urbanización valencianos son los de 2026, no los de 2010", () => {
+    const { costeViales, costeVerdes } = normativaPara("cv").params;
+    expect(costeViales.valor).toBe(125);
+    expect(costeVerdes.valor).toBe(55);
+    expect(costeViales.fuente.norma).toMatch(/abril de 2026/);
+    expect(costeViales.nota).toMatch(/2010/);
+  });
+
   it("una comunidad sin cargar cae al marco estatal donde existe", () => {
     const n = normativaPara("an");
     expect(n.cargada).toBe(false);
@@ -57,9 +69,12 @@ describe("calidad de las fuentes", () => {
       expect(p.fuente.consultada).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
   });
-  it("lo marcado como verificada en fuente secundaria lo declara", () => {
+  it("las cifras legales valencianas se verificaron en el texto oficial del BOE, no en una fuente secundaria", () => {
     const cv = normativaPara("cv").params;
-    expect(cv.dotPublica.fuente.secundaria).toBe(true);
+    for (const k of ["dotPublica", "dotVerde", "edifMax", "densMax", "cesionUrbanizable", "cesionUrbanoUE", "reservaVPP"] as const) {
+      expect(cv[k].fuente.secundaria).toBeFalsy();
+      expect(cv[k].fuente.url).toMatch(/boe\.es/);
+    }
   });
   it("solo la Comunitat Valenciana está cargada por ahora", () => {
     expect(comunidadCargada("cv")).toBe(true);
