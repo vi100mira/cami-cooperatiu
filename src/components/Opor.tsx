@@ -7,6 +7,7 @@ import { Rich } from "./Rich";
 import LiveSearch from "./LiveSearch";
 import PortalSearch from "./PortalSearch";
 import { simularEdificio, simularTerrenoAnuncio } from "@/lib/simulacion";
+import { consultaMapa } from "@/lib/ubicacion";
 import { catastroUrl, parseDireccion } from "@/lib/catastro";
 import type { Listing } from "@/lib/parse-fotocasa";
 import { Photos, MapBox } from "./Media";
@@ -144,7 +145,7 @@ function CandCard({ c, onSim }: { c: Cand; onSim: (c: Cand) => void }) {
           <NativeSelect id={"est-" + c.id} value={c.estado} onChange={(e) => upd((x) => ({ ...x, estado: e.target.value }))}>{ES.map((e) => <option key={e}>{e}</option>)}</NativeSelect>
         </Field>
         {c.notas && <p className="text-[13px] text-muted-foreground">{c.notas}</p>}
-        {(c.direccion || (!c.ejemplo && c.barrio)) && <MapBox query={((c.direccion || c.nombre + " " + c.barrio) + " " + (ciudad || "")).trim()} refcat={c.refcat} />}
+        {(c.direccion || c.mapa || (!c.ejemplo && c.barrio)) && <MapBox query={c.direccion ? (c.direccion + " " + (ciudad || "")).trim() : c.mapa ?? ((c.nombre + " " + c.barrio) + " " + (ciudad || "")).trim()} refcat={c.refcat} />}
         {c.refcat && <p className="text-[13px] text-muted-foreground">Ref. catastral: <b className="select-all font-mono font-medium text-foreground">{c.refcat}</b>{catastroUrl(c.refcat) ? <> · <a className="font-medium text-primary underline-offset-2 hover:underline" href={catastroUrl(c.refcat)!} target="_blank" rel="noopener noreferrer">Abrir la ficha del edificio ↗</a></> : " · no parece una referencia válida (14 o 20 caracteres)"}</p>}
         {!c.refcat && c.direccion && <CatastroLookup c={c} ciudad={ciudad} onFound={(ref) => upd((x) => ({ ...x, refcat: ref }))} />}
         {((c.url && /^https:\/\//.test(c.url)) || (c.plano && /^https:\/\//.test(c.plano))) && (
@@ -173,11 +174,12 @@ function CandForm({ viaRef, prefill }: { viaRef: React.RefObject<HTMLSelectEleme
       e.preventDefault();
       const f = new FormData(e.currentTarget), g = (k: string) => String(f.get(k) ?? "");
       const url = g("url"), plano = g("plano"), foto = g("foto");
-      set((s) => ({ ...s, cands: [{ id: "c" + Date.now(), nombre: g("nombre").trim(), barrio: g("barrio").trim(), via: g("via"), precio: parseFloat(g("precio")) || 0, viv: parseInt(g("viv"), 10) || 0, estado: g("estado"), notas: g("notas").trim(), url: /^https:\/\//.test(url) ? url : undefined, direccion: g("direccion").trim() || undefined, refcat: g("refcat").trim() || undefined, plano: /^https:\/\//.test(plano) ? plano : undefined, fotos: [...(prefill?.fotos ?? []), ...(/^https:\/\//.test(foto) ? [foto] : [])].slice(0, 6), chk: {} }, ...s.cands] }));
+      set((s) => ({ ...s, cands: [{ id: "c" + Date.now(), nombre: g("nombre").trim(), barrio: g("barrio").trim(), via: g("via"), precio: parseFloat(g("precio")) || 0, viv: parseInt(g("viv"), 10) || 0, estado: g("estado"), notas: g("notas").trim(), url: /^https:\/\//.test(url) ? url : undefined, direccion: g("direccion").trim() || undefined, mapa: g("mapa").trim() || undefined, refcat: g("refcat").trim() || undefined, plano: /^https:\/\//.test(plano) ? plano : undefined, fotos: [...(prefill?.fotos ?? []), ...(/^https:\/\//.test(foto) ? [foto] : [])].slice(0, 6), chk: {} }, ...s.cands] }));
       ref.current?.reset();
     }}>
       <CardTitle>Añadir un candidato</CardTitle>
       <input type="hidden" name="url" defaultValue={prefill?.url ?? ""} />
+      <input type="hidden" name="mapa" defaultValue={prefill?.mapa ?? ""} />
       <FormGrid>
         <Field label="Nombre o dirección" htmlFor="cf-nombre"><Input id="cf-nombre" name="nombre" type="text" required autoComplete="off" defaultValue={prefill?.nombre} /></Field>
         <Field label="Barrio" htmlFor="cf-barrio"><Input id="cf-barrio" name="barrio" type="text" autoComplete="off" defaultValue={prefill?.barrio} /></Field>
@@ -272,7 +274,7 @@ export default function Opor() {
             ? <Alert variant="warning"><TriangleAlert aria-hidden /><span>La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que para <b>{s.group.ciudad.trim()}</b> no hay botón de búsqueda. Usa los botones de portales de aquí abajo: abren la búsqueda ya filtrada en cada portal.</span></Alert>
             : <Alert variant="warning"><TriangleAlert aria-hidden /><span>Escribe una ciudad para activar la búsqueda. Para València aparece la búsqueda en vivo; para el resto, los botones de portales.</span></Alert>}
       </Card>
-      {live && <LiveSearch ciudad="valencia" onSim={simularListing} onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: l.gestora ? "parada" : tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}.${l.gestora ? ` Lo publica ${l.gestora}, gestora de Sareb: pregunta si es de Sareb, de un banco o una cesión de remate.` : ""} Verifica todos los datos.` })} />}
+      {live && <LiveSearch ciudad="valencia" onSim={simularListing} onPick={(l, tipo) => toForm({ mapa: consultaMapa(l), fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: l.gestora ? "parada" : tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}.${l.gestora ? ` Lo publica ${l.gestora}, gestora de Sareb: pregunta si es de Sareb, de un banco o una cesión de remate.` : ""} Verifica todos los datos.` })} />}
       <PortalSearch ciudad={s.group.ciudad} />
         </TabsContent>
         <TabsContent value="candidatos" className="gap-5">

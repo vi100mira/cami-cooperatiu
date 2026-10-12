@@ -161,3 +161,32 @@ export function distanciaAnuncio(l: Anuncio, centro: { lat: number; lon: number 
   const u = ubicar(l);
   return u ? distanciaKm(centro, u.municipio) : null;
 }
+
+const contiene = (texto: string, nombre: string) => ` ${normalizar(texto)} `.includes(` ${normalizar(nombre)} `);
+
+/**
+ * Texto para buscar el anuncio en un mapa, lo más concreto posible: el lugar que dice el título («en Carrer de la Pau»,
+ * «en Parque de la Bombilla-Pla de Rascanya, Llíria»), la zona si no es el «València» por defecto de los portales y el
+ * municipio ubicado con `ubicar`, que no se fía de la zona. Sin esto, un anuncio de Burjassot cuya zona dice «València» se
+ * buscaba como «València València» y el mapa caía en otro sitio.
+ */
+export function consultaMapa(l: Anuncio): string {
+  const muni = ubicar(l)?.municipio;
+  // Al apuntar un anuncio como candidato el título lleva añadido «· 731 m²» y similares: se corta en ese separador.
+  const dentroDelTitulo = (/\ben\s+(.+)$/i.exec((l.titulo ?? "").trim())?.[1] ?? "").split(/\s·\s/)[0];
+  const lugar = dentroDelTitulo.replace(/\bno number\b|\bs\/n\b/gi, " ").replace(/\s*[-–]\s*/g, ", ").replace(/\s+/g, " ").replace(/^[,\s]+|[,\s]+$/g, "");
+  const zona = (l.zona ?? "").trim();
+  const partes: string[] = [];
+  if (lugar) partes.push(lugar);
+  if (zona && normalizar(zona) !== "valencia" && !contiene(lugar, zona)) partes.push(zona);
+  const texto = partes.join(" ");
+  if (muni) {
+    if (!contiene(texto, muni.es) && !contiene(texto, muni.ca)) partes.push(muni.nombre);
+    // La provincia solo si aporta algo: «València, València» no.
+    if (normalizar(muni.provincia) !== normalizar(muni.nombre) && normalizar(muni.provincia) !== normalizar(muni.es)) partes.push(muni.provincia);
+  } else {
+    partes.push("València");
+  }
+  partes.push("España");
+  return partes.join(", ");
+}

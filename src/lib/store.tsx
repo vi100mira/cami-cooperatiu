@@ -4,7 +4,7 @@ import { CDEF, type CalcInput } from "./calc";
 import type { Group } from "./content";
 import { TDEF, CLASES, type TerrenoInput } from "./terreno";
 
-export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
+export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; /** Texto para buscar el candidato en un mapa, deducido del anuncio. */ mapa?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
 export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; terreno: TerrenoInput; open: number | null; sim?: Sim | null; }
 /** Valores de antes de simular (o los que puso la simulación), para poder volver a ellos. */
 export interface SimValores { suelo?: number; obra?: number; precioTerreno?: number; superficieTerreno?: number }

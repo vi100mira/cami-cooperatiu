@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
-import { MUNICIPIOS, normalizar, resolverCentro, distanciaKm, ubicar, distanciaAnuncio } from "./ubicacion";
+import { MUNICIPIOS, normalizar, resolverCentro, distanciaKm, ubicar, distanciaAnuncio, consultaMapa } from "./ubicacion";
 import { parseFotocasa } from "./parse-fotocasa";
 import { parsePisos } from "./parse-pisos";
 import { parseYaencontre } from "./parse-yaencontre";
@@ -126,5 +126,35 @@ describe("ubicar con los anuncios guardados como ejemplo", () => {
       const d = distanciaAnuncio(l, v);
       if (ubicar(l)) expect(d).toBeGreaterThanOrEqual(0); else expect(d).toBeNull();
     }
+  });
+});
+
+describe("consultaMapa", () => {
+  const q = (a: ReturnType<typeof anuncio>) => consultaMapa(a);
+  it("Fotocasa con zona por defecto: usa el municipio de la dirección, no «València València»", () => {
+    expect(q(anuncio("https://www.fotocasa.es/es/comprar/edificio/burjassot/zona-campus-universitario/188666927/d"))).toBe("Burjassot, València, España");
+    expect(q(anuncio("https://www.fotocasa.es/es/comprar/edificio/llutxent/llutxent/189219216/d"))).toBe("Llutxent, València, España");
+  });
+  it("Fotocasa con barrio: lo añade al municipio sin repetir València", () => {
+    expect(q(anuncio("https://www.fotocasa.es/es/comprar/edificio/valencia-capital/trinitat/188833958/d", "Trinitat"))).toBe("Trinitat, València, España");
+  });
+  it("usa el lugar del título y limpia lo que no ayuda", () => {
+    expect(q(anuncio("https://www.yaencontre.com/venta/terreno/inmueble-1-2", "Llíria", "Terreno en Parque de la Bombilla-Pla de Rascanya, Llíria"))).toBe("Parque de la Bombilla, Pla de Rascanya, Llíria, València, España");
+    expect(q(anuncio("https://www.pisos.com/comprar/edificio-gandia_ciutat_centre_historic46701-55036165347_106600/", "Centre Històric", "Edificio en Carrer del Duc Carles de Borja"))).toBe("Carrer del Duc Carles de Borja, Centre Històric, Gandia, València, España");
+    expect(q(anuncio("https://www.pisos.com/comprar/edificio-gandia_x-1_2/", "València", "Edificio en calle Mayor No Number"))).toBe("calle Mayor, Gandia, València, España");
+  });
+  it("ignora lo que se añade al título al apuntarlo como candidato («· 731 m²»)", () => {
+    expect(q(anuncio("https://www.yaencontre.com/venta/terreno/inmueble-1-2", "Llíria", "Terreno en Parque de la Bombilla-Pla de Rascanya, Llíria · 731 m²"))).toBe("Parque de la Bombilla, Pla de Rascanya, Llíria, València, España");
+    expect(q(anuncio("https://www.fotocasa.es/es/comprar/edificio/torrent/zona/1/d", "Zona Centro", "Edificio de pisos · Zona Centro · 480 m²"))).toBe("Zona Centro, Torrent, València, España");
+  });
+  it("no repite el municipio si el título ya lo dice, ni con otro nombre", () => {
+    expect(q(anuncio("https://www.yaencontre.com/venta/edificio/inmueble-1-2", "Alzira", "Edificio en Ayuntamiento - Centro, Alzira"))).toBe("Ayuntamiento, Centro, Alzira, València, España");
+    expect(q(anuncio("https://www.yaencontre.com/venta/edificio/inmueble-1-2", "Torrent", "Edificio en Casco Antiguo, Torrent"))).toBe("Casco Antiguo, Torrent, València, España");
+  });
+  it("sin municipio conocido, busca en València", () => {
+    expect(q(anuncio("https://www.yaencontre.com/venta/edificio/inmueble-1-2", "València", "Edificio"))).toBe("València, España");
+  });
+  it("fuera de la provincia de València añade la suya", () => {
+    expect(q(anuncio("https://www.fotocasa.es/es/comprar/edificio/elche/centro/1/d"))).toBe("Elx, Alacant, España");
   });
 });

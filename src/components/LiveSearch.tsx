@@ -19,7 +19,7 @@ import { ToggleChips } from "./ui/toggle-chips";
 import { filtrarTodo, ajuste, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, ENCAJE_TEXTO, tituloLegible, type Orden, type Cooperativa } from "@/lib/fit";
 import { FavButton } from "./FavButton";
 import { CentroRadio, useCentro } from "./CentroRadio";
-import { ubicar, distanciaKm } from "@/lib/ubicacion";
+import { ubicar, distanciaKm, consultaMapa } from "@/lib/ubicacion";
 
 type Tipo = "edificios" | "terrenos";
 type Busca = Tipo | "ambos";
@@ -171,7 +171,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                       {l.precio && l.m2 ? <div className="flex items-center gap-1.5"><Euro className="size-3.5" aria-hidden /><dt className="sr-only">Precio por m²</dt><dd><b className="font-mono font-medium text-foreground">{eur(l.precio / l.m2)}</b>/m²</dd></div> : null}
                     </dl>
                     {viv ? <p className="rounded-lg bg-accent px-3 py-2 text-[13px]" title="Estimación orientativa a partir de los m² del anuncio">≈ <b>{viv}</b> viviendas · <b>{eur(precioPorVivienda(l, t)!)}</b>/vivienda <i className="text-muted-foreground">(estimado)</i></p> : null}
-                    <MapBox query={`${l.zona} ${CIUDAD_NOMBRE[ciudadBase] ?? ciudadBase}`} />
+                    <MapBox query={consultaMapa(l)} />
                     {l.resumen && <p className="text-[13.5px] text-muted-foreground">{l.resumen}</p>}
                     <div className="flex flex-wrap gap-2">
                       <Button size="sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, t)}><Calculator aria-hidden /> Simular en calculadora</Button>
