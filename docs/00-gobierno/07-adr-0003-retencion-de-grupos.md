@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0003
-estado: aceptada; migración aplicada en la base de datos; código verificado en local y pendiente del despliegue final (12/10/2026)
+estado: aceptada; implementada, verificada y desplegada en producción (12/10/2026, commit 5ee0ab4)
 fecha: 2026-10-12
 ultima_revision: 2026-10-12
 ---
@@ -50,7 +50,7 @@ ultima_revision: 2026-10-12
 | Aspecto | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
 | Migración (columna, índice y funciones) | Sí | En la base real: la vista previa solo lista el grupo viejo, un plazo menor de 3 meses se rechaza, la purga borra el grupo y sus miembros en cascada y conserva el reciente; sin avisos nuevos de seguridad y la clave pública recibe «permiso denegado» al invocar las funciones | Sí (aplicada en producción el 12/10/2026) |
-| Anotación de la actividad y aviso de privacidad | Sí | `npm run test:e2e` comprueba que la fecha avanza tras marcar un favorito | Pendiente del despliegue final |
+| Anotación de la actividad y aviso de privacidad | Sí | `npm run test:e2e` comprueba que la fecha avanza tras marcar un favorito, también contra producción | Sí (12/10/2026) |
 
 ## Pendiente
 

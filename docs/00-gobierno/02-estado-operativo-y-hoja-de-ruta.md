@@ -70,20 +70,20 @@ Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 87 tests en 15
 
 Mejora de usabilidad de la calculadora de terreno (12/10/2026, implementada y verificada en local; pendiente de desplegar): la tarjeta medía 2.439 px a 1024×768 por apilar el resultado, los costes y las nueve normas, y la columna de resultados fija quedaba cortada. Ahora el resultado clave está siempre arriba y el detalle va en pestañas (Reparto, Costes y Normas), con cada norma en una línea que despliega su fuente. Alturas medidas a 1024×768: 735 px por defecto, 720 en Costes y 975 en Normas; en móvil 1.671 px, sin desbordamiento horizontal. Los resultados dejan de ser fijos y en pantallas estrechas los datos van antes que el detalle. Las pruebas de cálculo no cambian (87 en 15 archivos).
 
-## Cambios del 12/10/2026 (implementados y verificados en local; pendientes del despliegue final)
+## Cambios del 12/10/2026 (implementados, verificados y desplegados)
 
 El despliegue cuesta, así que se acumularon los cambios para publicarlos juntos.
 
 | Cambio | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
-| Calculadora de terreno compacta: resultado clave arriba y pestañas Reparto, Costes y Normas (de 2.439 a 735 px a 1024×768) | Sí | Mediciones en navegador, cambios de clase y móvil sin desbordamiento | No |
-| Normativa valenciana verificada en el texto del BOE (arts. 33, 36 y 82, actualizado el 10/08/2026), con la exención del art. 33.3 | Sí | Descarga y lectura en local; 89 pruebas de normativa y cálculo | No |
-| Costes de urbanización de 2026 (125 y 55 €/m²) en lugar de los de 2010 (240 y 120) | Sí | Lectura de los PDF originales en local | No |
-| Búsqueda ajustada a la cooperativa: capital orientativo, orden por defecto, etiquetas y casilla de ocultar | Sí | 20 pruebas nuevas y navegador con anuncios simulados (3 y 20 familias) | No |
-| Actividad de los grupos y purga manual (ADR-0003) | Sí | SQL contra la base real; funciones inaccesibles para la clave pública; actividad comprobada en `test:e2e` | Migración sí; código no |
+| Calculadora de terreno compacta: resultado clave arriba y pestañas Reparto, Costes y Normas (de 2.439 a 735 px a 1024×768) | Sí | Mediciones en navegador, cambios de clase y móvil sin desbordamiento | Sí (12/10/2026) |
+| Normativa valenciana verificada en el texto del BOE (arts. 33, 36 y 82, actualizado el 10/08/2026), con la exención del art. 33.3 | Sí | Descarga y lectura en local; 89 pruebas de normativa y cálculo | Sí (12/10/2026) |
+| Costes de urbanización de 2026 (125 y 55 €/m²) en lugar de los de 2010 (240 y 120) | Sí | Lectura de los PDF originales en local | Sí (12/10/2026) |
+| Búsqueda ajustada a la cooperativa: capital orientativo, orden por defecto, etiquetas y casilla de ocultar | Sí | 20 pruebas nuevas y navegador con anuncios simulados (3 y 20 familias) | Sí (12/10/2026) |
+| Actividad de los grupos y purga manual (ADR-0003) | Sí | SQL contra la base real; funciones inaccesibles para la clave pública; actividad comprobada en `test:e2e` | Sí (12/10/2026) |
 | Prueba de extremo a extremo en el repositorio (`npm run test:e2e`) | Sí | 31 comprobaciones contra la base real, con limpieza | — |
 
-Puertas de calidad (12/10/2026, Node 20, copia local): `npm test` 109 tests en 16 archivos y `npm run typecheck` sin errores.
+Puertas de calidad (12/10/2026, Node 20, copia local): `npm test` 109 tests en 16 archivos y `npm run typecheck` sin errores. Despliegue único en producción el 12/10/2026 (commit `5ee0ab4`, Ready): `npm run test:e2e` contra producción pasó las 31 comprobaciones y se comprobó que el código nuevo está servido (orden por cooperativa, pestaña de normas, costes de 2026, aviso con la actividad y la exención del art. 33.3). La interfaz nueva no se recorrió en el navegador en producción.
 
 ## Pendiente de confirmar
 

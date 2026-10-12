@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0002
-estado: aceptada; implementada, verificada en local y desplegada en producción (11/10/2026, commit 3390738)
+estado: aceptada; implementada, verificada y desplegada en producción (11/10/2026, commit 3390738); normativa verificada en el BOE y rediseño en pestañas desplegados el 12/10/2026 (commit 5ee0ab4)
 fecha: 2026-10-11
 ultima_revision: 2026-10-11
 ---
