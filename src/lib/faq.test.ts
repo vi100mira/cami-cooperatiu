@@ -10,4 +10,9 @@ describe("FAQ", () => {
   it("solo enlaza a términos del glosario que existen", () => {
     FAQ.forEach((f) => { for (const m of f.a.matchAll(/\{\{(\w+)\|[^}]+\}\}/g)) expect(TERMS[m[1]], m[1]).toBeDefined(); });
   });
+  it("la entrada sobre terceros no socios y reventa cita los artículos y las cifras que se verificaron en el BOE", () => {
+    const e = FAQ.find((f) => f.g === "Aspectos legales");
+    expect(e).toBeDefined();
+    for (const x of ["27/1999", "art. 91.4", "25 %", "art. 65.1", "art. 92", "cinco años", "diez", "abogada"]) expect(e!.a, x).toContain(x);
+  });
 });
