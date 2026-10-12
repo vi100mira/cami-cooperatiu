@@ -4,7 +4,7 @@ import { TERMS } from "@/lib/content";
 import { useStore, type Sim } from "@/lib/store";
 import { viviendasDeCalculo, quitarSimulacion, ajustarObraPorM2, OBRA_POR_VIVIENDA, OBRA_POR_M2 } from "@/lib/simulacion";
 import { M2_POR_VIVIENDA } from "@/lib/fit";
-import { model, series, eligibility, niceTicks, type CalcInput, type Model } from "@/lib/calc";
+import { model, series, eligibility, niceTicks, queHariaFalta, type CalcInput, type Model } from "@/lib/calc";
 import { eur, nf0, fnum, kfmt } from "@/lib/format";
 import { useHelp } from "./Rich";
 import { TriangleAlert, Check, X } from "lucide-react";
@@ -109,7 +109,10 @@ function ResA({ m, c }: { m: Model; c: CalcInput }) {
 }
 
 function ResB({ m, c }: { m: Model; c: CalcInput }) {
+  const { s: estado } = useStore();
+  const sim = estado.sim;
   const e = eligibility(c, m), fill = Math.min(100, (e.pc / 60) * 100);
+  const falta = queHariaFalta(c, m);
   return (
     <>
       <p className="note" style={{ marginTop: 0 }}>Todo este bloque es para <b>una familia</b>. Su cuota, <b>{eur(m.tot)}/mes</b>, viene de la calculadora de arriba: {m.v} {m.v === 1 ? "vivienda" : "viviendas"} y un coste total de {eur(m.total)}.</p>
@@ -135,7 +138,25 @@ function ResB({ m, c }: { m: Model; c: CalcInput }) {
       </div>
       <Badge variant={e.fits ? "success" : "danger"} className="mt-2 px-3 py-1 text-[13px]">{e.fits ? <><Check aria-hidden /> Sí: la cuota cabe en su presupuesto</> : <><X aria-hidden /> No: la cuota supera el 30% de sus ingresos</>}</Badge>
       </div>
-      {!e.fits && <Alert variant="warning"><TriangleAlert aria-hidden /><span>Con estos datos el proyecto no es asumible para esta familia. Prueba con más viviendas, un edificio más barato, más ayudas o un plazo de préstamo más largo.</span></Alert>}
+      {!e.fits && (
+        <Alert variant="warning"><TriangleAlert aria-hidden />
+          <div className="grid gap-1.5">
+            <span>Con estos datos la cuota no cabe en el 30 % de los ingresos. Para esta propiedad, cambiando <b>solo una</b> de estas cosas y dejando el resto igual:</span>
+            <ul className="grid list-disc gap-1 pl-5">
+              {falta.sinMargen
+                ? <li>Ni la aportación ni la obra lo arreglan: el mantenimiento y el fondo de reserva ya se comen el 30 % de estos ingresos.</li>
+                : <>
+                    {falta.aportacion != null && <li>Una aportación inicial de <b>{eur(falta.aportacion)}</b> por vivienda (ahora {eur(+c.aport || 0)}).</li>}
+                    {falta.obraMaxima != null
+                      ? <li>Una obra de como máximo <b>{eur(falta.obraMaxima)}</b>{sim?.m2 ? <> (unos {nf0.format(falta.obraMaxima / sim.m2)} €/m²)</> : null} (ahora {eur(+c.obra || 0)}).</li>
+                      : <li>Ni con obra gratuita cabría: el precio es demasiado alto para esta aportación y estos ingresos.</li>}
+                  </>}
+              <li>Unos ingresos de la familia de al menos <b>{eur(falta.ingresosNecesarios)}</b> al año (ahora {eur(+c.ingresos || 0)}).</li>
+            </ul>
+            <span>También ayudan más viviendas que repartan el coste, más ayudas o un plazo de préstamo más largo.</span>
+          </div>
+        </Alert>
+      )}
       <p className="note">En el concurso de la EVha que sirvió de ejemplo, la mitad de las personas socias debían pertenecer a colectivos preferentes. Las bases de cada concurso mandan.</p>
     </>
   );

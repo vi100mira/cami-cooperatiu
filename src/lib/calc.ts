@@ -70,3 +70,22 @@ export function niceTicks(max: number, n: number) {
   for (let k = 0; ; k++) { t.push(k * s); if (k * s >= max) break; }
   return t;
 }
+
+/**
+ * Qué haría falta para que la cuota quepa en el 30 % de los ingresos de la familia, cambiando UNA sola cosa y dejando el resto igual:
+ * la aportación inicial por vivienda, la obra o los ingresos. Lo que no se puede lograr con esa palanca sale como null
+ * (por ejemplo, si el mantenimiento y el fondo de reserva ya se comen el 30 %, ninguna aportación ni obra lo arregla).
+ */
+export function queHariaFalta(c: CalcInput, m: Model) {
+  const maxq = ((+c.ingresos || 0) / 12) * 0.3;
+  const cuotaPrestamo = maxq - (+c.mant || 0) - (+c.reserva || 0); // lo que cada vivienda puede dedicar al préstamo cada mes
+  const n = Math.max(1, Math.round(c.plazo * 12)), r = c.interes / 1200;
+  const factor = r === 0 ? n : (1 - Math.pow(1 + r, -n)) / r;
+  const gastos = 1 + (+c.gastos || 0) / 100;
+  const ingresosNecesarios = m.ing30 * 12;
+  if (cuotaPrestamo <= 0) return { cabe: m.tot <= maxq, sinMargen: true, aportacion: null, obraMaxima: null, ingresosNecesarios };
+  const financiable = cuotaPrestamo * factor * m.v;
+  const aportacion = Math.max(0, (m.total - (+c.subv || 0) - financiable) / m.v);
+  const obraMaxima = (financiable + (+c.aport || 0) * m.v + (+c.subv || 0)) / gastos - (+c.suelo || 0);
+  return { cabe: m.tot <= maxq, sinMargen: false, aportacion, obraMaxima: obraMaxima > 0 ? obraMaxima : null, ingresosNecesarios };
+}

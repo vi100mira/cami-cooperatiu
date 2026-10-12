@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { capacidad, CDEF } from "./calc";
+import { capacidad, CDEF, model, queHariaFalta } from "./calc";
 import { ajuste, filtrar, filtrarTodo, type Cooperativa } from "./fit";
 import type { Listing } from "./parse-fotocasa";
 
@@ -167,5 +167,47 @@ describe("centro de acción y distancia máxima", () => {
   it("también funciona al mezclar edificios y terrenos", () => {
     const r = filtrarTodo([{ tipo: "edificios", items: [items[2]] }, { tipo: "terrenos", items: [items[1], items[3]] }], { ...base, orden: "cerca", radioKm: 30 });
     expect(r.map((e) => e.l.id)).toEqual(["b", "c"]);
+  });
+});
+
+describe("qué haría falta para que la cuota quepa", () => {
+  const base = { ...CDEF, suelo: 600000, obra: 660000, ingresos: 36000 };
+  const viv = 6;
+  it("cambiando solo la aportación, la cuota queda justo en el 30 % de los ingresos", () => {
+    const m = model(base, viv); const f = queHariaFalta(base, m);
+    expect(f.cabe).toBe(false);
+    expect(f.aportacion).toBeGreaterThan(base.aport);
+    const m2 = model({ ...base, aport: f.aportacion! }, viv);
+    expect(m2.tot).toBeCloseTo(900, 0);
+  });
+  it("cambiando solo la obra, la cuota queda justo en el 30 %", () => {
+    const f = queHariaFalta(base, model(base, viv));
+    expect(f.obraMaxima).not.toBeNull();
+    expect(f.obraMaxima!).toBeLessThan(base.obra);
+    expect(model({ ...base, obra: f.obraMaxima! }, viv).tot).toBeCloseTo(900, 0);
+  });
+  it("con unos ingresos de al menos los necesarios, la cuota cabe", () => {
+    const f = queHariaFalta(base, model(base, viv));
+    const ing = f.ingresosNecesarios;
+    expect(ing).toBeGreaterThan(base.ingresos);
+    expect(queHariaFalta({ ...base, ingresos: ing + 1 }, model({ ...base, ingresos: ing + 1 }, viv)).cabe).toBe(true);
+  });
+  it("si ya cabe, no hace falta nada (aportación 0 o la actual)", () => {
+    const facil = { ...base, suelo: 100000, obra: 100000 };
+    const f = queHariaFalta(facil, model(facil, viv));
+    expect(f.cabe).toBe(true);
+    expect(f.aportacion).toBe(0);
+  });
+  it("propiedades distintas necesitan cosas distintas", () => {
+    const a = queHariaFalta({ ...base, suelo: 300000, obra: 330000 }, model({ ...base, suelo: 300000, obra: 330000 }, 3));
+    const b = queHariaFalta({ ...base, suelo: 1200000, obra: 660000 }, model({ ...base, suelo: 1200000, obra: 660000 }, 12));
+    expect(a.aportacion).not.toBe(b.aportacion);
+    expect(a.obraMaxima).not.toBe(b.obraMaxima);
+  });
+  it("si el mantenimiento y la reserva ya superan el 30 %, ninguna aportación ni obra lo arregla", () => {
+    const f = queHariaFalta({ ...base, ingresos: 3000 }, model({ ...base, ingresos: 3000 }, viv));
+    expect(f.sinMargen).toBe(true);
+    expect(f.aportacion).toBeNull();
+    expect(f.obraMaxima).toBeNull();
   });
 });
