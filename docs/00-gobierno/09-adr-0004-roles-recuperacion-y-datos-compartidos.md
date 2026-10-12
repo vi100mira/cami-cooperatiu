@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0004
-estado: aceptada; implementada y verificada en local (12/10/2026); pendiente de desplegar
+estado: aceptada; implementada, verificada y desplegada en producción (12/10/2026, commit 0364482)
 fecha: 2026-10-12
 ultima_revision: 2026-10-12
 ---
@@ -53,13 +53,13 @@ ultima_revision: 2026-10-12
 | Aspecto | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
 | Migración (`20261012_roles_recuperacion_y_datos.sql`) | Sí | Aplicada en la base real: un solo administrador por grupo, incluido el grupo existente | Sí (base de datos; aditiva, el código anterior sigue funcionando) |
-| Rutas `/api/grupos/admin`, `/api/grupos/recuperar`, `/api/grupos/datos`, `/api/miembros/yo` (PATCH) y traspaso de administración | Sí | `npm run test:e2e` en local: 64 comprobaciones, incluida la recuperación con código de un solo uso, el aislamiento entre grupos y el traspaso | No |
-| Interfaz (código al crear, «He olvidado una contraseña», «Administrar el grupo», «Cambiar mi contraseña», sincronización de datos) | Sí | Navegador en local: alta, código visible una vez, panel de administración, datos sembrados en la base; vista de móvil sin desbordamiento | No |
+| Rutas `/api/grupos/admin`, `/api/grupos/recuperar`, `/api/grupos/datos`, `/api/miembros/yo` (PATCH) y traspaso de administración | Sí | `npm run test:e2e`: 64 comprobaciones, incluida la recuperación con código de un solo uso, el aislamiento entre grupos y el traspaso, en local y contra producción | Sí (12/10/2026) |
+| Interfaz (código al crear, «He olvidado una contraseña», «Administrar el grupo», «Cambiar mi contraseña», sincronización de datos) | Sí | Navegador en local: alta, código visible una vez, panel de administración, datos sembrados en la base; vista de móvil sin desbordamiento. En producción solo se comprobó que las rutas nuevas responden y la prueba e2e | Sí (12/10/2026) |
 
 ## Pendiente
 
-1. Desplegar junto con el resto de cambios del 12/10/2026.
-2. La administradora del grupo existente (`leida-vecinal`) debe generar su código de recuperación tras el despliegue.
+1. ~~Desplegar~~ Hecho el 12/10/2026.
+2. La administradora del grupo existente (`leida-vecinal`) debe generar su código de recuperación desde «Administrar el grupo».
 3. Validar en la revisión jurídica el aviso ampliado (dossier `08`).
 4. Valorar actualizar los datos compartidos al volver a la pestaña, o avisar de conflictos, si hay uso real.
 
