@@ -15,10 +15,11 @@ import { Field, FormGrid } from "./ui/field";
 import { Checkbox } from "./ui/checkbox";
 import { Alert } from "./ui/alert";
 import { ToggleChips } from "./ui/toggle-chips";
-import { filtrar, ajuste, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, ENCAJE_TEXTO, tituloLegible, type Orden, type Cooperativa } from "@/lib/fit";
+import { filtrarTodo, ajuste, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, ENCAJE_TEXTO, tituloLegible, type Orden, type Cooperativa } from "@/lib/fit";
 import { FavButton } from "./FavButton";
 
 type Tipo = "edificios" | "terrenos";
+type Busca = Tipo | "ambos";
 interface Res { tipo: Tipo; fuente: string; fallidos?: string[]; actualizado: string; items: Listing[]; }
 const CIUDAD_NOMBRE: Record<string, string> = { valencia: "València", "valencia-provincia": "provincia de València" };
 const MSG: Record<string, string> = {
@@ -29,11 +30,11 @@ const MSG: Record<string, string> = {
 };
 
 export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
-  const [tipo, setTipo] = useState<Tipo>("edificios");
+  const [tipo, setTipo] = useState<Busca>("edificios");
   const [lugar, setLugar] = useState("");
   // Siempre se busca en toda la provincia; el municipio o barrio se afina después sobre los resultados.
   const ciudad = ciudadBase + "-provincia";
-  const [state, setState] = useState<{ loading: boolean; res?: Res; err?: string }>({ loading: false });
+  const [state, setState] = useState<{ loading: boolean; resultados?: Res[]; avisos?: string[]; err?: string }>({ loading: false });
   const [maxP, setMaxP] = useState("");
   const [minV, setMinV] = useState("");
   const [maxPv, setMaxPv] = useState("");
@@ -44,41 +45,53 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   // La dimensión de la cooperativa sale de Ruta (familias) y de las calculadoras (aportación, ingresos, préstamo).
   const cap = capacidad(s.calc, s.group.fam);
   const coop: Cooperativa = { familias: cap.familias, capital: cap.total, m2Vivienda: s.terreno?.m2Vivienda || 90 };
+  // «Ambos» hace una consulta por tipo (cada una con su propia caché de 24 h) y junta los resultados.
   const run = async () => {
     setState({ loading: true });
-    try {
-      const r = await fetch("/api/buscar?ciudad=" + ciudad + "&tipo=" + tipo);
-      const j = await r.json();
-      if (!r.ok) setState({ loading: false, err: MSG[j.error] ?? "No se ha podido buscar." });
-      else setState({ loading: false, res: j });
-    } catch { setState({ loading: false, err: MSG.no_disponible }); }
+    const tipos: Tipo[] = tipo === "ambos" ? ["edificios", "terrenos"] : [tipo];
+    const salidas = await Promise.all(tipos.map(async (t): Promise<{ res: Res } | { t: Tipo; msg: string }> => {
+      try {
+        const r = await fetch("/api/buscar?ciudad=" + ciudad + "&tipo=" + t);
+        const j = await r.json();
+        return r.ok ? { res: j as Res } : { t, msg: MSG[j.error] ?? "No se ha podido buscar." };
+      } catch { return { t, msg: MSG.no_disponible }; }
+    }));
+    const buenas = salidas.flatMap((x) => ("res" in x ? [x.res] : []));
+    const malas = salidas.flatMap((x) => ("msg" in x ? [x] : []));
+    if (!buenas.length) setState({ loading: false, err: malas[0]?.msg ?? MSG.no_disponible });
+    else setState({ loading: false, resultados: buenas, avisos: malas.map((m) => "No se han podido cargar los " + m.t + ": " + m.msg) });
   };
   const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const q = norm(lugar.trim());
-  const base = q ? (state.res?.items ?? []).filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : (state.res?.items ?? []);
+  const resultados = state.resultados ?? [];
+  const grupos = resultados.map((r) => ({ tipo: r.tipo, items: q ? r.items.filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : r.items }));
+  const total = resultados.reduce((n, r) => n + r.items.length, 0);
+  const conEdificios = tipo !== "terrenos";
   const filtros = { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo, coop };
-  const items = filtrar(base, tipo, { ...filtros, soloEncaje });
+  const items = filtrarTodo(grupos, { ...filtros, soloEncaje });
   // Cuántos resultados se esconden solo por no encajar con la cooperativa, para poder avisarlo.
-  const ocultos = soloEncaje ? filtrar(base, tipo, { ...filtros, soloEncaje: false }).length - items.length : 0;
+  const ocultos = soloEncaje ? filtrarTodo(grupos, { ...filtros, soloEncaje: false }).length - items.length : 0;
   const nombreCiudad = CIUDAD_NOMBRE[ciudad] ?? ciudad;
+  const fallidos = [...new Set(resultados.flatMap((r) => r.fallidos ?? []))];
   return (
     <Card>
-      <ToggleChips label="Tipo de inmueble" value={tipo} options={[["edificios", "Edificios"], ["terrenos", "Terrenos"]]} onChange={(t) => { setTipo(t); setState({ loading: false }); }} />
+      <ToggleChips label="Tipo de inmueble" value={tipo} options={[["edificios", "Edificios"], ["terrenos", "Terrenos"], ["ambos", "Ambos"]]} onChange={(t) => { setTipo(t); setState({ loading: false }); }} />
+      {tipo === "ambos" && <p className="text-[13px] text-muted-foreground">«Ambos» hace dos consultas, una por tipo, y cada una cuenta para el límite diario compartido. Verás edificios y terrenos mezclados y ordenados juntos.</p>}
       <Alert variant="info"><Info aria-hidden /><span><b>Función en pruebas.</b> Busca en toda la {nombreCiudad}, incluidos terrenos de bancos, y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</span></Alert>
       <div><Button disabled={state.loading} onClick={run}>{state.loading ? <><Loader2 className="animate-spin" aria-hidden /> Buscando…</> : <><Search aria-hidden /> Buscar en la {nombreCiudad}</>}</Button></div>
       {state.err && <Alert variant="danger" role="alert"><TriangleAlert aria-hidden /><span>{state.err}</span></Alert>}
-      {state.res && (
+      {state.resultados && (
         <>
       <div className="grid gap-1"><div className="font-heading text-base font-bold">Afina los resultados</div><p className="text-[13px] text-muted-foreground">Los filtros se aplican al momento sobre lo encontrado, sin gastar nuevas consultas.</p></div>
       <FormGrid>
         <Field label="Municipio o barrio (opcional)" htmlFor="ls-lugar"><Input id="ls-lugar" type="text" autoComplete="off" placeholder="Por ejemplo, València, Torrent o Russafa" value={lugar} onChange={(e) => setLugar(e.target.value)} /></Field>
         <Field label="Precio máximo (€)" htmlFor="ls-max"><Input id="ls-max" type="number" min={0} step={50000} inputMode="numeric" value={maxP} onChange={(e) => setMaxP(e.target.value)} /></Field>
-        {tipo === "edificios" && <Field label="Viviendas mínimas (estimadas)" htmlFor="ls-minv"><Input id="ls-minv" type="number" min={0} step={1} inputMode="numeric" value={minV} onChange={(e) => setMinV(e.target.value)} /></Field>}
-        {tipo === "edificios" && <Field label="Máximo por vivienda (€)" htmlFor="ls-pv"><Input id="ls-pv" type="number" min={0} step={10000} inputMode="numeric" value={maxPv} onChange={(e) => setMaxPv(e.target.value)} /></Field>}
+        {conEdificios && <Field label={tipo === "ambos" ? "Viviendas mínimas (solo edificios)" : "Viviendas mínimas (estimadas)"} htmlFor="ls-minv"><Input id="ls-minv" type="number" min={0} step={1} inputMode="numeric" value={minV} onChange={(e) => setMinV(e.target.value)} /></Field>}
+        {conEdificios && <Field label={tipo === "ambos" ? "Máximo por vivienda (€, solo edificios)" : "Máximo por vivienda (€)"} htmlFor="ls-pv"><Input id="ls-pv" type="number" min={0} step={10000} inputMode="numeric" value={maxPv} onChange={(e) => setMaxPv(e.target.value)} /></Field>}
         <Field label="Ordenar por" htmlFor="ls-ord">
           <NativeSelect id="ls-ord" value={orden} onChange={(e) => setOrden(e.target.value as Orden)}>
             <option value="ajuste">Ajustado a tu cooperativa</option>
-            {tipo === "edificios" && <option value="pv">Más barato por vivienda</option>}
+            {conEdificios && <option value="pv">Más barato por vivienda</option>}
             <option value="precio">Precio más bajo</option><option value="m2">Más superficie</option><option value="relevancia">Orden del portal</option>
           </NativeSelect></Field>
       </FormGrid>
@@ -86,30 +99,32 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
         <span><b>Tu cooperativa:</b> {cap.familias} {cap.familias === 1 ? "familia" : "familias"} y un capital orientativo de unos <b>{eur(cap.total)}</b> (aportación inicial y préstamo hasta el 30 % de los ingresos, con los datos de las calculadoras, que son ejemplos hasta que los cambies). Se supone que el suelo o edificio no debería pasar de la mitad: el resto es obra y gastos.</span>
         <label className="flex cursor-pointer items-start gap-2.5"><Checkbox className="mt-0.5" checked={soloEncaje} onCheckedChange={(v) => setSoloEncaje(v === true)} /> <span>Ocultar lo muy grande, muy pequeño o más caro que todo vuestro capital{ocultos > 0 && <b className="ml-1 text-foreground">({ocultos} {ocultos === 1 ? "oculto" : "ocultos"})</b>}</span></label>
       </div>
-      {tipo === "edificios" && (
+      {conEdificios && (
         <label className="flex cursor-pointer items-center gap-2.5 text-[13.5px] text-muted-foreground">
           <Checkbox checked={verTodo} onCheckedChange={(v) => setVerTodo(v === true)} /> Mostrar también apartamentos turísticos, hoteles, traspasos y solares
         </label>
       )}
           <Alert variant="warning"><TriangleAlert aria-hidden /><span>Las viviendas estimadas y el precio por vivienda salen de los m² construidos del anuncio (suponiendo unos 80 m² por vivienda) y <b>pueden no ser exactos</b>. Confirma siempre los datos en el anuncio original.</span></Alert>
-          {!!state.res.fallidos?.length && <Alert variant="warning"><TriangleAlert aria-hidden /><span>No hemos podido leer {state.res.fallidos.join(", ")} en esta consulta, así que faltan sus anuncios. Prueba mañana o usa los botones de portales.</span></Alert>}
-          <p className="text-[13px] text-muted-foreground"><b className="text-foreground">{items.length}</b> de {state.res.items.length} resultados · Fuente: {state.res.fuente} · Actualizado {new Date(state.res.actualizado).toLocaleString("es-ES")}.</p>
+          {!!fallidos.length && <Alert variant="warning"><TriangleAlert aria-hidden /><span>No hemos podido leer {fallidos.join(", ")} en esta consulta, así que faltan sus anuncios. Prueba mañana o usa los botones de portales.</span></Alert>}
+          {(state.avisos ?? []).map((a) => <Alert key={a} variant="warning"><TriangleAlert aria-hidden /><span>{a}</span></Alert>)}
+          <p className="text-[13px] text-muted-foreground"><b className="text-foreground">{items.length}</b> de {total} resultados · Fuente: {[...new Set(resultados.map((r) => r.fuente))].join(" · ")} · Actualizado {new Date(Math.min(...resultados.map((r) => new Date(r.actualizado).getTime()))).toLocaleString("es-ES")}.</p>
           <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
-            {items.map((l) => {
-              const viv = viviendasEstimadas(l, tipo);
-              const aj = ajuste(l, tipo, coop);
+            {items.map(({ l, tipo: t }) => {
+              const viv = viviendasEstimadas(l, t);
+              const aj = ajuste(l, t, coop);
               return (
                 <Card key={l.id} className="gap-3 p-3.5 shadow-none transition hover:shadow-md" >
                   <article className="grid gap-2.5">
                     <Photos fotos={l.fotos ?? []} alt={`${l.titulo} en ${l.zona}`} />
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap gap-1.5">
+                        {tipo === "ambos" && <Badge variant="soft">{t === "terrenos" ? "Terreno" : "Edificio"}</Badge>}
                         {l.fuente && <Badge variant="outline">{l.fuente}</Badge>}
                         {l.gestora && <Badge variant="warning" title="Gestora de activos de Sareb. No todo lo que publica es de Sareb: también gestiona carteras de bancos y cesiones de remate. Pregunta por el origen y la situación del inmueble.">Gestora de Sareb · {l.gestora}</Badge>}
-                        {etiquetas(l, tipo).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}
+                        {etiquetas(l, t).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}
                         {aj.etiquetas.map((e) => <Badge key={e} variant={e === "encaja" ? "success" : e === "sin-dato" ? "outline" : "warning"}>{ENCAJE_TEXTO[e]}</Badge>)}
                       </div>
-                      <FavButton l={l} tipo={state.res!.tipo} />
+                      <FavButton l={l} tipo={t} />
                     </div>
                     <h4 className="font-heading text-base font-bold leading-snug">{tituloLegible(l)}</h4>
                     <div className="flex items-baseline justify-between gap-3">
@@ -120,12 +135,12 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                       <div className="flex items-center gap-1.5"><Ruler className="size-3.5" aria-hidden /><dt className="sr-only">Superficie</dt><dd><b className="font-mono font-medium text-foreground">{l.m2 ? fnum(l.m2, 0) + " m²" : "—"}</b></dd></div>
                       {l.precio && l.m2 ? <div className="flex items-center gap-1.5"><Euro className="size-3.5" aria-hidden /><dt className="sr-only">Precio por m²</dt><dd><b className="font-mono font-medium text-foreground">{eur(l.precio / l.m2)}</b>/m²</dd></div> : null}
                     </dl>
-                    {viv ? <p className="rounded-lg bg-accent px-3 py-2 text-[13px]" title="Estimación orientativa a partir de los m² del anuncio">≈ <b>{viv}</b> viviendas · <b>{eur(precioPorVivienda(l, tipo)!)}</b>/vivienda <i className="text-muted-foreground">(estimado)</i></p> : null}
+                    {viv ? <p className="rounded-lg bg-accent px-3 py-2 text-[13px]" title="Estimación orientativa a partir de los m² del anuncio">≈ <b>{viv}</b> viviendas · <b>{eur(precioPorVivienda(l, t)!)}</b>/vivienda <i className="text-muted-foreground">(estimado)</i></p> : null}
                     <MapBox query={`${l.zona} ${CIUDAD_NOMBRE[ciudadBase] ?? ciudadBase}`} />
                     {l.resumen && <p className="text-[13.5px] text-muted-foreground">{l.resumen}</p>}
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, state.res!.tipo)}><Calculator aria-hidden /> Simular en calculadora</Button>
-                      <Button size="sm" variant="outline" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, state.res!.tipo)}><Plus aria-hidden /> Apuntar como candidato</Button>
+                      <Button size="sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, t)}><Calculator aria-hidden /> Simular en calculadora</Button>
+                      <Button size="sm" variant="outline" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, t)}><Plus aria-hidden /> Apuntar como candidato</Button>
                       <Button size="sm" variant="ghost" asChild><a href={l.url} target="_blank" rel="noopener noreferrer">Ver anuncio <ExternalLink aria-hidden /></a></Button>
                       {(l.otras ?? []).filter((o) => /^https:\/\//.test(o.url)).map((o) => <Button key={o.fuente} size="sm" variant="ghost" asChild><a href={o.url} target="_blank" rel="noopener noreferrer">También en {o.fuente} <ExternalLink aria-hidden /></a></Button>)}
                     </div>

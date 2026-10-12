@@ -132,3 +132,33 @@ export function portalLinks(ciudad: string, tipo: "edificios" | "terrenos", maxP
     url: "https://www.google.com/search?q=" + encodeURIComponent(`site:${p.site} ${que} ${c}${maxPrecio ? " hasta " + maxPrecio + " €" : ""}`),
   }));
 }
+
+export type TipoInmueble = "edificios" | "terrenos";
+/** Un anuncio con el tipo al que pertenece: la búsqueda «ambos» mezcla edificios y terrenos en una sola lista. */
+export interface Entrada { l: Listing; tipo: TipoInmueble }
+
+/**
+ * Filtra y ordena uno o varios tipos de inmueble a la vez. Con un solo tipo equivale a `filtrar`. Con varios, los
+ * filtros que solo tienen sentido para edificios (viviendas mínimas y máximo por vivienda) no se aplican a los terrenos,
+ * y el orden «más barato por vivienda» deja los terrenos al final.
+ */
+export function filtrarTodo(grupos: { tipo: TipoInmueble; items: Listing[] }[], f: Filtros): Entrada[] {
+  const mezcla = grupos.length > 1;
+  const out: Entrada[] = grupos.flatMap((g) => {
+    const fg: Filtros = { ...f, orden: "relevancia", ...(mezcla && g.tipo === "terrenos" ? { minViv: 0, maxPv: 0 } : {}) };
+    return filtrar(g.items, g.tipo, fg).map((l) => ({ l, tipo: g.tipo }));
+  });
+  if (f.orden === "relevancia") return out;
+  const precio = (e: Entrada) => e.l.precio ?? Number.MAX_SAFE_INTEGER;
+  if (f.orden === "ajuste") {
+    const c = f.coop;
+    if (!c) return out;
+    return [...out].sort((a, b) => (ajuste(a.l, a.tipo, c).puntos - ajuste(b.l, b.tipo, c).puntos) || (precio(a) - precio(b)));
+  }
+  const key = (e: Entrada): number => {
+    if (f.orden === "pv") return precioPorVivienda(e.l, e.tipo) ?? Infinity;
+    if (f.orden === "precio") return e.l.precio ?? Infinity;
+    return -(e.l.m2 ?? 0);
+  };
+  return [...out].sort((a, b) => key(a) - key(b));
+}

@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { TERMS } from "@/lib/content";
-import { useStore } from "@/lib/store";
+import { useStore, type Sim } from "@/lib/store";
+import { viviendasDeCalculo, quitarSimulacion, OBRA_POR_VIVIENDA } from "@/lib/simulacion";
 import { model, series, eligibility, niceTicks, type CalcInput, type Model } from "@/lib/calc";
 import { eur, nf0, fnum, kfmt } from "@/lib/format";
 import { useHelp } from "./Rich";
@@ -42,13 +43,17 @@ const SPC: Spec[] = [
 function Field({ sp }: { sp: Spec }) {
   const { s, set } = useStore();
   const help = useHelp();
-  const val = sp.k === "fam" ? s.group.fam : (s.calc as unknown as Record<string, number>)[sp.k];
+  const val = sp.k === "fam" ? viviendasDeCalculo(s) : (s.calc as unknown as Record<string, number>)[sp.k];
   const [txt, setTxt] = useState<string | null>(null);
   const change = (raw: string) => {
     if (!sp.r) setTxt(raw);
     if (raw === "") return;
     let v = parseFloat(raw); if (isNaN(v) || v < 0) v = 0;
-    if (sp.k === "fam") set((x) => ({ ...x, group: { ...x.group, fam: Math.max(1, Math.min(200, Math.round(v) || 1)) } }));
+    if (sp.k === "fam") {
+      const n = Math.max(1, Math.min(200, Math.round(v) || 1));
+      // Con una simulación en curso se cambian las viviendas de la simulación, no las familias de la cooperativa.
+      set((x) => x.sim?.viv != null ? { ...x, sim: { ...x.sim, viv: n } } : { ...x, group: { ...x.group, fam: n } });
+    }
     else set((x) => ({ ...x, calc: { ...x.calc, [sp.k]: v } }));
   };
   const q = sp.t ? <button type="button" className="q" aria-label={"Ayuda: " + TERMS[sp.t].t} onClick={(e) => help(sp.t!, e.currentTarget)}>?</button> : null;
@@ -204,9 +209,18 @@ function ResC({ m, c }: { m: Model; c: CalcInput }) {
   );
 }
 
+/** Qué se ha cargado en las calculadoras al simular, y qué queda por revisar. */
+function textoSim(sim: Sim, fam: number) {
+  const coop = `Tu cooperativa sigue teniendo ${fam} ${fam === 1 ? "familia" : "familias"}.`;
+  if (sim.tipo === "terrenos") return `Se han cargado el precio${sim.sinSuperficie ? "" : " y la superficie"} en «Del terreno a las viviendas»${sim.sinSuperficie ? " (el anuncio no indica la superficie: ponla tú)" : ""}. El anuncio no dice la clase de suelo ni la edificabilidad: elígelas ahí y pulsa «Usar en las calculadoras de cuota».`;
+  if (sim.tipo === "terreno-calculado") return `Se han cargado el coste del suelo ya urbanizado y las ${sim.viv} viviendas posibles. ${coop} La obra no se ha tocado: ajústala.`;
+  if (sim.viv != null) return `Se han cargado el precio, ${sim.viv} ${sim.viv === 1 ? "vivienda estimada" : "viviendas estimadas"} y una obra supuesta de ${nf0.format(OBRA_POR_VIVIENDA)} € por vivienda: revísalos. ${coop}`;
+  return `Se ha cargado el precio y una obra supuesta de ${nf0.format(OBRA_POR_VIVIENDA)} € por vivienda: revísalos. El anuncio no indica los metros, así que se calcula con las viviendas de tu cooperativa (${fam}).`;
+}
+
 export default function Calc() {
   const { s, set } = useStore();
-  const m = model(s.calc, s.group.fam);
+  const m = model(s.calc, viviendasDeCalculo(s));
   return (
     <section className="grid gap-5">
       <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Calculadoras</h2><p className="max-w-[68ch] text-muted-foreground">Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Si aún no tenéis terreno cerrado, empieza por «Del terreno a las viviendas»: te dice cuánto se puede construir y cuánto cuesta, y lo carga en las otras tres, que se actualizan juntas.</p></div>
@@ -218,10 +232,10 @@ export default function Calc() {
           <div className="grid min-w-0 flex-1 gap-1">
             <div className="text-xs font-semibold text-muted-foreground">Estás calculando</div>
             <div className="font-heading text-lg font-bold">{s.sim.titulo}</div>
-            <div className="text-[13px] text-muted-foreground">{[s.sim.zona, s.sim.fuente].filter(Boolean).join(" · ")}. Se han cargado el precio y las viviendas estimadas del anuncio: revísalos.</div>
+            <div className="text-[13px] text-muted-foreground">{[s.sim.zona, s.sim.fuente].filter(Boolean).join(" · ")}{[s.sim.zona, s.sim.fuente].some(Boolean) ? ". " : ""}{textoSim(s.sim, s.group.fam)}</div>
             <div className="flex flex-wrap gap-3 text-[13px]">
               {s.sim.url && /^https:\/\//.test(s.sim.url) && <a className="font-semibold text-primary underline" href={s.sim.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
-              <button type="button" className="text-muted-foreground underline" onClick={() => set((x) => ({ ...x, sim: null }))}>Quitar</button>
+              <button type="button" className="text-muted-foreground underline" onClick={() => set((x) => quitarSimulacion(x))}>Quitar y volver a mis datos</button>
             </div>
           </div>
         </Card>

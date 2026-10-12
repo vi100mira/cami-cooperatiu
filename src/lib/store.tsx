@@ -6,7 +6,17 @@ import { TDEF, CLASES, type TerrenoInput } from "./terreno";
 
 export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
 export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; terreno: TerrenoInput; open: number | null; sim?: Sim | null; }
-export interface Sim { titulo: string; zona?: string; foto?: string; url?: string; fuente?: string; }
+/** Valores de antes de simular (o los que puso la simulación), para poder volver a ellos. */
+export interface SimValores { suelo?: number; obra?: number; precioTerreno?: number; superficieTerreno?: number }
+export interface Sim {
+  titulo: string; zona?: string; foto?: string; url?: string; fuente?: string;
+  tipo?: "edificios" | "terrenos" | "terreno-calculado";
+  /** Viviendas con las que se calcula mientras dura la simulación; no cambian las familias de la cooperativa. */
+  viv?: number;
+  sinSuperficie?: boolean;
+  previo?: Required<SimValores>;
+  puesto?: SimValores;
+}
 const KEY = "camiCooperatiu.v1";
 
 export function examples(): Cand[] {

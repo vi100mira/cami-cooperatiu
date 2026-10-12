@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
+import { simularTerrenoCalculado } from "@/lib/simulacion";
 import { calcTerreno, valoresDe, parametrosRelevantes, CLASES, type ClaseSuelo, type TerrenoInput, type TerrenoResultado } from "@/lib/terreno";
 import { normativaPara, PARAMS, EDITABLES, ORIGEN_TEXTO, VERIF_TEXTO, type ParamKey, type Resuelto, type NormativaResuelta, type Verificacion } from "@/lib/normativa";
 import { eur, nf0, fnum } from "@/lib/format";
@@ -171,7 +172,7 @@ export default function Terreno() {
   const up = (patch: Partial<TerrenoInput>) => set((x) => ({ ...x, terreno: { ...x.terreno, ...patch } }));
   const hayCambios = AJUSTES.some((a) => typeof t[a.k] === "number");
   const usar = () => {
-    set((x) => ({ ...x, calc: { ...x.calc, suelo: Math.round(r.costes.total) }, group: { ...x.group, fam: Math.max(1, Math.min(200, r.viviendas)) } }));
+    set((x) => simularTerrenoCalculado(x, { coste: r.costes.total, viviendas: r.viviendas }));
     window.dispatchEvent(new CustomEvent("cami:goto", { detail: "calc" }));
   };
   const noUrb = t.clase === "no-urbanizable";

@@ -80,6 +80,8 @@ El despliegue cuesta, así que se acumularon los cambios para publicarlos juntos
 | Normativa valenciana verificada en el texto del BOE (arts. 33, 36 y 82, actualizado el 10/08/2026), con la exención del art. 33.3 | Sí | Descarga y lectura en local; 89 pruebas de normativa y cálculo | Sí (12/10/2026) |
 | Costes de urbanización de 2026 (125 y 55 €/m²) en lugar de los de 2010 (240 y 120) | Sí | Lectura de los PDF originales en local | Sí (12/10/2026) |
 | Búsqueda ajustada a la cooperativa: capital orientativo, orden por defecto, etiquetas y casilla de ocultar | Sí | 20 pruebas nuevas y navegador con anuncios simulados (3 y 20 familias) | Sí (12/10/2026) |
+| Búsqueda «Ambos» (edificios y terrenos mezclados, una consulta por tipo) en la búsqueda en vivo y en los portales | Sí | Pruebas de `filtrarTodo` y navegador con anuncios simulados: 2 consultas, lista mezclada y ordenada junta | No (pendiente del despliegue único) |
+| Simulación corregida: un edificio carga precio, viviendas estimadas y una obra supuesta de 110.000 € por vivienda; un terreno carga precio y superficie en «Del terreno a las viviendas»; ninguna toca ya las familias de la cooperativa (que se comparten con el grupo); «Quitar y volver a mis datos» restaura lo anterior | Sí | `simulacion.test.ts` (12 pruebas) y navegador | No (pendiente del despliegue único) |
 | Actividad de los grupos y purga manual (ADR-0003) | Sí | SQL contra la base real; funciones inaccesibles para la clave pública; actividad comprobada en `test:e2e` | Sí (12/10/2026) |
 | Prueba de extremo a extremo en el repositorio (`npm run test:e2e`) | Sí | 31 comprobaciones contra la base real, con limpieza | — |
 

@@ -41,7 +41,8 @@ function Shell() {
   useEffect(() => {
     const h = location.hash.slice(1);
     if (TABS.some((t) => t[0] === h)) setTab(h);
-    const ev = (e: Event) => { const t = (e as CustomEvent).detail as string; go(t, t === "calc" ? "cA" : undefined); };
+    // «calc:terreno» abre las calculadoras y baja hasta la del terreno; «calc» baja hasta la cuota.
+    const ev = (e: Event) => { const t = (e as CustomEvent).detail as string; if (t === "calc:terreno") go("calc", "cT"); else go(t, t === "calc" ? "cA" : undefined); };
     window.addEventListener("cami:goto", ev);
     return () => window.removeEventListener("cami:goto", ev);
   }, [go]);

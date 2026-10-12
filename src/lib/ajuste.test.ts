@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { capacidad, CDEF } from "./calc";
-import { ajuste, filtrar, type Cooperativa } from "./fit";
+import { ajuste, filtrar, filtrarTodo, type Cooperativa } from "./fit";
 import type { Listing } from "./parse-fotocasa";
 
 const L = (id: string, precio: number | null, m2: number | null): Listing => ({ id, titulo: id, url: "https://x/" + id, precio, m2, zona: "", resumen: "", fotos: [] });
@@ -110,5 +110,36 @@ describe("orden y filtro ajustados a la cooperativa", () => {
   });
   it("los demás órdenes y filtros siguen funcionando igual", () => {
     expect(filtrar(items, "edificios", { ...base, orden: "precio" }).map((x) => x.id)).toEqual(["pequeno", "enorme", "encaja", "grande", "caro"]);
+  });
+});
+
+describe("filtrarTodo (edificios y terrenos a la vez)", () => {
+  const ed = (id: string, m2: number, precio: number) => ({ id, titulo: "Edificio de pisos", url: "https://x.es/" + id, precio, m2, zona: "València", resumen: "", fotos: [] }) as never;
+  const te = (id: string, m2: number, precio: number) => ({ id, titulo: "Solar", url: "https://x.es/" + id, precio, m2, zona: "Torrent", resumen: "", fotos: [] }) as never;
+  const base = { maxPrecio: 0, minViv: 0, maxPv: 0, orden: "precio" as const };
+  const grupos = [{ tipo: "edificios" as const, items: [ed("e1", 480, 600000), ed("e2", 160, 150000)] }, { tipo: "terrenos" as const, items: [te("t1", 1000, 300000)] }];
+
+  it("mezcla los dos tipos y los ordena juntos por precio", () => {
+    const r = filtrarTodo(grupos, base);
+    expect(r.map((e) => e.l.id)).toEqual(["e2", "t1", "e1"]);
+    expect(r.map((e) => e.tipo)).toEqual(["edificios", "terrenos", "edificios"]);
+  });
+  it("las viviendas mínimas solo se exigen a los edificios", () => {
+    const r = filtrarTodo(grupos, { ...base, minViv: 5 });
+    expect(r.map((e) => e.l.id).sort()).toEqual(["e1", "t1"]);
+  });
+  it("con un solo tipo se comporta como filtrar", () => {
+    const r = filtrarTodo([grupos[1]], { ...base, minViv: 5 });
+    expect(r).toHaveLength(0);
+  });
+  it("«más barato por vivienda» deja los terrenos al final", () => {
+    const r = filtrarTodo(grupos, { ...base, orden: "pv" });
+    expect(r[r.length - 1].tipo).toBe("terrenos");
+  });
+  it("ordenar por ajuste usa el tipo de cada anuncio", () => {
+    const coop = { familias: 6, capital: 2_000_000, m2Vivienda: 90 };
+    const enorme = [grupos[0], { tipo: "terrenos" as const, items: [te("t2", 20000, 300000)] }];
+    const r = filtrarTodo(enorme, { ...base, orden: "ajuste", coop });
+    expect(r.map((e) => e.l.id)).toEqual(["e1", "e2", "t2"]);
   });
 });
