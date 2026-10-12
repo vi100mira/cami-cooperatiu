@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { eur, fnum } from "@/lib/format";
+import { useStore } from "@/lib/store";
+import { capacidad } from "@/lib/calc";
 import { Photos, MapBox } from "./Media";
 import type { Listing } from "@/lib/parse-fotocasa";
 import { Search, ExternalLink, Calculator, Plus, Loader2, TriangleAlert, Info, Ruler, Euro } from "lucide-react";
@@ -13,7 +15,7 @@ import { Field, FormGrid } from "./ui/field";
 import { Checkbox } from "./ui/checkbox";
 import { Alert } from "./ui/alert";
 import { ToggleChips } from "./ui/toggle-chips";
-import { filtrar, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, tituloLegible, type Orden } from "@/lib/fit";
+import { filtrar, ajuste, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, ENCAJE_TEXTO, tituloLegible, type Orden, type Cooperativa } from "@/lib/fit";
 import { FavButton } from "./FavButton";
 
 type Tipo = "edificios" | "terrenos";
@@ -35,8 +37,13 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   const [maxP, setMaxP] = useState("");
   const [minV, setMinV] = useState("");
   const [maxPv, setMaxPv] = useState("");
-  const [orden, setOrden] = useState<Orden>("pv");
+  const [orden, setOrden] = useState<Orden>("ajuste");
   const [verTodo, setVerTodo] = useState(false);
+  const [soloEncaje, setSoloEncaje] = useState(true);
+  const { s } = useStore();
+  // La dimensión de la cooperativa sale de Ruta (familias) y de las calculadoras (aportación, ingresos, préstamo).
+  const cap = capacidad(s.calc, s.group.fam);
+  const coop: Cooperativa = { familias: cap.familias, capital: cap.total, m2Vivienda: s.terreno?.m2Vivienda || 90 };
   const run = async () => {
     setState({ loading: true });
     try {
@@ -49,7 +56,10 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const q = norm(lugar.trim());
   const base = q ? (state.res?.items ?? []).filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : (state.res?.items ?? []);
-  const items = filtrar(base, tipo, { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo });
+  const filtros = { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo, coop };
+  const items = filtrar(base, tipo, { ...filtros, soloEncaje });
+  // Cuántos resultados se esconden solo por no encajar con la cooperativa, para poder avisarlo.
+  const ocultos = soloEncaje ? filtrar(base, tipo, { ...filtros, soloEncaje: false }).length - items.length : 0;
   const nombreCiudad = CIUDAD_NOMBRE[ciudad] ?? ciudad;
   return (
     <Card>
@@ -67,10 +77,15 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
         {tipo === "edificios" && <Field label="Máximo por vivienda (€)" htmlFor="ls-pv"><Input id="ls-pv" type="number" min={0} step={10000} inputMode="numeric" value={maxPv} onChange={(e) => setMaxPv(e.target.value)} /></Field>}
         <Field label="Ordenar por" htmlFor="ls-ord">
           <NativeSelect id="ls-ord" value={orden} onChange={(e) => setOrden(e.target.value as Orden)}>
+            <option value="ajuste">Ajustado a tu cooperativa</option>
             {tipo === "edificios" && <option value="pv">Más barato por vivienda</option>}
             <option value="precio">Precio más bajo</option><option value="m2">Más superficie</option><option value="relevancia">Orden del portal</option>
           </NativeSelect></Field>
       </FormGrid>
+      <div className="grid gap-2 rounded-lg bg-accent px-3.5 py-2.5 text-[13.5px]">
+        <span><b>Tu cooperativa:</b> {cap.familias} {cap.familias === 1 ? "familia" : "familias"} y un capital orientativo de unos <b>{eur(cap.total)}</b> (aportación inicial y préstamo hasta el 30 % de los ingresos, con los datos de las calculadoras, que son ejemplos hasta que los cambies). Se supone que el suelo o edificio no debería pasar de la mitad: el resto es obra y gastos.</span>
+        <label className="flex cursor-pointer items-start gap-2.5"><Checkbox className="mt-0.5" checked={soloEncaje} onCheckedChange={(v) => setSoloEncaje(v === true)} /> <span>Ocultar lo muy grande, muy pequeño o más caro que todo vuestro capital{ocultos > 0 && <b className="ml-1 text-foreground">({ocultos} {ocultos === 1 ? "oculto" : "ocultos"})</b>}</span></label>
+      </div>
       {tipo === "edificios" && (
         <label className="flex cursor-pointer items-center gap-2.5 text-[13.5px] text-muted-foreground">
           <Checkbox checked={verTodo} onCheckedChange={(v) => setVerTodo(v === true)} /> Mostrar también apartamentos turísticos, hoteles, traspasos y solares
@@ -82,6 +97,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
           <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
             {items.map((l) => {
               const viv = viviendasEstimadas(l, tipo);
+              const aj = ajuste(l, tipo, coop);
               return (
                 <Card key={l.id} className="gap-3 p-3.5 shadow-none transition hover:shadow-md" >
                   <article className="grid gap-2.5">
@@ -91,6 +107,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                         {l.fuente && <Badge variant="outline">{l.fuente}</Badge>}
                         {l.gestora && <Badge variant="warning" title="Gestora de activos de Sareb. No todo lo que publica es de Sareb: también gestiona carteras de bancos y cesiones de remate. Pregunta por el origen y la situación del inmueble.">Gestora de Sareb · {l.gestora}</Badge>}
                         {etiquetas(l, tipo).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}
+                        {aj.etiquetas.map((e) => <Badge key={e} variant={e === "encaja" ? "success" : e === "sin-dato" ? "outline" : "warning"}>{ENCAJE_TEXTO[e]}</Badge>)}
                       </div>
                       <FavButton l={l} tipo={state.res!.tipo} />
                     </div>

@@ -34,13 +34,66 @@ export function tituloLegible(l: Pick<Listing, "titulo" | "zona" | "m2">): strin
   return [base, zona, l.m2 ? l.m2 + " m²" : ""].filter(Boolean).join(" · ");
 }
 
-export type Orden = "relevancia" | "pv" | "precio" | "m2";
+export type Orden = "relevancia" | "pv" | "precio" | "m2" | "ajuste";
 
-export interface Filtros { maxPrecio: number; minViv: number; maxPv: number; orden: Orden; verTodo?: boolean }
+/** Dimensión de la cooperativa: cuántas familias y cuánto dinero puede reunir en total (ver `capacidad` en calc.ts). */
+export interface Cooperativa { familias: number; capital: number; m2Vivienda: number }
+
+/** El suelo o el edificio no debería pasar de esta parte del presupuesto total: el resto es obra y gastos. Es un supuesto orientativo. */
+export const PARTE_MAX_SUELO = 0.5;
+
+export type Encaje = "encaja" | "grande" | "pequeno" | "caro" | "sin-dato";
+export const ENCAJE_TEXTO: Record<Encaje, string> = {
+  encaja: "Encaja con tu cooperativa",
+  grande: "Grande para tu cooperativa",
+  pequeno: "Pequeño para tu cooperativa",
+  caro: "Por encima de tu capital",
+  "sin-dato": "Sin datos de tamaño",
+};
+
+export interface Ajuste { puntos: number; etiquetas: Encaje[]; oculto: boolean; ratioTamano: number | null; ratioPrecio: number | null }
+
+/**
+ * Cuánto encaja un anuncio con la cooperativa. Menos puntos es mejor. «Oculto» solo marca los casos extremos
+ * (varias veces más grande o más pequeño de lo necesario, o más caro que todo el capital).
+ * Edificios: viviendas estimadas frente a familias. Terrenos: m² frente a lo que necesitarían las familias con
+ * una edificabilidad de 1 m² por m² de suelo, con margen de 3 veces porque en ciudad puede ser mayor.
+ */
+export function ajuste(l: Pick<Listing, "m2" | "precio">, tipo: "edificios" | "terrenos", c: Cooperativa): Ajuste {
+  const fam = Math.max(1, c.familias || 1);
+  const etiquetas: Encaje[] = [];
+  let puntos = 0, oculto = false, ratioTamano: number | null = null;
+  if (tipo === "edificios") {
+    const v = viviendasEstimadas(l, tipo);
+    if (v != null) {
+      ratioTamano = v / fam;
+      if (ratioTamano > 2) { etiquetas.push("grande"); puntos += Math.log(ratioTamano / 2); }
+      else if (ratioTamano < 0.75) { etiquetas.push("pequeno"); puntos += 1.5 * Math.log(0.75 / ratioTamano); }
+      if (ratioTamano > 4 || ratioTamano < 0.5) oculto = true;
+    } else { etiquetas.push("sin-dato"); puntos += 0.7; }
+  } else if (l.m2) {
+    ratioTamano = l.m2 / (fam * Math.max(1, c.m2Vivienda || 90));
+    if (ratioTamano > 3) { etiquetas.push("grande"); puntos += Math.log(ratioTamano / 3); }
+    else if (ratioTamano < 1 / 3) { etiquetas.push("pequeno"); puntos += 1.5 * Math.log(1 / 3 / ratioTamano); }
+    if (ratioTamano > 10 || ratioTamano < 0.15) oculto = true;
+  } else { etiquetas.push("sin-dato"); puntos += 0.7; }
+
+  let ratioPrecio: number | null = null;
+  if (l.precio != null && c.capital > 0) {
+    ratioPrecio = l.precio / (PARTE_MAX_SUELO * c.capital);
+    if (ratioPrecio > 1) { etiquetas.push("caro"); puntos += Math.log(ratioPrecio); }
+    if (l.precio > c.capital) oculto = true;
+  }
+  if (!etiquetas.length) etiquetas.push("encaja");
+  return { puntos, etiquetas, oculto, ratioTamano, ratioPrecio };
+}
+
+export interface Filtros { maxPrecio: number; minViv: number; maxPv: number; orden: Orden; verTodo?: boolean; coop?: Cooperativa; soloEncaje?: boolean }
 
 export function filtrar(items: Listing[], tipo: "edificios" | "terrenos", f: Filtros): Listing[] {
   const out = items.filter((l) => {
     if (!f.verTodo && etiquetas(l, tipo).length) return false;
+    if (f.soloEncaje && f.coop && ajuste(l, tipo, f.coop).oculto) return false;
     if (f.maxPrecio && !(l.precio != null && l.precio <= f.maxPrecio)) return false;
     if (f.minViv) { const v = viviendasEstimadas(l, tipo); if (v == null || v < f.minViv) return false; }
     if (f.maxPv) { const p = precioPorVivienda(l, tipo); if (p == null || p > f.maxPv) return false; }
@@ -52,7 +105,13 @@ export function filtrar(items: Listing[], tipo: "edificios" | "terrenos", f: Fil
     if (f.orden === "m2") return -(l.m2 ?? 0);
     return 0;
   };
-  return f.orden === "relevancia" ? out : [...out].sort((a, b) => key(a) - key(b));
+  if (f.orden === "ajuste" && f.coop) {
+    const c = f.coop;
+    // Primero lo que mejor encaja; a igualdad, lo más barato.
+    const precio = (l: Listing) => l.precio ?? Number.MAX_SAFE_INTEGER;
+    return [...out].sort((a, b) => (ajuste(a, tipo, c).puntos - ajuste(b, tipo, c).puntos) || (precio(a) - precio(b)));
+  }
+  return f.orden === "relevancia" || f.orden === "ajuste" ? out : [...out].sort((a, b) => key(a) - key(b));
 }
 
 const PORTALES = [

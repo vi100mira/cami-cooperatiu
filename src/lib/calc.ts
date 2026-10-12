@@ -48,6 +48,21 @@ export function eligibility(c: CalcInput, m: Model) {
   return { lim, ok: c.ingresos <= lim, mens, maxq: mens * 0.3, fits: m.tot <= mens * 0.3, pc: mens > 0 ? (m.tot / mens) * 100 : 0 };
 }
 
+/**
+ * Capital orientativo de la cooperativa: lo que cada familia puede aportar al entrar más el préstamo que su cuota
+ * podría sostener (hasta el 30 % de los ingresos, una vez descontados el mantenimiento y el fondo de reserva).
+ * Es un tope de lo que podría costar el proyecto entero, no un precio de compra.
+ */
+export function capacidad(c: CalcInput, fam: number) {
+  const v = Math.max(1, +fam || 1);
+  const cuotaMax = Math.max(0, ((+c.ingresos || 0) / 12) * 0.3 - (+c.mant || 0) - (+c.reserva || 0));
+  const n = Math.max(1, Math.round((+c.plazo || 0) * 12));
+  const r = (+c.interes || 0) / 1200;
+  const prestamoPorFamilia = cuotaMax === 0 ? 0 : r === 0 ? cuotaMax * n : (cuotaMax * (1 - Math.pow(1 + r, -n))) / r;
+  const porFamilia = (+c.aport || 0) + prestamoPorFamilia;
+  return { familias: v, cuotaMax, prestamoPorFamilia, porFamilia, total: v * porFamilia + (+c.subv || 0) };
+}
+
 export function niceTicks(max: number, n: number) {
   const raw = max / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
   const s = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
