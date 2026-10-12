@@ -42,6 +42,8 @@ interface Ctx {
   salir: () => Promise<void>;
   borrarMiPerfil: () => Promise<string | null>;
   alternarFavorito: (l: Listing, tipo: Tipo) => Promise<string | null>;
+  /** Marca el corazón solo si aún no está marcado; sin grupo identificado no hace nada. Devuelve un mensaje de error o null. */
+  marcarFavorito: (l: Listing, tipo: Tipo) => Promise<string | null>;
   quitarFavorito: (ofertaId: string) => Promise<string | null>;
   esFavorito: (l: Listing) => boolean;
   quienes: (l: Listing) => string[];
@@ -150,13 +152,17 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
   }, [favoritos, refrescar]);
 
   const esFavorito = useCallback((l: Listing) => favoritos.some((f) => f.esMio && f.ofertaId === ofertaIdDe(l)), [favoritos]);
+  const marcarFavorito = useCallback(async (l: Listing, tipo: Tipo) => {
+    if (!miembro || favoritos.some((f) => f.esMio && f.ofertaId === ofertaIdDe(l))) return null;
+    return alternarFavorito(l, tipo);
+  }, [miembro, favoritos, alternarFavorito]);
   const quienes = useCallback((l: Listing) => { const id = ofertaIdDe(l); return favoritos.filter((f) => f.ofertaId === id).map((f) => f.marcadoPor); }, [favoritos]);
 
   const valor = useMemo<Ctx>(() => ({
     estado, disponible, grupo, miembro, miembros, favoritos,
     codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop,
-    entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, quitarFavorito, esFavorito, quienes,
-  }), [estado, disponible, grupo, miembro, miembros, favoritos, codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop, entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, quitarFavorito, esFavorito, quienes]);
+    entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, marcarFavorito, quitarFavorito, esFavorito, quienes,
+  }), [estado, disponible, grupo, miembro, miembros, favoritos, codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop, entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, marcarFavorito, quitarFavorito, esFavorito, quienes]);
   return <C.Provider value={valor}>{children}</C.Provider>;
 }
 export function useGrupo() { const c = useContext(C); if (!c) throw new Error("GrupoProvider"); return c; }

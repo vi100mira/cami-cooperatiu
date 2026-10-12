@@ -18,6 +18,7 @@ import { Alert } from "./ui/alert";
 import { ToggleChips } from "./ui/toggle-chips";
 import { filtrarTodo, ajuste, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, ENCAJE_TEXTO, tituloLegible, type Orden, type Cooperativa } from "@/lib/fit";
 import { FavButton } from "./FavButton";
+import { useGrupo } from "@/lib/grupo";
 import { CentroRadio, useCentro } from "./CentroRadio";
 import { ubicar, distanciaKm, consultaMapa } from "@/lib/ubicacion";
 
@@ -59,6 +60,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   // Siempre se busca en toda la provincia; el municipio o barrio se afina después sobre los resultados.
   const ciudad = ciudadBase + "-provincia";
   const { s } = useStore();
+  const grupo = useGrupo();
   // La dimensión de la cooperativa sale de Ruta (familias) y de las calculadoras (aportación, ingresos, préstamo).
   const cap = capacidad(s.calc, s.group.fam);
   // Centro de acción y distancia máxima del grupo (se editan en Ruta y aquí; son los mismos datos).
@@ -175,7 +177,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                     {l.resumen && <p className="text-[13.5px] text-muted-foreground">{l.resumen}</p>}
                     <div className="flex flex-wrap gap-2">
                       <Button size="sm" disabled={!l.precio} title={l.precio ? "Abre la calculadora con el precio y las viviendas estimadas de este anuncio" : "Este anuncio no indica precio"} onClick={() => onSim(l, t)}><Calculator aria-hidden /> Simular en calculadora</Button>
-                      <Button size="sm" variant="outline" onClick={() => onPick({ ...l, titulo: tituloLegible(l) }, t)}><Plus aria-hidden /> Apuntar como candidato</Button>
+                      <Button size="sm" variant="outline" title="Lo apunta en Candidatos y, si estás en tu grupo, también lo marca con el corazón" onClick={() => { onPick({ ...l, titulo: tituloLegible(l) }, t); void grupo.marcarFavorito(l, t); }}><Plus aria-hidden /> Apuntar como candidato</Button>
                       <Button size="sm" variant="ghost" asChild><a href={l.url} target="_blank" rel="noopener noreferrer">Ver anuncio <ExternalLink aria-hidden /></a></Button>
                       {(l.otras ?? []).filter((o) => /^https:\/\//.test(o.url)).map((o) => <Button key={o.fuente} size="sm" variant="ghost" asChild><a href={o.url} target="_blank" rel="noopener noreferrer">También en {o.fuente} <ExternalLink aria-hidden /></a></Button>)}
                     </div>
