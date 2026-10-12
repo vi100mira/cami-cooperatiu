@@ -61,13 +61,13 @@ ultima_revision: 2026-10-11
 | Interfaz (pestaña, corazón, privacidad) | Sí | Navegador contra la base real: alta, favorito persistente tras recargar, cambio de persona, borrar perfil, corazón sin sesión, vista móvil. En producción solo se comprobó que la portada carga con la pestaña «Grupo»; la interfaz no se recorrió en el navegador | Sí (11/10/2026) |
 | Tests unitarios | Sí | 63 tests en 13 archivos, `typecheck` y `build` correctos | — |
 
-Límites de la verificación: la búsqueda en vivo está apagada en local, así que la respuesta de `/api/buscar` se simuló con dos anuncios de prueba. El script de extremo a extremo no está en el repositorio.
+Límites de la verificación: la búsqueda en vivo está apagada en local, así que la respuesta de `/api/buscar` se simuló con dos anuncios de prueba. El script de extremo a extremo está en el repositorio desde el 12/10/2026 (`npm run test:e2e`, 31 comprobaciones).
 
 ## Pendiente
 
-1. Revisión jurídica del aviso de privacidad y de las garantías de transferencia internacional (Vercel), y decidir una caducidad para grupos inactivos (no se guarda la fecha de última actividad). Responsable y contacto: hechos el 11/10/2026.
+1. Revisión jurídica del aviso de privacidad y de las garantías de transferencia internacional (Vercel), La caducidad de grupos inactivos se decidió el 12/10/2026: sin plazo automático y con purga manual (ADR-0003). Responsable y contacto: hechos el 11/10/2026.
 2. Variables en Vercel: hechas el 11/10/2026 en Production (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` con valor distinto del local, sin prefijo `NEXT_PUBLIC_`). Falta decidir si se añaden a Preview: hacerlo haría que los despliegues de prueba escribieran en la misma base que producción, porque solo hay un proyecto de Supabase.
-3. Llevar el script de extremo a extremo al repositorio como prueba de integración.
+3. Hecho el 12/10/2026: el script de extremo a extremo está en el repositorio como prueba de integración.
 4. Decidir si se añade administración del grupo (hoy no hay roles) y recuperación de contraseña.
 5. Valorar el paso a Supabase Auth cuando haya usuarios reales.
 

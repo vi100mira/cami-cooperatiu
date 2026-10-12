@@ -70,6 +70,21 @@ Puertas de calidad (11/10/2026, Node 20, copia local): `npm test` 87 tests en 15
 
 Mejora de usabilidad de la calculadora de terreno (12/10/2026, implementada y verificada en local; pendiente de desplegar): la tarjeta medía 2.439 px a 1024×768 por apilar el resultado, los costes y las nueve normas, y la columna de resultados fija quedaba cortada. Ahora el resultado clave está siempre arriba y el detalle va en pestañas (Reparto, Costes y Normas), con cada norma en una línea que despliega su fuente. Alturas medidas a 1024×768: 735 px por defecto, 720 en Costes y 975 en Normas; en móvil 1.671 px, sin desbordamiento horizontal. Los resultados dejan de ser fijos y en pantallas estrechas los datos van antes que el detalle. Las pruebas de cálculo no cambian (87 en 15 archivos).
 
+## Cambios del 12/10/2026 (implementados y verificados en local; pendientes del despliegue final)
+
+El despliegue cuesta, así que se acumularon los cambios para publicarlos juntos.
+
+| Cambio | Implementado | Verificado | Desplegado |
+| --- | --- | --- | --- |
+| Calculadora de terreno compacta: resultado clave arriba y pestañas Reparto, Costes y Normas (de 2.439 a 735 px a 1024×768) | Sí | Mediciones en navegador, cambios de clase y móvil sin desbordamiento | No |
+| Normativa valenciana verificada en el texto del BOE (arts. 33, 36 y 82, actualizado el 10/08/2026), con la exención del art. 33.3 | Sí | Descarga y lectura en local; 89 pruebas de normativa y cálculo | No |
+| Costes de urbanización de 2026 (125 y 55 €/m²) en lugar de los de 2010 (240 y 120) | Sí | Lectura de los PDF originales en local | No |
+| Búsqueda ajustada a la cooperativa: capital orientativo, orden por defecto, etiquetas y casilla de ocultar | Sí | 20 pruebas nuevas y navegador con anuncios simulados (3 y 20 familias) | No |
+| Actividad de los grupos y purga manual (ADR-0003) | Sí | SQL contra la base real; funciones inaccesibles para la clave pública; actividad comprobada en `test:e2e` | Migración sí; código no |
+| Prueba de extremo a extremo en el repositorio (`npm run test:e2e`) | Sí | 31 comprobaciones contra la base real, con limpieza | — |
+
+Puertas de calidad (12/10/2026, Node 20, copia local): `npm test` 109 tests en 16 archivos y `npm run typecheck` sin errores.
+
 ## Pendiente de confirmar
 
 - Variables de Vercel para los grupos: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` añadidas el 11/10/2026 solo en el entorno Production (las dos claves como *sensitive*; `AUTH_SECRET` con un valor distinto del local). No hay nada en Preview ni Development. Prueba de humo en producción el 11/10/2026 (10 comprobaciones: portada, base alcanzable, alta, cookie `httpOnly` y `Secure`, sesión firmada, favorito, borrado de perfil y de grupo) con datos de prueba que se borraron; la base quedó con 0 filas. La interfaz no se recorrió en el navegador en producción.
@@ -84,7 +99,8 @@ Mejora de usabilidad de la calculadora de terreno (12/10/2026, implementada y ve
 3. Revisar términos de uso de los portales antes de abrir la búsqueda al público.
 4. Primeros testers externos.
 5. Datos propios de otras comunidades autónomas en `entitiesFor`.
-6. Revisión jurídica del aviso de privacidad y de las transferencias internacionales, y decidir un plazo de caducidad para grupos inactivos (hoy no se guarda la fecha de última actividad). Ver ADR-0001. Los grupos están desplegados desde el 11/10/2026.
-7. Llevar la prueba de extremo a extremo al repositorio y decidir roles de grupo y recuperación de contraseña.
+6. Revisión jurídica del aviso de privacidad y de las transferencias internacionales (ver ADR-0001), incluido el criterio de conservación. La caducidad de grupos se decidió el 12/10/2026: sin plazo automático y con purga manual (ADR-0003). Los grupos están desplegados desde el 11/10/2026.
+7. Decidir roles de grupo y recuperación de contraseña. La prueba de extremo a extremo ya está en el repositorio (`npm run test:e2e`).
 8. Valorar Supabase Auth (enlace mágico y RLS por usuario) cuando haya usuarios reales. Es la evolución prevista en `USUARIOS-Y-COOPERATIVAS.md`.
-9. Calculadora de terreno: verificar los artículos 36 y 82 de la LOTUP en el diario oficial, resolver el 30 % frente al 40 % de vivienda protegida, cargar más comunidades y fijar una revisión periódica de la normativa (ver ADR-0002).
+9. Calculadora de terreno: resolver el 30 % frente al 40 % de vivienda protegida, cargar más comunidades y fijar una revisión periódica de la normativa (ver ADR-0002). Los artículos 33, 36 y 82 de la LOTUP ya están verificados en el BOE.
+10. Búsqueda ajustada a la cooperativa: probarla con búsqueda real cuando esté activa en producción y valorar guardar la clase de suelo en cada candidato.

@@ -44,9 +44,9 @@ ultima_revision: 2026-10-11
 
 **Riesgos y límites aceptados**
 - **La normativa envejece.** El texto refundido de la LOTUP tiene una modificación publicada el 02/07/2026 y existe un anteproyecto de nueva ley del suelo valenciana. La fecha de revisión es visible y hace falta revisarla periódicamente.
-- **Fuentes secundarias:** los artículos 36 y 82 de la LOTUP se leyeron en un portal jurídico que reproduce el texto consolidado, no en el diario oficial.
+- **Fuentes:** los artículos 33, 36 y 82 de la LOTUP se verificaron el 12/10/2026 en el texto consolidado del BOE (actualizado el 10/08/2026), descargado y leído en local. Esa lectura añadió un matiz: el artículo 33.3 exime de la reserva de vivienda protegida a municipios pequeños con poca construcción reciente (en vigor desde el 10/12/2024). La norma sigue cambiando: la fecha de revisión es visible junto a cada cifra.
 - **Conflicto por aclarar:** la reserva de vivienda protegida valenciana (30 %) es inferior al mínimo estatal (40 % tras la Ley 12/2023). La norma estatal permite reservas inferiores en algunos casos, pero la cifra queda marcada como *comprobar vigencia*.
-- **Los costes de urbanización** (240 y 120 €/m²) salen de un informe municipal de València cuyo año no se pudo confirmar, y los 20 m² de viales por cada 100 m² de techo son un método de estimación. Son editables y están marcados como estimación.
+- **Los costes de urbanización** (125 €/m² de urbanización y 55 €/m² de zona verde) salen de la memoria de viabilidad del PEPRI T-1 de València de abril de 2026, con módulos del IVE. Otros documentos dan cifras distintas: Olocau en 2018 entre 122 y 161 €/m² de viales y entre 44 y 52 de zonas verdes, y València en 2010 240 y 120. La primera versión usaba las de 2010 sin saber su año; el 12/10/2026 se comprobó que eran de julio de 2010 y se sustituyeron. Los 20 m² de viales por cada 100 m² de techo son un método de estimación. Son editables y están marcados como estimación.
 - **Los plazos hasta poder construir** no tienen fuente: el valor por defecto es una estimación y se avisa.
 - **La edificabilidad real de un terreno la fija el plan del ayuntamiento.** La calculadora es orientación y recomienda pedir el informe o cédula urbanística.
 - Solo la Comunitat Valenciana está cargada. Para el resto se usa el marco estatal y referencias, con aviso.
@@ -60,8 +60,8 @@ ultima_revision: 2026-10-11
 
 ## Pendiente
 
-1. Verificar los artículos 36 y 82 de la LOTUP en el diario oficial y comprobar la reserva del 30 % frente al 40 % estatal.
-2. Confirmar el año del informe de València de los módulos de urbanización.
+1. Comprobar la reserva del 30 % frente al 40 % estatal. Los artículos 33, 36 y 82 ya están verificados en el BOE (12/10/2026).
+2. Los costes de referencia son de un plan de reforma interior de València (abril de 2026): revisarlos cuando haya un documento más reciente o de nueva urbanización.
 3. Cargar otras comunidades, con revisión de cada fuente.
 4. Decidir una revisión periódica de la normativa y qué hacer ante el anteproyecto de ley del suelo valenciana.
 5. Valorar guardar la clase de suelo en la ficha de cada candidato y leerla de los anuncios cuando el portal la indique.

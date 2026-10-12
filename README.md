@@ -40,7 +40,9 @@ Opcional. Cada grupo se da de alta con una contraseña de grupo y cada persona t
   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
   ```
 
-- **Esquema:** `supabase/migrations/20261011_create_techo_comun_schema.sql`. Aplícalo en tu propio proyecto de Supabase (editor SQL o CLI).
+- **Esquema:** `supabase/migrations/20261011_create_techo_comun_schema.sql` y, después, `20261012_actividad_y_purga_manual.sql` (actividad de los grupos y funciones de purga). Aplícalos en tu propio proyecto de Supabase (editor SQL o CLI).
+- **Purgar grupos inactivos (a mano):** en el editor SQL, `select * from public.grupos_inactivos(12);` lista los de más de 12 meses sin actividad y `select * from public.purgar_grupos_inactivos(12);` los borra. Nada se borra solo. Ver el ADR-0003.
+- **Prueba de extremo a extremo:** con `npm run dev` en marcha y `.env.local` rellenado, `npm run test:e2e` crea dos grupos de prueba, comprueba el flujo completo y los borra. Admite una URL como argumento, por ejemplo `node --env-file=.env.local scripts/e2e.mjs https://tu-dominio.vercel.app`. Usa 4 altas por ejecución y el límite es de 10 cada 15 minutos por IP.
 - **Seguridad:** RLS activado y sin políticas en las tres tablas, y todo acceso por las rutas `src/app/api/{grupos,miembros,favoritos,sesion}`. No añadas políticas para `anon` o `authenticated` sin leer antes el ADR. Contraseñas con bcrypt; sesión en cookie firmada de 12 h.
 - **Privacidad:** se guardan solo nombre del grupo, nombre o alias, contraseñas cifradas y favoritos. Aviso visible en la pestaña «Grupo»; cada persona puede borrar su perfil desde ahí.
 - **Coste:** plan gratuito de Supabase. No pases a un plan de pago ni actives complementos de pago.
@@ -83,7 +85,8 @@ Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser e
 - `src/lib/{guards,search,parse-fotocasa}.ts` y `src/app/api/buscar/route.ts`: búsqueda con protecciones.
 - `src/lib/{auth,session,supabase,validate,favoritos,http}.ts` y `src/app/api/{grupos,miembros,favoritos,sesion}`: grupos, sesión y favoritos (con tests de `auth`, `validate` y `favoritos`).
 - `src/lib/grupo.tsx`, `src/components/{Grupo,FavButton,Privacidad}.tsx`: estado del grupo en el cliente, pestaña «Grupo», corazón y aviso de privacidad.
-- `supabase/migrations/`: esquema de la base de datos.
+- `supabase/migrations/`: esquema de la base de datos. `scripts/e2e.mjs`: prueba de extremo a extremo de grupos y favoritos.
+- `src/lib/fit.ts` y `src/lib/calc.ts` (`capacidad`): filtros de la búsqueda y encaje de cada anuncio con el tamaño y el capital de la cooperativa (con tests en `ajuste.test.ts`).
 - `src/components/*`: interfaz.
 
 Guía de orientación; no es asesoría jurídica ni financiera.

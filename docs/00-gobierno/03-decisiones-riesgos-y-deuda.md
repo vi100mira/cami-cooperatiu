@@ -17,6 +17,7 @@ ultima_revision: 2026-10-11
 - **Contraseñas solo con hash bcrypt**, sesión en cookie firmada (`AUTH_SECRET`), y errores de acceso genéricos para no revelar qué grupos existen.
 - **Datos mínimos en servidor**: nombre o alias, nombre del grupo y favoritos con lista blanca de campos. Sin correo, teléfono, DNI, ingresos ni datos bancarios.
 - **Aviso de privacidad visible** y derecho de supresión desde la interfaz.
+- **Los grupos no caducan solos (ADR-0003, 12/10/2026):** se anota la fecha de última actividad y hay funciones de purga manual (`public.grupos_inactivos` y `public.purgar_grupos_inactivos`, plazo mínimo de 3 meses) que solo ejecuta quien administra la base de datos. El aviso de privacidad lo dice.
 - **Toda cifra normativa lleva fuente, fecha y fiabilidad** (ADR-0002). Una cifra de una comunidad nunca se presenta como de otra: lo que falta se respalda con el marco estatal o con una referencia marcada como «no es tu norma». Las reglas legales no se editan en la calculadora; las estimaciones sí.
 - **Enlazar siempre al anuncio original** y presentar todo como orientación, no asesoría jurídica ni financiera.
 
@@ -33,10 +34,11 @@ ultima_revision: 2026-10-11
 | Fuerza bruta sobre contraseñas de grupo o de persona | Mínimo de 8 caracteres, bcrypt coste 12 y límite por IP cada 15 min (10 intentos en alta y entrada al grupo, 20 al confirmar persona). El contador está en memoria de cada instancia: es un freno, no una garantía |
 | Sistema basado en confianza: quien conozca las dos contraseñas entra como la persona | Aceptado en el MVP; el aviso lo explica y recomienda contraseñas no reutilizadas. Evolución: Supabase Auth |
 | Contraseña perdida sin recuperación (no hay correo) | Aceptado en el MVP; la persona puede añadirse de nuevo con otro nombre |
-| Datos personales (nombres o alias) en servidor | Responsable (Leida cooperativa) y contacto en el aviso desde el 11/10/2026. **Pendiente:** revisión jurídica, garantías de las transferencias internacionales (Vercel) y plazo de caducidad de grupos inactivos |
+| Datos personales (nombres o alias) en servidor | Responsable (Leida cooperativa) y contacto en el aviso desde el 11/10/2026. **Pendiente:** revisión jurídica y garantías de las transferencias internacionales (Vercel). Decidido el 12/10/2026: sin caducidad automática y con purga manual de grupos inactivos (ADR-0003); validar ese criterio de conservación |
 | Sesión de una persona borrada válida hasta 12 h | `/api/sesion` la degrada a «grupo» y las escrituras fallan por clave foránea; impacto limitado a su propio navegador |
 | La normativa urbanística cambia y puede estar desactualizada (el texto refundido de la LOTUP tiene una modificación publicada el 02/07/2026 y hay un anteproyecto de nueva ley del suelo valenciana) | La fecha de revisión es visible junto a cada cifra; revisar la normativa periódicamente y antes de abrir a testers externos |
-| Cifras urbanísticas leídas en una fuente secundaria, o estimaciones sin año (módulos de urbanización de València) | Se declaran en la tabla de normas; verificar los artículos 36 y 82 en el diario oficial y confirmar el año del informe |
+| Costes de urbanización de un plan concreto (València, abril de 2026, reforma interior) que pueden no valer para otro ámbito, y cifras muy distintas según el documento | Se declaran como estimación editable, con contraste de otros documentos en la nota de cada cifra. Los artículos 33, 36 y 82 se verificaron en el BOE el 12/10/2026 |
+| Conservación indefinida de los datos de un grupo abandonado | Se anota la última actividad y hay funciones de purga manual (ADR-0003); depende de que alguien las ejecute |
 | Que se tome la calculadora de terreno por asesoría urbanística | Aviso permanente de que es orientación y recomendación de pedir el informe o la cédula urbanística al ayuntamiento |
 | El plan gratuito de Supabase puede pausar proyectos inactivos | Comprobar la política vigente; si se pausa, la pestaña «Grupo» avisa y el resto de la guía sigue funcionando |
 
@@ -45,7 +47,7 @@ ultima_revision: 2026-10-11
 - No hay CI que ejecute los tests antes del despliegue.
 - Aviso de Vitest por usar `__dirname` en `vitest.config.mts`.
 - Varios commits de arreglo directamente en producción (p. ej. «Arreglo de sintaxis»): no hay comprobación previa al push desde Cowork.
-- Las rutas de grupos y favoritos solo tienen pruebas unitarias de sus piezas (`auth`, `validate`, `favoritos`). La prueba de extremo a extremo contra Supabase (29 comprobaciones el 11/10/2026) no está en el repositorio.
+- Las rutas de grupos y favoritos tienen pruebas unitarias de sus piezas y la prueba de extremo a extremo `npm run test:e2e` (31 comprobaciones el 12/10/2026), que hay que ejecutar a mano contra un servidor con la base real: no corre en ningún CI.
 - No hay roles ni administración de grupo, ni recuperación de contraseña.
 - Solo la Comunitat Valenciana tiene normativa cargada; las demás usan el marco estatal y referencias con aviso. Cargar una comunidad exige revisar cada fuente.
 - El plazo hasta poder construir y los costes de urbanización de referencia no tienen una fuente oficial; son estimaciones editables.
