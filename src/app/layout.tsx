@@ -5,11 +5,12 @@ export const metadata: Metadata = {
   title: "Techo Común",
   description: "Guía gratuita y sin ánimo de lucro para crear una cooperativa de vivienda en cesión de uso en España.",
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+// Tema azul oscuro fijo en todos los dispositivos (no sigue el ajuste claro/oscuro del sistema); themeColor tiñe la barra del navegador móvil.
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#0b1324", colorScheme: "dark" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" data-theme="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
