@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { TERMS } from "@/lib/content";
 import { useStore, type Sim } from "@/lib/store";
-import { viviendasDeCalculo, quitarSimulacion, OBRA_POR_VIVIENDA } from "@/lib/simulacion";
+import { viviendasDeCalculo, quitarSimulacion, ajustarObraPorM2, OBRA_POR_VIVIENDA, OBRA_POR_M2 } from "@/lib/simulacion";
+import { M2_POR_VIVIENDA } from "@/lib/fit";
 import { model, series, eligibility, niceTicks, type CalcInput, type Model } from "@/lib/calc";
 import { eur, nf0, fnum, kfmt } from "@/lib/format";
 import { useHelp } from "./Rich";
@@ -209,13 +210,45 @@ function ResC({ m, c }: { m: Model; c: CalcInput }) {
   );
 }
 
-/** Qué se ha cargado en las calculadoras al simular, y qué queda por revisar. */
+/** Qué sale del anuncio, qué son supuestos y qué queda por revisar al simular. */
 function textoSim(sim: Sim, fam: number) {
   const coop = `Tu cooperativa sigue teniendo ${fam} ${fam === 1 ? "familia" : "familias"}.`;
-  if (sim.tipo === "terrenos") return `Se han cargado el precio${sim.sinSuperficie ? "" : " y la superficie"} en «Del terreno a las viviendas»${sim.sinSuperficie ? " (el anuncio no indica la superficie: ponla tú)" : ""}. El anuncio no dice la clase de suelo ni la edificabilidad: elígelas ahí y pulsa «Usar en las calculadoras de cuota».`;
-  if (sim.tipo === "terreno-calculado") return `Se han cargado el coste del suelo ya urbanizado y las ${sim.viv} viviendas posibles. ${coop} La obra no se ha tocado: ajústala.`;
-  if (sim.viv != null) return `Se han cargado el precio, ${sim.viv} ${sim.viv === 1 ? "vivienda estimada" : "viviendas estimadas"} y una obra supuesta de ${nf0.format(OBRA_POR_VIVIENDA)} € por vivienda: revísalos. ${coop}`;
-  return `Se ha cargado el precio y una obra supuesta de ${nf0.format(OBRA_POR_VIVIENDA)} € por vivienda: revísalos. El anuncio no indica los metros, así que se calcula con las viviendas de tu cooperativa (${fam}).`;
+  const obra = `${nf0.format(OBRA_POR_M2)} €/m²`;
+  if (sim.tipo === "terrenos") {
+    if (sim.sinViviendas) return "Se han cargado el precio y la superficie, pero con la clase de suelo elegida en «Del terreno a las viviendas» no sale ninguna vivienda (suelo no urbanizable o sin edificabilidad). Cámbiala ahí si el terreno es de otra clase.";
+    return `Del anuncio salen el precio${sim.sinSuperficie ? "" : " y la superficie"}${sim.sinSuperficie ? " (no indica la superficie: ponla tú en «Del terreno a las viviendas»)" : ""}. La clase de suelo y la edificabilidad no vienen en el anuncio: se han usado las de «Del terreno a las viviendas», con ellas salen ${sim.viv} viviendas y se ha cargado el suelo ya urbanizado y una obra supuesta de ${obra}. Compruébalas y, si las cambias, pulsa allí «Usar en las calculadoras de cuota». ${coop}`;
+  }
+  if (sim.tipo === "terreno-calculado") return `Se han cargado el coste del suelo ya urbanizado, las ${sim.viv} viviendas posibles y una obra supuesta de ${obra} sobre el techo construible: ajústala. ${coop}`;
+  if (sim.m2) return `Del anuncio salen el precio y los m² (≈ ${sim.viv} ${sim.viv === 1 ? "vivienda" : "viviendas"} a ${M2_POR_VIVIENDA} m²). Lo demás son supuestos: la obra se calcula con ${obra} (cámbiala según el estado del edificio) y el resto, con los datos de las calculadoras. ${coop}`;
+  if (sim.viv != null) return `Del anuncio salen el precio y las ${sim.viv} viviendas. Lo demás son supuestos: obra de ${nf0.format(OBRA_POR_VIVIENDA)} € por vivienda (ajústala en «Obra o rehabilitación») y el resto, con los datos de las calculadoras. ${coop}`;
+  return `Del anuncio sale el precio. No indica los metros, así que se calcula con las viviendas de tu cooperativa (${fam}) y una obra de ${nf0.format(OBRA_POR_VIVIENDA)} € por vivienda: ajústala en «Obra o rehabilitación».`;
+}
+
+/** Cifras de la propiedad simulada de principio a fin, para ver qué sale del anuncio y qué es supuesto. */
+function FichaSim({ m, c, sim }: { m: Model; c: CalcInput; sim: Sim }) {
+  const { set } = useStore();
+  const hechos: [string, string][] = [
+    [sim.tipo === "edificios" ? "Precio del edificio" : "Suelo (ya urbanizado)", eur(+c.suelo || 0)],
+    ["Obra o rehabilitación", eur(+c.obra || 0)],
+    [`Total con gastos (${fnum(+c.gastos || 0, 0)} %)`, eur(m.total)],
+    ["Viviendas", String(m.v)],
+    ["Coste por vivienda", eur(m.total / m.v)],
+    ["Cuota de cada familia", `${nf0.format(m.tot)} €/mes`],
+  ];
+  return (
+    <div className="grid gap-2 rounded-lg bg-accent px-3 py-2.5 text-[13px]">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+        {hechos.map(([k, v]) => <div key={k}><dt className="text-muted-foreground">{k}</dt><dd className="font-mono font-medium text-foreground">{v}</dd></div>)}
+      </dl>
+      {sim.m2 ? (
+        <label className="flex flex-wrap items-center gap-2" htmlFor="sim-obra-m2">
+          <span className="text-muted-foreground">Obra supuesta, por m² construido ({nf0.format(sim.m2)} m²):</span>
+          <input id="sim-obra-m2" type="number" min={0} step={50} inputMode="numeric" className="w-24 rounded-md border bg-card px-2 py-1 text-right font-mono" value={Math.round((+c.obra || 0) / sim.m2)}
+            onChange={(e) => { const v = parseFloat(e.target.value); if (!isNaN(v)) set((x) => ajustarObraPorM2(x, v)); }} /> <span className="text-muted-foreground">€/m²</span>
+        </label>
+      ) : null}
+    </div>
+  );
 }
 
 export default function Calc() {
@@ -233,6 +266,7 @@ export default function Calc() {
             <div className="text-xs font-semibold text-muted-foreground">Estás calculando</div>
             <div className="font-heading text-lg font-bold">{s.sim.titulo}</div>
             <div className="text-[13px] text-muted-foreground">{[s.sim.zona, s.sim.fuente].filter(Boolean).join(" · ")}{[s.sim.zona, s.sim.fuente].some(Boolean) ? ". " : ""}{textoSim(s.sim, s.group.fam)}</div>
+            <FichaSim m={m} c={s.calc} sim={s.sim} />
             <div className="flex flex-wrap gap-3 text-[13px]">
               {s.sim.url && /^https:\/\//.test(s.sim.url) && <a className="font-semibold text-primary underline" href={s.sim.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
               <button type="button" className="font-semibold text-primary underline" onClick={() => window.dispatchEvent(new CustomEvent("cami:goto", { detail: "opor" }))}>← Volver a Oportunidades</button>

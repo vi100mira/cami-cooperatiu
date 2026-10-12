@@ -14,6 +14,10 @@ export interface Sim {
   /** Viviendas con las que se calcula mientras dura la simulación; no cambian las familias de la cooperativa. */
   viv?: number;
   sinSuperficie?: boolean;
+  /** El suelo no permite viviendas (no urbanizable o sin edificabilidad): solo se cargaron precio y superficie. */
+  sinViviendas?: boolean;
+  /** m² construidos de referencia para la obra: los del edificio del anuncio o el techo construible del terreno. */
+  m2?: number;
   previo?: Required<SimValores>;
   puesto?: SimValores;
 }

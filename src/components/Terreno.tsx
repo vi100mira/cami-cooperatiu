@@ -172,7 +172,7 @@ export default function Terreno() {
   const up = (patch: Partial<TerrenoInput>) => set((x) => ({ ...x, terreno: { ...x.terreno, ...patch } }));
   const hayCambios = AJUSTES.some((a) => typeof t[a.k] === "number");
   const usar = () => {
-    set((x) => simularTerrenoCalculado(x, { coste: r.costes.total, viviendas: r.viviendas }));
+    set((x) => simularTerrenoCalculado(x, { coste: r.costes.total, viviendas: r.viviendas, techo: r.techoCooperativa }));
     window.dispatchEvent(new CustomEvent("cami:goto", { detail: "calc" }));
   };
   const noUrb = t.clase === "no-urbanizable";
