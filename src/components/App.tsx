@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { StoreProvider, useStore } from "@/lib/store";
 import { GrupoProvider, useGrupo } from "@/lib/grupo";
 import { SyncDatosGrupo } from "./SyncDatosGrupo";
+import { EditarCooperativa } from "./Cooperativa";
 import { irASub } from "@/lib/subpestana";
 import { HelpCtx } from "./Rich";
 import Sheet from "./Sheet";
@@ -95,6 +96,7 @@ function Shell() {
         </footer>
       </div>
       <Sheet term={term} onClose={close} onOpen={setTerm} />
+      <EditarCooperativa />
     </HelpCtx.Provider>
   );
 }

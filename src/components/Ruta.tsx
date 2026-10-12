@@ -1,19 +1,15 @@
 "use client";
-import { PH, REGIONS, entitiesFor, TERMS } from "@/lib/content";
+import { PH, entitiesFor, TERMS } from "@/lib/content";
 import { useStore } from "@/lib/store";
 import { Rich, useHelp } from "./Rich";
 import { plain } from "@/lib/format";
-import { ChevronDown, ArrowRight, Check, Users } from "lucide-react";
+import { ChevronDown, ArrowRight, Check } from "lucide-react";
 import { Card, CardTitle } from "./ui/card";
-import { Input } from "./ui/input";
-import { NativeSelect } from "./ui/select";
-import { Field } from "./ui/field";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { GrupoConexion } from "./GrupoConexion";
 import { ThemeToggle } from "./ThemeToggle";
-import { CentroRadio } from "./CentroRadio";
+import { ResumenCooperativa } from "./Cooperativa";
 
 export const stats = (done: Record<string, boolean>, i: number) => {
   const p = PH[i], n = p.tasks.length, d = p.tasks.filter((t) => done[t.id]).length;
@@ -57,21 +53,7 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
   const openAt = s.open != null && s.open >= -1 && s.open < PH.length ? s.open : cur;
   return (
     <section className="grid gap-5">
-      <Card>
-        <CardTitle className="flex items-center gap-2 text-2xl"><Users className="size-5 text-primary" aria-hidden /> Tu cooperativa</CardTitle>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Comunidad autónoma" htmlFor="g-region"><NativeSelect id="g-region" value={s.group.region} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, region: e.target.value } }))}><option value="">Elige tu comunidad…</option>{REGIONS.map((r) => <option key={r[0]} value={r[0]}>{r[1]}</option>)}</NativeSelect></Field>
-          <Field label="Ciudad o municipio" htmlFor="g-ciudad"><Input id="g-ciudad" type="text" autoComplete="off" placeholder="Por ejemplo, Bilbao o València" value={s.group.ciudad} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, ciudad: e.target.value } }))} /></Field>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-[2fr_1fr_2fr]">
-          <Field label="Nombre de la cooperativa" htmlFor="g-name"><Input id="g-name" type="text" autoComplete="off" placeholder="Por ejemplo, Llar del Barri" value={s.group.name} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, name: e.target.value } }))} /></Field>
-          <Field label="Familias" htmlFor="g-fam"><Input id="g-fam" type="number" min={1} max={200} inputMode="numeric" value={s.group.fam} onChange={(e) => { const v = parseInt(e.target.value, 10); if (isNaN(v)) return; set((x) => ({ ...x, group: { ...x.group, fam: Math.max(1, Math.min(200, v)) } })); }} /></Field>
-          <Field label="Barrio o zona de interés" htmlFor="g-barrio"><Input id="g-barrio" type="text" autoComplete="off" placeholder="Por ejemplo, Cabanyal o Patraix" value={s.group.barrio} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, barrio: e.target.value } }))} /></Field>
-        </div>
-        <CentroRadio id="ruta-cr" />
-        <p className="text-[13px] text-muted-foreground">Estos datos adaptan las entidades, los enlaces y los mensajes a tu zona, y alimentan las calculadoras. Se guardan en este navegador; si entras a un grupo, la comunidad, la ciudad, las familias, el barrio, el centro de acción y la distancia máxima también se comparten con él.</p>
-        <GrupoConexion />
-      </Card>
+      <ResumenCooperativa variante="ruta" />
       <div className="grid gap-1.5">
         <h2 className="font-heading text-2xl font-bold">La ruta, en seis estaciones</h2>
         <p className="max-w-[68ch] text-muted-foreground">Toca una estación para abrir sus pasos. Marca lo que ya habéis hecho y la línea avanza. Las palabras con <span className="t" style={{ pointerEvents: "none" }}>?</span> abren una explicación.</p>

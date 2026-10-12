@@ -15,6 +15,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Disclosure } from "./ui/disclosure";
 import { ToggleChips } from "./ui/toggle-chips";
 import { Privacidad } from "./Privacidad";
+import { ResumenCooperativa } from "./Cooperativa";
 
 function useEnvio() {
   const [busy, setBusy] = useState(false);
@@ -258,6 +259,7 @@ function Favoritos() {
           </div>
         </div>
       </Card>
+      <ResumenCooperativa variante="grupo" />
       <div className="grid gap-1.5">
         <h3 className="font-heading text-xl font-bold">Favoritos del grupo</h3>
         <p className="max-w-[68ch] text-sm text-muted-foreground">Las ofertas que ha marcado cada persona del grupo, con su nombre. Para añadir más, pulsa el corazón de un anuncio en <b>Oportunidades</b>.</p>
