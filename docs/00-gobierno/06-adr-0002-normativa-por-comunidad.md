@@ -23,7 +23,7 @@ ultima_revision: 2026-10-11
 3. **Respaldo en cadena:** comunidad, marco estatal, referencias de coste y, en último término, la referencia valenciana. Lo que no es de la comunidad nunca se presenta como suyo: la referencia valenciana se degrada siempre a *estimación* y se etiqueta como «no es tu norma».
 4. **El cálculo es una función pura** (`src/lib/terreno.ts`) que recibe valores ya resueltos, con pruebas.
 5. **Las reglas legales no se editan; las estimaciones sí** (superficie de viales y costes de urbanización), y el cambio se muestra como «cambiado por ti».
-6. **Calculadora nueva**, no ampliación de la de cuota: «Del terreno a las viviendas». Muestra la cascada del suelo bruto al edificable y del techo máximo al techo de la cooperativa, el desglose de costes y una tabla con la norma de cada cifra. Un botón carga el coste del suelo urbanizado y las viviendas en las calculadoras de cuota.
+6. **Calculadora nueva**, no ampliación de la de cuota: «Del terreno a las viviendas». El resultado clave (viviendas posibles y el botón que carga el coste del suelo urbanizado y las viviendas en las calculadoras de cuota) está siempre visible arriba, y el detalle va en tres pestañas: *Reparto* (cascadas del suelo bruto al edificable y del techo máximo al techo de la cooperativa), *Costes* y *Normas*. Cada regla de la pestaña de normas ocupa una línea y despliega su artículo, fuente, fecha y nota al pulsarla. El 12/10/2026 se adoptó esta disposición porque la versión inicial, con todo apilado, medía 2.439 px a 1024×768 y la columna de resultados fija quedaba cortada.
 7. **Clases de suelo:** solar urbano, urbano por urbanizar, urbanizable y no urbanizable. El no urbanizable no calcula viviendas y lo explica.
 
 ## Alternativas descartadas
