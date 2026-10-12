@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { crearMemoria } from "@/lib/memoria";
 import { eur, fnum } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import { capacidad } from "@/lib/calc";
@@ -29,18 +30,31 @@ const MSG: Record<string, string> = {
   no_disponible: "El portal no ha respondido, o ha cambiado su web y no hemos podido leerla. Inténtalo más tarde y, si sigue fallando, usa los botones de portales de arriba.",
 };
 
+type Estado = { loading: boolean; resultados?: Res[]; avisos?: string[]; err?: string };
+interface Busq { tipo: Busca; lugar: string; maxP: string; minV: string; maxPv: string; orden: Orden; verTodo: boolean; soloEncaje: boolean; state: Estado }
+const POR_DEFECTO: Busq = { tipo: "edificios", lugar: "", maxP: "", minV: "", maxPv: "", orden: "ajuste", verTodo: false, soloEncaje: true, state: { loading: false } };
+// La búsqueda (tipo, filtros y resultados) vive fuera del componente: al ir a otra pestaña (por ejemplo, a la calculadora)
+// este se desmonta, y así no hay que repetir la búsqueda al volver. Sobrevive también a recargar dentro de la visita.
+const memoria = crearMemoria<Busq>("camiBusqueda.v1", POR_DEFECTO,
+  (x) => (x && typeof x === "object" && (x as Busq).state && typeof (x as Busq).tipo === "string" ? { ...POR_DEFECTO, ...(x as Busq) } : null),
+  (b) => ({ ...b, state: { ...b.state, loading: false } }));
+
 export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
-  const [tipo, setTipo] = useState<Busca>("edificios");
-  const [lugar, setLugar] = useState("");
+  const [b, setB] = useState<Busq>(memoria.leer);
+  useEffect(() => { setB(memoria.leer()); return memoria.suscribir(setB); }, []);
+  const up = (p: Partial<Busq>) => memoria.escribir({ ...memoria.leer(), ...p });
+  const { tipo, lugar, maxP, minV, maxPv, orden, verTodo, soloEncaje, state } = b;
+  const setTipo = (v: Busca) => up({ tipo: v });
+  const setLugar = (v: string) => up({ lugar: v });
+  const setState = (v: Estado) => up({ state: v });
+  const setMaxP = (v: string) => up({ maxP: v });
+  const setMinV = (v: string) => up({ minV: v });
+  const setMaxPv = (v: string) => up({ maxPv: v });
+  const setOrden = (v: Orden) => up({ orden: v });
+  const setVerTodo = (v: boolean) => up({ verTodo: v });
+  const setSoloEncaje = (v: boolean) => up({ soloEncaje: v });
   // Siempre se busca en toda la provincia; el municipio o barrio se afina después sobre los resultados.
   const ciudad = ciudadBase + "-provincia";
-  const [state, setState] = useState<{ loading: boolean; resultados?: Res[]; avisos?: string[]; err?: string }>({ loading: false });
-  const [maxP, setMaxP] = useState("");
-  const [minV, setMinV] = useState("");
-  const [maxPv, setMaxPv] = useState("");
-  const [orden, setOrden] = useState<Orden>("ajuste");
-  const [verTodo, setVerTodo] = useState(false);
-  const [soloEncaje, setSoloEncaje] = useState(true);
   const { s } = useStore();
   // La dimensión de la cooperativa sale de Ruta (familias) y de las calculadoras (aportación, ingresos, préstamo).
   const cap = capacidad(s.calc, s.group.fam);

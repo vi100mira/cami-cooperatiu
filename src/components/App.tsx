@@ -33,14 +33,21 @@ function Shell() {
   }, [nombreGrupo, s.group.name, set]);
 
   const scrollTo = (id: string) => setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+  // Cada pestaña recuerda hasta dónde habías bajado, para poder ir y volver (por ejemplo, de Oportunidades a la calculadora)
+  // sin perder el sitio. Si se pide una sección concreta, se baja a ella; si no hay posición guardada, se sube arriba.
+  const tabActual = useRef("ruta");
+  const posiciones = useRef<Record<string, number>>({});
   const go = useCallback((t: string, id?: string) => {
+    posiciones.current[tabActual.current] = window.scrollY;
+    tabActual.current = t;
     setTab(t);
     try { history.replaceState(null, "", "#" + t); } catch {}
-    if (id) scrollTo(id); else window.scrollTo({ top: 0 });
+    if (id) scrollTo(id);
+    else { const y = posiciones.current[t] ?? 0; setTimeout(() => window.scrollTo({ top: y, behavior: "instant" }), 60); }
   }, []);
   useEffect(() => {
     const h = location.hash.slice(1);
-    if (TABS.some((t) => t[0] === h)) setTab(h);
+    if (TABS.some((t) => t[0] === h)) { tabActual.current = h; setTab(h); }
     // «calc:terreno» abre las calculadoras y baja hasta la del terreno; «calc» baja hasta la cuota.
     const ev = (e: Event) => { const t = (e as CustomEvent).detail as string; if (t === "calc:terreno") go("calc", "cT"); else go(t, t === "calc" ? "cA" : undefined); };
     window.addEventListener("cami:goto", ev);

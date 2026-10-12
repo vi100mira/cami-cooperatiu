@@ -235,6 +235,7 @@ export default function Calc() {
             <div className="text-[13px] text-muted-foreground">{[s.sim.zona, s.sim.fuente].filter(Boolean).join(" · ")}{[s.sim.zona, s.sim.fuente].some(Boolean) ? ". " : ""}{textoSim(s.sim, s.group.fam)}</div>
             <div className="flex flex-wrap gap-3 text-[13px]">
               {s.sim.url && /^https:\/\//.test(s.sim.url) && <a className="font-semibold text-primary underline" href={s.sim.url} target="_blank" rel="noopener noreferrer">Ver anuncio ↗</a>}
+              <button type="button" className="font-semibold text-primary underline" onClick={() => window.dispatchEvent(new CustomEvent("cami:goto", { detail: "opor" }))}>← Volver a Oportunidades</button>
               <button type="button" className="text-muted-foreground underline" onClick={() => set((x) => quitarSimulacion(x))}>Quitar y volver a mis datos</button>
             </div>
           </div>
