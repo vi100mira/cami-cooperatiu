@@ -7,7 +7,10 @@ import { M2_POR_VIVIENDA } from "@/lib/fit";
 import { model, series, eligibility, niceTicks, queHariaFalta, type CalcInput, type Model } from "@/lib/calc";
 import { eur, nf0, fnum, kfmt } from "@/lib/format";
 import { useHelp } from "./Rich";
-import { TriangleAlert, Check, X } from "lucide-react";
+import { TriangleAlert, Check, X, Mountain, Calculator, Wallet, Scale } from "lucide-react";
+import { Tabs, TabsContent } from "./ui/tabs";
+import { SubNav } from "./SubNav";
+import { useSubPestana } from "@/lib/subpestana";
 import { Card, CardTitle } from "./ui/card";
 import { Alert } from "./ui/alert";
 import { Badge } from "./ui/badge";
@@ -272,11 +275,14 @@ function FichaSim({ m, c, sim }: { m: Model; c: CalcInput; sim: Sim }) {
   );
 }
 
+const SUBS_CALC = ["terreno", "cuota", "presupuesto", "alquiler"];
+
 export default function Calc() {
   const { s, set } = useStore();
+  const [sub, irSub] = useSubPestana("calc", SUBS_CALC, "terreno", "subnav-calc");
   const m = model(s.calc, viviendasDeCalculo(s));
   return (
-    <section className="grid gap-5">
+    <section id="sec-calc" className="grid scroll-mt-16 gap-5">
       <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Calculadoras</h2><p className="max-w-[68ch] text-muted-foreground">Todos los valores iniciales son ejemplos que puedes cambiar; no son precios de mercado. Si aún no tenéis terreno cerrado, empieza por «Del terreno a las viviendas»: te dice cuánto se puede construir y cuánto cuesta, y lo carga en las otras tres, que se actualizan juntas.</p></div>
       {s.sim && (
         <Card className="gap-3 sm:flex-row sm:items-center">
@@ -296,13 +302,21 @@ export default function Calc() {
           </div>
         </Card>
       )}
-      <Terreno />
-      <Card id="cA" className="gap-5"><CardTitle className="text-xl">Cuota mensual de cada vivienda</CardTitle>
-        <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></Card>
-      <Card id="cB" className="gap-5"><CardTitle className="text-xl">¿Cabe en el presupuesto de cada familia?</CardTitle>
-        <div className="calc-grid"><div className="inputs">{SPB.map((sp) => <Field key={sp.k} sp={sp} />)}<p className="note">Los límites de cada concurso cambian: usa estos valores solo como orientación y revisa las bases.</p></div><div className="res" aria-live="polite"><ResB m={m} c={s.calc} /></div></div></Card>
-      <Card id="cC" className="gap-5"><CardTitle className="text-xl">Cooperativa frente a alquiler</CardTitle>
-        <div className="calc-grid wide"><div className="inputs">{SPC.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResC m={m} c={s.calc} /></div></div></Card>
+      <Tabs value={sub} onValueChange={irSub} className="grid gap-4">
+        <SubNav id="subnav-calc" label="Apartados de las calculadoras" items={[
+          { k: "terreno", l: "Del terreno", icono: <Mountain aria-hidden /> },
+          { k: "cuota", l: "Cuota", icono: <Calculator aria-hidden /> },
+          { k: "presupuesto", l: "Presupuesto", icono: <Wallet aria-hidden /> },
+          { k: "alquiler", l: "Alquiler", icono: <Scale aria-hidden /> },
+        ]} />
+        <TabsContent value="terreno"><Terreno /></TabsContent>
+        <TabsContent value="cuota"><Card id="cA" className="gap-5"><CardTitle className="text-xl">Cuota mensual de cada vivienda</CardTitle>
+        <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></Card></TabsContent>
+        <TabsContent value="presupuesto"><Card id="cB" className="gap-5"><CardTitle className="text-xl">¿Cabe en el presupuesto de cada familia?</CardTitle>
+        <div className="calc-grid"><div className="inputs">{SPB.map((sp) => <Field key={sp.k} sp={sp} />)}<p className="note">Los límites de cada concurso cambian: usa estos valores solo como orientación y revisa las bases.</p></div><div className="res" aria-live="polite"><ResB m={m} c={s.calc} /></div></div></Card></TabsContent>
+        <TabsContent value="alquiler"><Card id="cC" className="gap-5"><CardTitle className="text-xl">Cooperativa frente a alquiler</CardTitle>
+        <div className="calc-grid wide"><div className="inputs">{SPC.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResC m={m} c={s.calc} /></div></div></Card></TabsContent>
+      </Tabs>
     </section>
   );
 }

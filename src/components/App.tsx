@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { StoreProvider, useStore } from "@/lib/store";
 import { GrupoProvider, useGrupo } from "@/lib/grupo";
 import { SyncDatosGrupo } from "./SyncDatosGrupo";
+import { irASub } from "@/lib/subpestana";
 import { HelpCtx } from "./Rich";
 import Sheet from "./Sheet";
 import Ruta, { Hero } from "./Ruta";
@@ -48,15 +49,24 @@ function Shell() {
   useEffect(() => {
     const h = location.hash.slice(1);
     if (TABS.some((t) => t[0] === h)) { tabActual.current = h; setTab(h); }
-    // «calc:terreno» abre las calculadoras y baja hasta la del terreno; «calc» baja hasta la cuota.
-    const ev = (e: Event) => { const t = (e as CustomEvent).detail as string; if (t === "calc:terreno") go("calc", "cT"); else go(t, t === "calc" ? "cA" : undefined); };
+    // «calc:terreno» abre el apartado del terreno de las calculadoras; «calc», el de la cuota.
+    const ev = (e: Event) => {
+      const t = (e as CustomEvent).detail as string;
+      if (t === "calc:terreno") { irASub("calc", "terreno"); go("calc", "sec-calc"); }
+      else if (t === "calc") { irASub("calc", "cuota"); go("calc", "sec-calc"); }
+      else go(t);
+    };
     window.addEventListener("cami:goto", ev);
     return () => window.removeEventListener("cami:goto", ev);
   }, [go]);
 
   const help = useCallback((k: string, el?: HTMLElement) => { if (el) setFrom((f) => f ?? el); setTerm(k); }, []);
   const close = useCallback(() => { setTerm(null); setFrom((f) => { f?.focus?.(); return null; }); }, []);
-  const goTo = (k: string) => { if (k === "calc") go("calc", "cA"); else if (k === "entidades") go("opor", "entidades"); else if (k === "candidatos") go("opor", "candidatos"); };
+  const goTo = (k: string) => {
+    if (k === "calc") { irASub("calc", "cuota"); go("calc", "sec-calc"); }
+    else if (k === "entidades") { irASub("opor", "entidades"); go("opor", "sec-opor"); }
+    else if (k === "candidatos") { irASub("opor", "candidatos"); go("opor", "sec-opor"); }
+  };
 
   return (
     <HelpCtx.Provider value={help}>

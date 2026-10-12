@@ -10,7 +10,10 @@ import { simularEdificio, simularTerrenoAnuncio } from "@/lib/simulacion";
 import { catastroUrl, parseDireccion } from "@/lib/catastro";
 import type { Listing } from "@/lib/parse-fotocasa";
 import { Photos, MapBox } from "./Media";
-import { ExternalLink, Calculator, Trash2, Plus, Mail, Copy, MapPin, FileSearch, Check, TriangleAlert, Search, Loader2, ClipboardList } from "lucide-react";
+import { ExternalLink, Calculator, Trash2, Plus, Mail, Copy, MapPin, FileSearch, Check, TriangleAlert, Search, Loader2, ClipboardList, Route as IconoVias, Building2 } from "lucide-react";
+import { Tabs, TabsContent } from "./ui/tabs";
+import { SubNav } from "./SubNav";
+import { useSubPestana } from "@/lib/subpestana";
 import { Button } from "./ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -222,8 +225,11 @@ function EntCard({ e }: { e: Entity }) {
   );
 }
 
+const SUBS_OPOR = ["buscar", "candidatos", "vias", "entidades"];
+
 export default function Opor() {
   const { s, set } = useStore();
+  const [sub, irSub] = useSubPestana("opor", SUBS_OPOR, "buscar", "subnav-opor");
   const viaRef = useRef<HTMLSelectElement>(null);
   const [prefill, setPrefill] = useState<Partial<Cand> | null>(null);
   const [mixed, setMixed] = useState(0);
@@ -231,7 +237,7 @@ export default function Opor() {
   const ENT = entitiesFor(s.group);
   const live = isValenciaCity(s.group);
   const gs: string[] = []; ENT.forEach((e) => { if (!gs.includes(e.g)) gs.push(e.g); });
-  const toForm = (p: Partial<Cand>) => { setPrefill(p); setMixed((n) => n + 1); setTimeout(() => document.getElementById("candForm")?.scrollIntoView({ behavior: "smooth" }), 50); };
+  const toForm = (p: Partial<Cand>) => { setPrefill(p); setMixed((n) => n + 1); irSub("candidatos"); setTimeout(() => document.getElementById("candForm")?.scrollIntoView({ behavior: "smooth" }), 150); };
   const simular = (c: Cand) => {
     set((x) => simularEdificio(x, { titulo: c.nombre, zona: c.barrio, precio: c.precio > 0 ? c.precio : null, viv: c.viv > 0 ? c.viv : undefined, foto: c.fotos?.find((f) => /^https:\/\//.test(f)), url: c.url }));
     window.dispatchEvent(new CustomEvent("cami:goto", { detail: "calc" }));
@@ -242,10 +248,19 @@ export default function Opor() {
     window.dispatchEvent(new CustomEvent("cami:goto", { detail: tipo === "terrenos" ? "calc:terreno" : "calc" }));
   };
   const Intro = ({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) => (
-    <div className="grid gap-1.5" id={id}><h2 className="font-heading text-2xl font-bold">{title}</h2><p className="max-w-[68ch] text-muted-foreground">{children}</p></div>
+    <div className="grid gap-1.5" id={id}><h3 className="font-heading text-xl font-bold">{title}</h3><p className="max-w-[68ch] text-muted-foreground">{children}</p></div>
   );
   return (
-    <section className="grid gap-5">
+    <section id="sec-opor" className="grid scroll-mt-16 gap-5">
+      <div className="grid gap-1.5"><h2 className="font-heading text-2xl font-bold">Oportunidades</h2><p className="max-w-[68ch] text-muted-foreground">Busca edificios y terrenos, apunta los que os interesen, valora las vías de acceso y mira a quién preguntar.</p></div>
+      <Tabs value={sub} onValueChange={irSub} className="grid gap-4">
+        <SubNav id="subnav-opor" label="Apartados de Oportunidades" items={[
+          { k: "buscar", l: "Buscar", icono: <Search aria-hidden /> },
+          { k: "candidatos", l: "Candidatos", icono: <ClipboardList aria-hidden />, n: s.cands.filter((c) => !c.ejemplo).length },
+          { k: "vias", l: "Vías", icono: <IconoVias aria-hidden /> },
+          { k: "entidades", l: "Entidades", icono: <Building2 aria-hidden /> },
+        ]} />
+        <TabsContent value="buscar" className="gap-5">
       <Intro id="buscador" title="Buscar edificios y terrenos">Indica en qué ciudad buscáis y usa los portales o, en la provincia de València, la búsqueda en vivo (función en pruebas).</Intro>
       <Card>
         <Field label={<><MapPin className="size-3.5" aria-hidden /> Ciudad o municipio donde buscáis</>} htmlFor="bs-ciudad">
@@ -259,10 +274,8 @@ export default function Opor() {
       </Card>
       {live && <LiveSearch ciudad="valencia" onSim={simularListing} onPick={(l, tipo) => toForm({ fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: l.gestora ? "parada" : tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}.${l.gestora ? ` Lo publica ${l.gestora}, gestora de Sareb: pregunta si es de Sareb, de un banco o una cesión de remate.` : ""} Verifica todos los datos.` })} />}
       <PortalSearch ciudad={s.group.ciudad} />
-
-      <Intro title="Cinco formas de conseguir techo">Una valoración orientativa de este asistente, basada en lo que se ha leído en prensa y guías del sector. No son datos medidos. Ordena según lo que más os importe.</Intro>
-      <Vias onAdd={(id) => toForm({ via: id })} />
-
+        </TabsContent>
+        <TabsContent value="candidatos" className="gap-5">
       <Intro id="candidatos" title="Vuestros candidatos">Apunta cada edificio o solar que encontréis, hazle seguimiento y mándalo a la calculadora con un toque. Las tarjetas marcadas como ejemplo se pueden borrar.</Intro>
       <Card>
         <div className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-widest text-muted-foreground"><ClipboardList className="size-3.5" aria-hidden /> Embudo de candidatos</div>
@@ -274,10 +287,17 @@ export default function Opor() {
       </Card>
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">{s.cands.length ? s.cands.map((c) => <CandCard key={c.id} c={c} onSim={simular} />) : <p className="text-[13px] text-muted-foreground">Todavía no hay candidatos. Añade el primero con el formulario de abajo.</p>}</div>
       <CandForm key={mixed} viaRef={viaRef} prefill={prefill} />
-
+        </TabsContent>
+        <TabsContent value="vias" className="gap-5">
+      <Intro title="Cinco formas de conseguir techo">Una valoración orientativa de este asistente, basada en lo que se ha leído en prensa y guías del sector. No son datos medidos. Ordena según lo que más os importe.</Intro>
+      <Vias onAdd={(id) => toForm({ via: id })} />
+        </TabsContent>
+        <TabsContent value="entidades" className="gap-5">
       <Intro id="entidades" title="A quién preguntar y dónde mirar">Cada botón abre la web de la entidad en otra pestaña. Los mensajes ya llevan los datos de vuestro grupo; revísalos y envíalos tú.</Intro>
       <div className="grid gap-5">{gs.map((g) => <div key={g} className="grid gap-2.5"><h3 className="font-heading text-lg font-bold">{g}</h3><div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">{ENT.filter((e) => e.g === g).map((e) => <EntCard key={e.id} e={e} />)}</div></div>)}</div>
       <Casa47Socias intro={<Intro id="socias" title="Para las personas socias: sorteos de alquiler de Casa 47">Otra forma de acceder a una vivienda, distinta de todo lo anterior.</Intro>} />
+        </TabsContent>
+      </Tabs>
     </section>
   );
 }
