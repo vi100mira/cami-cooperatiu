@@ -64,7 +64,7 @@ export function datosOferta(x: unknown): { ok: true; v: DatosOferta } | { ok: fa
 export const passwordValida = (x: unknown): x is string => typeof x === "string" && x.length >= 8 && x.length <= 200;
 
 // Datos de la cooperativa que comparten las personas del grupo. Lista blanca: ingresos y capital nunca se guardan.
-export interface DatosGrupo { region: string; ciudad: string; familias: number; barrio: string; }
+export interface DatosGrupo { region: string; ciudad: string; familias: number; barrio: string; centro?: string; radio?: number; }
 
 export function validarDatosGrupo(x: unknown): { ok: true; v: DatosGrupo } | { ok: false; error: string } {
   const o = (x && typeof x === "object" ? x : {}) as Record<string, unknown>;
@@ -75,5 +75,9 @@ export function validarDatosGrupo(x: unknown): { ok: true; v: DatosGrupo } | { o
   if (region && !REGIONS.some((r) => r[0] === region)) return { ok: false, error: "Comunidad no válida." };
   if (ciudad.length > 80 || barrio.length > 80) return { ok: false, error: "La ciudad y el barrio admiten hasta 80 caracteres." };
   if (!(familias >= 1 && familias <= 200)) return { ok: false, error: "Las familias deben ser entre 1 y 200." };
-  return { ok: true, v: { region, ciudad, familias, barrio } };
+  // Centro de acción y distancia máxima: opcionales, para que los datos guardados antes de existir sigan siendo válidos.
+  const centro = typeof o.centro === "string" ? o.centro.trim() : undefined;
+  if (centro !== undefined && centro.length > 80) return { ok: false, error: "El centro de acción admite hasta 80 caracteres." };
+  if (o.radio !== undefined && !(typeof o.radio === "number" && Number.isInteger(o.radio) && o.radio >= 0 && o.radio <= 200)) return { ok: false, error: "La distancia máxima debe ser un número de km entre 0 y 200." };
+  return { ok: true, v: { region, ciudad, familias, barrio, ...(centro !== undefined ? { centro } : {}), ...(o.radio !== undefined ? { radio: o.radio as number } : {}) } };
 }

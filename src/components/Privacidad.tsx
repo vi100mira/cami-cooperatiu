@@ -11,7 +11,7 @@ export function Privacidad() {
     <Card id="privacidad" className="gap-3">
       <div className="flex items-center gap-2 font-heading text-lg font-bold"><ShieldCheck className="size-5 text-primary" aria-hidden /> Privacidad: qué guardamos y para qué</div>
       <p className="text-sm text-muted-foreground">
-        Solo si creas o entras a un grupo, guardamos <b className="text-foreground">el nombre del grupo, tu nombre o alias, contraseñas cifradas, los favoritos que marques y los datos básicos de vuestra cooperativa (comunidad, ciudad, familias y barrio)</b>. Sirve únicamente para que las personas de tu grupo compartáis ofertas. No pedimos correo, teléfono, DNI, ingresos ni datos bancarios. Responsable: {RESPONSABLE}.
+        Solo si creas o entras a un grupo, guardamos <b className="text-foreground">el nombre del grupo, tu nombre o alias, contraseñas cifradas, los favoritos que marques y los datos básicos de vuestra cooperativa (comunidad, ciudad, familias, barrio, centro de acción y distancia máxima de desplazamiento)</b>. Sirve únicamente para que las personas de tu grupo compartáis ofertas. No pedimos correo, teléfono, DNI, ingresos ni datos bancarios. Responsable: {RESPONSABLE}.
       </p>
       <Disclosure summary="Leer el aviso completo">
         <div className="grid max-w-[70ch] gap-2.5 text-sm text-muted-foreground">
@@ -23,7 +23,7 @@ export function Privacidad() {
               <li>el nombre o alias de cada persona (mejor sin apellidos);</li>
               <li>las contraseñas y el código de recuperación del grupo, únicamente como huella cifrada, nunca en texto plano;</li>
               <li>quién administra el grupo (la persona que lo creó, o la que lleva más tiempo en él si esa se va);</li>
-              <li>los datos de «Tu cooperativa» que compartís dentro del grupo: comunidad autónoma, ciudad o municipio, número de familias y barrio o zona de interés;</li>
+              <li>los datos de «Tu cooperativa» que compartís dentro del grupo: comunidad autónoma, ciudad o municipio, número de familias, barrio o zona de interés, centro de acción (un municipio) y distancia máxima de desplazamiento en kilómetros;</li>
               <li>los favoritos que marques: título, zona, precio, superficie, portal, enlace del anuncio y fecha;</li>
               <li>la fecha de la última actividad del grupo (la última vez que alguien entró o marcó un favorito).</li>
             </ul>

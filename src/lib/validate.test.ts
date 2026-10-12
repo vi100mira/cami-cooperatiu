@@ -55,6 +55,16 @@ describe("validarDatosGrupo", () => {
     expect(r.ok).toBe(true);
     if (r.ok) expect(Object.keys(r.v).sort()).toEqual(["barrio", "ciudad", "familias", "region"]);
   });
+  it("admite el centro de acción y la distancia máxima, y son opcionales", () => {
+    const r = validarDatosGrupo({ ...ok, centro: "  València ", radio: 20 });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.v).toMatchObject({ centro: "València", radio: 20 });
+    expect(validarDatosGrupo({ ...ok, radio: 0, centro: "" }).ok).toBe(true);
+  });
+  it("rechaza una distancia fuera de rango o que no es un entero, y un centro demasiado largo", () => {
+    for (const radio of [-1, 201, 2.5, "20", null]) expect(validarDatosGrupo({ ...ok, radio }).ok, String(radio)).toBe(false);
+    expect(validarDatosGrupo({ ...ok, centro: "x".repeat(81) }).ok).toBe(false);
+  });
   it("admite la comunidad sin elegir", () => expect(validarDatosGrupo({ ...ok, region: "" }).ok).toBe(true));
   it("rechaza comunidades inventadas, familias fuera de rango y textos largos", () => {
     expect(validarDatosGrupo({ ...ok, region: "zz" }).ok).toBe(false);

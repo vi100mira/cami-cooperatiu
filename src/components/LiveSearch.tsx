@@ -18,6 +18,8 @@ import { Alert } from "./ui/alert";
 import { ToggleChips } from "./ui/toggle-chips";
 import { filtrarTodo, ajuste, viviendasEstimadas, precioPorVivienda, etiquetas, ETIQUETA_TEXTO, ENCAJE_TEXTO, tituloLegible, type Orden, type Cooperativa } from "@/lib/fit";
 import { FavButton } from "./FavButton";
+import { CentroRadio, useCentro } from "./CentroRadio";
+import { ubicar, distanciaKm } from "@/lib/ubicacion";
 
 type Tipo = "edificios" | "terrenos";
 type Busca = Tipo | "ambos";
@@ -31,8 +33,8 @@ const MSG: Record<string, string> = {
 };
 
 type Estado = { loading: boolean; resultados?: Res[]; avisos?: string[]; err?: string };
-interface Busq { tipo: Busca; lugar: string; maxP: string; minV: string; maxPv: string; orden: Orden; verTodo: boolean; soloEncaje: boolean; state: Estado }
-const POR_DEFECTO: Busq = { tipo: "edificios", lugar: "", maxP: "", minV: "", maxPv: "", orden: "ajuste", verTodo: false, soloEncaje: true, state: { loading: false } };
+interface Busq { tipo: Busca; lugar: string; maxP: string; minV: string; maxPv: string; orden: Orden; verTodo: boolean; soloEncaje: boolean; ocultarSinUbicacion: boolean; state: Estado }
+const POR_DEFECTO: Busq = { tipo: "edificios", lugar: "", maxP: "", minV: "", maxPv: "", orden: "ajuste", verTodo: false, soloEncaje: true, ocultarSinUbicacion: false, state: { loading: false } };
 // La búsqueda (tipo, filtros y resultados) vive fuera del componente: al ir a otra pestaña (por ejemplo, a la calculadora)
 // este se desmonta, y así no hay que repetir la búsqueda al volver. Sobrevive también a recargar dentro de la visita.
 const memoria = crearMemoria<Busq>("camiBusqueda.v1", POR_DEFECTO,
@@ -43,7 +45,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   const [b, setB] = useState<Busq>(memoria.leer);
   useEffect(() => { setB(memoria.leer()); return memoria.suscribir(setB); }, []);
   const up = (p: Partial<Busq>) => memoria.escribir({ ...memoria.leer(), ...p });
-  const { tipo, lugar, maxP, minV, maxPv, orden, verTodo, soloEncaje, state } = b;
+  const { tipo, lugar, maxP, minV, maxPv, orden, verTodo, soloEncaje, ocultarSinUbicacion, state } = b;
   const setTipo = (v: Busca) => up({ tipo: v });
   const setLugar = (v: string) => up({ lugar: v });
   const setState = (v: Estado) => up({ state: v });
@@ -53,11 +55,14 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   const setOrden = (v: Orden) => up({ orden: v });
   const setVerTodo = (v: boolean) => up({ verTodo: v });
   const setSoloEncaje = (v: boolean) => up({ soloEncaje: v });
+  const setOcultarSinUbicacion = (v: boolean) => up({ ocultarSinUbicacion: v });
   // Siempre se busca en toda la provincia; el municipio o barrio se afina después sobre los resultados.
   const ciudad = ciudadBase + "-provincia";
   const { s } = useStore();
   // La dimensión de la cooperativa sale de Ruta (familias) y de las calculadoras (aportación, ingresos, préstamo).
   const cap = capacidad(s.calc, s.group.fam);
+  // Centro de acción y distancia máxima del grupo (se editan en Ruta y aquí; son los mismos datos).
+  const { municipio: centro, radio } = useCentro();
   const coop: Cooperativa = { familias: cap.familias, capital: cap.total, m2Vivienda: s.terreno?.m2Vivienda || 90 };
   // «Ambos» hace una consulta por tipo (cada una con su propia caché de 24 h) y junta los resultados.
   const run = async () => {
@@ -81,10 +86,13 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   const grupos = resultados.map((r) => ({ tipo: r.tipo, items: q ? r.items.filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : r.items }));
   const total = resultados.reduce((n, r) => n + r.items.length, 0);
   const conEdificios = tipo !== "terrenos";
-  const filtros = { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo, coop };
+  const filtros = { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo, coop, centro: centro ? { lat: centro.lat, lon: centro.lon } : undefined, radioKm: radio, ocultarSinUbicacion };
   const items = filtrarTodo(grupos, { ...filtros, soloEncaje });
   // Cuántos resultados se esconden solo por no encajar con la cooperativa, para poder avisarlo.
   const ocultos = soloEncaje ? filtrarTodo(grupos, { ...filtros, soloEncaje: false }).length - items.length : 0;
+  // Cuántos resultados se esconden solo por estar fuera del radio, y cuántos se muestran sin poder comprobar dónde están.
+  const fueraDeRadio = centro && radio > 0 ? filtrarTodo(grupos, { ...filtros, soloEncaje, radioKm: 0, ocultarSinUbicacion: false }).length - items.length : 0;
+  const sinUbicar = centro ? items.filter((e) => !ubicar(e.l)).length : 0;
   const nombreCiudad = CIUDAD_NOMBRE[ciudad] ?? ciudad;
   const fallidos = [...new Set(resultados.flatMap((r) => r.fallidos ?? []))];
   return (
@@ -105,10 +113,18 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
         <Field label="Ordenar por" htmlFor="ls-ord">
           <NativeSelect id="ls-ord" value={orden} onChange={(e) => setOrden(e.target.value as Orden)}>
             <option value="ajuste">Ajustado a tu cooperativa</option>
+            {centro && <option value="cerca">Más cerca del centro</option>}
             {conEdificios && <option value="pv">Más barato por vivienda</option>}
             <option value="precio">Precio más bajo</option><option value="m2">Más superficie</option><option value="relevancia">Orden del portal</option>
           </NativeSelect></Field>
       </FormGrid>
+      <div className="grid gap-2 rounded-lg border px-3.5 py-3">
+        <div className="font-heading text-sm font-bold">Zona de acción del grupo</div>
+        <CentroRadio id="ls-cr" />
+        {centro && radio > 0 && (
+          <label className="flex cursor-pointer items-start gap-2.5 text-[13.5px]"><Checkbox className="mt-0.5" checked={ocultarSinUbicacion} onCheckedChange={(v) => setOcultarSinUbicacion(v === true)} /> <span>Ocultar también los anuncios que no sé ubicar{sinUbicar > 0 && !ocultarSinUbicacion && <b className="ml-1 text-foreground">({sinUbicar} {sinUbicar === 1 ? "se muestra" : "se muestran"} sin comprobar)</b>}</span></label>
+        )}
+      </div>
       <div className="grid gap-2 rounded-lg bg-accent px-3.5 py-2.5 text-[13.5px]">
         <span><b>Tu cooperativa:</b> {cap.familias} {cap.familias === 1 ? "familia" : "familias"} y un capital orientativo de unos <b>{eur(cap.total)}</b> (aportación inicial y préstamo hasta el 30 % de los ingresos, con los datos de las calculadoras, que son ejemplos hasta que los cambies). Se supone que el suelo o edificio no debería pasar de la mitad: el resto es obra y gastos.</span>
         <label className="flex cursor-pointer items-start gap-2.5"><Checkbox className="mt-0.5" checked={soloEncaje} onCheckedChange={(v) => setSoloEncaje(v === true)} /> <span>Ocultar lo muy grande, muy pequeño o más caro que todo vuestro capital{ocultos > 0 && <b className="ml-1 text-foreground">({ocultos} {ocultos === 1 ? "oculto" : "ocultos"})</b>}</span></label>
@@ -121,11 +137,13 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
           <Alert variant="warning"><TriangleAlert aria-hidden /><span>Las viviendas estimadas y el precio por vivienda salen de los m² construidos del anuncio (suponiendo unos 80 m² por vivienda) y <b>pueden no ser exactos</b>. Confirma siempre los datos en el anuncio original.</span></Alert>
           {!!fallidos.length && <Alert variant="warning"><TriangleAlert aria-hidden /><span>No hemos podido leer {fallidos.join(", ")} en esta consulta, así que faltan sus anuncios. Prueba mañana o usa los botones de portales.</span></Alert>}
           {(state.avisos ?? []).map((a) => <Alert key={a} variant="warning"><TriangleAlert aria-hidden /><span>{a}</span></Alert>)}
-          <p className="text-[13px] text-muted-foreground"><b className="text-foreground">{items.length}</b> de {total} resultados · Fuente: {[...new Set(resultados.map((r) => r.fuente))].join(" · ")} · Actualizado {new Date(Math.min(...resultados.map((r) => new Date(r.actualizado).getTime()))).toLocaleString("es-ES")}.</p>
+          <p className="text-[13px] text-muted-foreground"><b className="text-foreground">{items.length}</b> de {total} resultados{fueraDeRadio > 0 && <> ({fueraDeRadio} fuera de los {radio} km)</>} · Fuente: {[...new Set(resultados.map((r) => r.fuente))].join(" · ")} · Actualizado {new Date(Math.min(...resultados.map((r) => new Date(r.actualizado).getTime()))).toLocaleString("es-ES")}.</p>
           <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
             {items.map(({ l, tipo: t }) => {
               const viv = viviendasEstimadas(l, t);
               const aj = ajuste(l, t, coop);
+              const u = centro ? ubicar(l) : null;
+              const km = centro && u ? distanciaKm(centro, u.municipio) : null;
               return (
                 <Card key={l.id} className="gap-3 p-3.5 shadow-none transition hover:shadow-md" >
                   <article className="grid gap-2.5">
@@ -137,6 +155,9 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                         {l.gestora && <Badge variant="warning" title="Gestora de activos de Sareb. No todo lo que publica es de Sareb: también gestiona carteras de bancos y cesiones de remate. Pregunta por el origen y la situación del inmueble.">Gestora de Sareb · {l.gestora}</Badge>}
                         {etiquetas(l, t).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}
                         {aj.etiquetas.map((e) => <Badge key={e} variant={e === "encaja" ? "success" : e === "sin-dato" ? "outline" : "warning"}>{ENCAJE_TEXTO[e]}</Badge>)}
+                        {centro && (u && km != null
+                          ? <Badge variant="outline" title="Distancia en línea recta entre municipios; orientativa">{km < 1 ? `En ${u.municipio.nombre}` : `${u.municipio.nombre} · a ${Math.round(km)} km`}</Badge>
+                          : <Badge variant="outline" title="No se ha podido saber en qué municipio está">Ubicación sin comprobar</Badge>)}
                       </div>
                       <FavButton l={l} tipo={t} />
                     </div>

@@ -98,7 +98,7 @@ try {
   check("Contraseña nueva demasiado corta => 400", (await sB.call("PATCH", "/api/miembros/yo", { actual: pwBeto3, nueva: "corta" })).s === 400);
 
   // Datos de la cooperativa compartidos
-  const coop = { region: "cv", ciudad: "València", familias: 12, barrio: "Russafa" };
+  const coop = { region: "cv", ciudad: "València", familias: 12, barrio: "Russafa", centro: "València", radio: 20 };
   check("Datos del grupo sin identificarse => 401", (await new Sesion().call("GET", "/api/grupos/datos")).s === 401);
   check("Datos vacíos al principio", (await sA.call("GET", "/api/grupos/datos")).j?.datos === null);
   check("Beto guarda los datos de la cooperativa", (await sB.call("PUT", "/api/grupos/datos", { ...coop, ingresos: 99999 })).s === 200);
@@ -106,6 +106,9 @@ try {
   check("Ana ve los datos de Beto, sin campos de más", JSON.stringify(r.j?.datos) === JSON.stringify(coop), JSON.stringify(r.j?.datos));
   check("Familias fuera de rango => 400", (await sB.call("PUT", "/api/grupos/datos", { ...coop, familias: 0 })).s === 400);
   check("Comunidad inventada => 400", (await sB.call("PUT", "/api/grupos/datos", { ...coop, region: "zz" })).s === 400);
+  check("Distancia máxima fuera de rango => 400", (await sB.call("PUT", "/api/grupos/datos", { ...coop, radio: 500 })).s === 400);
+  check("Datos antiguos, sin centro ni distancia, siguen siendo válidos", (await sB.call("PUT", "/api/grupos/datos", { region: "cv", ciudad: "València", familias: 12, barrio: "Russafa" })).s === 200);
+  check("Beto vuelve a guardar el centro y la distancia", (await sB.call("PUT", "/api/grupos/datos", coop)).s === 200);
 
   // Favoritos
   const of1 = { ofertaId: "Fotocasa:e2e-1", datos: { titulo: "Edificio de prueba", url: "https://www.fotocasa.es/es/x/1/d", tipo: "edificios", precio: 900000, m2: 700, zona: "Russafa", fuente: "Fotocasa", telefono: "600000000", iban: "ES0000" } };

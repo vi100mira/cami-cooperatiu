@@ -143,3 +143,29 @@ describe("filtrarTodo (edificios y terrenos a la vez)", () => {
     expect(r.map((e) => e.l.id)).toEqual(["e1", "e2", "t2"]);
   });
 });
+
+describe("centro de acción y distancia máxima", () => {
+  const f = (id: string, slug: string, precio = 300000) => ({ id, titulo: "Edificio de pisos", url: `https://www.fotocasa.es/es/comprar/edificio/${slug}/zona/${id}/d`, precio, m2: 480, zona: "València", resumen: "", fotos: [] }) as never;
+  const sinPista = { id: "x", titulo: "Edificio de pisos", url: "https://www.yaencontre.com/venta/edificio/inmueble-1-2", precio: 300000, m2: 480, zona: "València", resumen: "", fotos: [] } as never;
+  const items = [f("a", "valencia-capital"), f("b", "torrent"), f("c", "sagunto"), f("d", "gandia"), sinPista];
+  const valencia = { lat: 39.47, lon: -0.3764 };
+  const base = { maxPrecio: 0, minViv: 0, maxPv: 0, orden: "relevancia" as const, centro: valencia };
+  const ids = (r: { id: string }[]) => r.map((x) => x.id);
+
+  it("sin radio no se filtra nada", () => expect(ids(filtrar(items, "edificios", base))).toEqual(["a", "b", "c", "d", "x"]));
+  it("con 20 km deja València y Torrent, descarta Sagunt y Gandia y conserva lo que no se puede ubicar", () => {
+    expect(ids(filtrar(items, "edificios", { ...base, radioKm: 20 }))).toEqual(["a", "b", "x"]);
+  });
+  it("con 30 km entra también Sagunt", () => expect(ids(filtrar(items, "edificios", { ...base, radioKm: 30 }))).toEqual(["a", "b", "c", "x"]));
+  it("ocultarSinUbicacion esconde lo que no se sabe dónde está", () => {
+    expect(ids(filtrar(items, "edificios", { ...base, radioKm: 20, ocultarSinUbicacion: true }))).toEqual(["a", "b"]);
+  });
+  it("sin centro ignora el radio", () => expect(filtrar(items, "edificios", { ...base, centro: undefined, radioKm: 5 })).toHaveLength(5));
+  it("el orden «más cerca» pone primero lo más próximo y al final lo que no se puede ubicar", () => {
+    expect(ids(filtrar([items[3], items[2], items[1], items[0], items[4]], "edificios", { ...base, orden: "cerca" }))).toEqual(["a", "b", "c", "d", "x"]);
+  });
+  it("también funciona al mezclar edificios y terrenos", () => {
+    const r = filtrarTodo([{ tipo: "edificios", items: [items[2]] }, { tipo: "terrenos", items: [items[1], items[3]] }], { ...base, orden: "cerca", radioKm: 30 });
+    expect(r.map((e) => e.l.id)).toEqual(["b", "c"]);
+  });
+});

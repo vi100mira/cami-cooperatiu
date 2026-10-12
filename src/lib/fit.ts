@@ -1,4 +1,5 @@
 import type { Listing } from "./parse-fotocasa";
+import { distanciaAnuncio } from "./ubicacion";
 
 /** m² construidos por vivienda incluyendo zonas comunes (supuesto orientativo para edificios). */
 export const M2_POR_VIVIENDA = 80;
@@ -34,7 +35,7 @@ export function tituloLegible(l: Pick<Listing, "titulo" | "zona" | "m2">): strin
   return [base, zona, l.m2 ? l.m2 + " m²" : ""].filter(Boolean).join(" · ");
 }
 
-export type Orden = "relevancia" | "pv" | "precio" | "m2" | "ajuste";
+export type Orden = "relevancia" | "pv" | "precio" | "m2" | "ajuste" | "cerca";
 
 /** Dimensión de la cooperativa: cuántas familias y cuánto dinero puede reunir en total (ver `capacidad` en calc.ts). */
 export interface Cooperativa { familias: number; capital: number; m2Vivienda: number }
@@ -88,7 +89,14 @@ export function ajuste(l: Pick<Listing, "m2" | "precio">, tipo: "edificios" | "t
   return { puntos, etiquetas, oculto, ratioTamano, ratioPrecio };
 }
 
-export interface Filtros { maxPrecio: number; minViv: number; maxPv: number; orden: Orden; verTodo?: boolean; coop?: Cooperativa; soloEncaje?: boolean }
+/**
+ * Centro de acción de la cooperativa y distancia máxima (km, 0 = sin límite). Los anuncios que no se pueden ubicar con seguridad
+ * se muestran, salvo que `ocultarSinUbicacion` los esconda: no se descartan por no saber dónde están.
+ */
+export interface Filtros { maxPrecio: number; minViv: number; maxPv: number; orden: Orden; verTodo?: boolean; coop?: Cooperativa; soloEncaje?: boolean; centro?: { lat: number; lon: number }; radioKm?: number; ocultarSinUbicacion?: boolean }
+
+/** Distancia (km) en la que cae el anuncio respecto al centro: null si no hay centro o no se sabe dónde está. */
+const kmDelCentro = (l: Listing, f: Pick<Filtros, "centro">) => (f.centro ? distanciaAnuncio(l, f.centro) : null);
 
 export function filtrar(items: Listing[], tipo: "edificios" | "terrenos", f: Filtros): Listing[] {
   const out = items.filter((l) => {
@@ -97,9 +105,15 @@ export function filtrar(items: Listing[], tipo: "edificios" | "terrenos", f: Fil
     if (f.maxPrecio && !(l.precio != null && l.precio <= f.maxPrecio)) return false;
     if (f.minViv) { const v = viviendasEstimadas(l, tipo); if (v == null || v < f.minViv) return false; }
     if (f.maxPv) { const p = precioPorVivienda(l, tipo); if (p == null || p > f.maxPv) return false; }
+    if (f.centro && ((f.radioKm ?? 0) > 0 || f.ocultarSinUbicacion)) {
+      const d = kmDelCentro(l, f);
+      if (d == null) { if (f.ocultarSinUbicacion) return false; }
+      else if ((f.radioKm ?? 0) > 0 && d > (f.radioKm as number)) return false;
+    }
     return true;
   });
   const key = (l: Listing): number => {
+    if (f.orden === "cerca") return kmDelCentro(l, f) ?? Infinity;
     if (f.orden === "pv") return precioPorVivienda(l, tipo) ?? Infinity;
     if (f.orden === "precio") return l.precio ?? Infinity;
     if (f.orden === "m2") return -(l.m2 ?? 0);
@@ -156,6 +170,7 @@ export function filtrarTodo(grupos: { tipo: TipoInmueble; items: Listing[] }[], 
     return [...out].sort((a, b) => (ajuste(a.l, a.tipo, c).puntos - ajuste(b.l, b.tipo, c).puntos) || (precio(a) - precio(b)));
   }
   const key = (e: Entrada): number => {
+    if (f.orden === "cerca") return kmDelCentro(e.l, f) ?? Infinity;
     if (f.orden === "pv") return precioPorVivienda(e.l, e.tipo) ?? Infinity;
     if (f.orden === "precio") return e.l.precio ?? Infinity;
     return -(e.l.m2 ?? 0);

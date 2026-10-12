@@ -5,7 +5,7 @@ import type { Listing } from "./parse-fotocasa";
 
 export interface Fav { id: string; ofertaId: string; datos: DatosFav; fecha: string; marcadoPor: string; esMio: boolean; }
 export interface Persona { id: string; nombre: string; esAdmin?: boolean; }
-export interface DatosCoop { region: string; ciudad: string; familias: number; barrio: string; }
+export interface DatosCoop { region: string; ciudad: string; familias: number; barrio: string; centro?: string; radio?: number; }
 export interface GrupoInfo { nombre: string; slug: string; }
 export type Estado = "cargando" | "fuera" | "grupo" | "miembro";
 export interface Alta { nombre: string; slug: string; password: string; miembro: string; miembroPassword: string; }

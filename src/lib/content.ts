@@ -4,7 +4,8 @@ export interface Phase{id:string;short:string;title:string;lead:string;hard?:str
 export interface Scores{c:number;r:number;z:number;l:number}
 export interface Via{id:string;title:string;tag:string;s:Scores;que:string;pro:string[];con:string[];ver:string;link?:{url:string;label:string;nota:string;acciones?:{label:string;url:string}[]}[]}
 export interface Entity{g:string;id:string;name:string;desc:string;url:string;ul:string;ct?:string[];ctn?:string;tpl?:string}
-export interface Group{name:string;fam:number;barrio:string;ciudad:string;region:string}
+/** centro y radio: centro de acción de la cooperativa (municipio) y distancia máxima en km para elegir ofertas; 0 o vacío = sin límite. */
+export interface Group{name:string;fam:number;barrio:string;ciudad:string;region:string;centro?:string;radio?:number}
 
 export const TERMS:Record<string,Term>={
 cesion:{t:"Cesión de uso",d:"La cooperativa es dueña del edificio para siempre. Cada persona socia recibe el derecho a vivir en una vivienda de forma indefinida mientras cumpla sus obligaciones, y paga una cuota mensual.\n\nNo se compra el piso ni se vende: si te vas, recuperas tu {{aportacion|aportación inicial}} actualizada y la vivienda vuelve a la cooperativa para el siguiente socio. Sin plusvalía, se frena la especulación.",rel:["cooperativa","aportacion","cuota"]},

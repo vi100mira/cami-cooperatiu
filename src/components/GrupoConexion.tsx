@@ -15,7 +15,7 @@ export function GrupoConexion() {
       <span className="flex min-w-0 items-start gap-2">
         <Users className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         {dentro
-          ? <span>Conectada al grupo <b>«{g.grupo?.nombre}»</b>{g.miembro ? <> como <b>{g.miembro.nombre}</b></> : " (falta confirmar quién eres)"}. {g.miembro ? "Los favoritos y los datos de arriba (comunidad, ciudad, familias y barrio) se comparten con el grupo; el nombre de la cooperativa y las cifras de las calculadoras se quedan en este navegador." : "Cuando confirmes quién eres, los favoritos y los datos de arriba (comunidad, ciudad, familias y barrio) se compartirán con el grupo."}</span>
+          ? <span>Conectada al grupo <b>«{g.grupo?.nombre}»</b>{g.miembro ? <> como <b>{g.miembro.nombre}</b></> : " (falta confirmar quién eres)"}. {g.miembro ? "Los favoritos y los datos de arriba (comunidad, ciudad, familias, barrio, centro de acción y distancia máxima) se comparten con el grupo; el nombre de la cooperativa y las cifras de las calculadoras se quedan en este navegador." : "Cuando confirmes quién eres, los favoritos y los datos de arriba (comunidad, ciudad, familias, barrio, centro de acción y distancia máxima) se compartirán con el grupo."}</span>
           : <span>¿Queréis compartir ofertas favoritas con el resto de personas? Entra a tu grupo o crea uno.</span>}
       </span>
       <Button size="sm" variant="outline" onClick={irAGrupo}>{dentro ? "Ver el grupo" : "Entrar o crear un grupo"}</Button>

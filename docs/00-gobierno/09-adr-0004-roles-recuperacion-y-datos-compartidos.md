@@ -46,7 +46,7 @@ ultima_revision: 2026-10-12
 - **Los grupos anteriores a este cambio no tienen código** hasta que su administradora lo genere desde «Administrar el grupo».
 - **Gana el último que escribe** en los datos compartidos y no hay avisos de conflicto ni actualización en vivo: otra persona los ve al cargar la página.
 - **La confianza sigue siendo de contraseñas:** quien conozca la del grupo y la de una persona entra como ella (ADR-0001).
-- **Nuevo tratamiento de datos:** comunidad, ciudad, familias y barrio no identifican por sí solos a una persona, pero junto al nombre del grupo pueden orientar sobre una cooperativa concreta. Va en el aviso y en el dossier jurídico.
+- **Nuevo tratamiento de datos:** comunidad, ciudad, familias, barrio, centro de acción y distancia máxima no identifican por sí solos a una persona, pero junto al nombre del grupo pueden orientar sobre una cooperativa concreta. Va en el aviso y en el dossier jurídico.
 
 ## Estado de implementación (12/10/2026)
 
