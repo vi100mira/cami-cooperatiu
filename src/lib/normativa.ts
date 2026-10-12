@@ -67,7 +67,7 @@ const CV: Normativa = {
     cesionUrbanizable: { valor: 10, verif: "verificada", fuente: { norma: LOTUP, articulo: "82.1.a", url: BOE_TRLOTUP, consultada: D12 }, nota: "Excepcionalmente puede subir hasta el 20 % si la rentabilidad del sector es sensiblemente superior." },
     cesionUrbanoUE: { valor: 5, verif: "verificada", fuente: { norma: LOTUP, articulo: "82.1.c", url: BOE_TRLOTUP, consultada: D12 }, nota: "Para suelo urbano por urbanizar en unidades de ejecución, sin incremento de aprovechamiento." },
     reservaVPP: {
-      valor: 30, verif: "comprobar",
+      valor: 30, rango: [30, 40], verif: "comprobar",
       fuente: { norma: LOTUP, articulo: "33.1.a", url: BOE_TRLOTUP, consultada: D12 },
       nota: "El texto valenciano dice 30 %, pero el Estado fija un mínimo del 40 % (RDL 7/2015, art. 20.1, tras la Ley 12/2023), con posibilidad de una reserva inferior por ley autonómica: la cifra queda por comprobar. Están exentos de esta reserva los planes de municipios de menos de 10.000 habitantes con menos de cinco viviendas autorizadas por cada mil habitantes y año en los dos últimos años, siempre que no ordenen más de 100 viviendas nuevas, y las reformas de la urbanización con menos de 200 viviendas (art. 33.3, en vigor desde el 10/12/2024).",
     },

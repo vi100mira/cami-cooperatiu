@@ -75,7 +75,7 @@ function Cascada({ r }: { r: TerrenoResultado }) {
   );
 }
 
-function Avisos({ r, p, t }: { r: TerrenoResultado; p: Record<ParamKey, number>; t: TerrenoInput }) {
+function Avisos({ r, p, t, vppRango }: { r: TerrenoResultado; p: Record<ParamKey, number>; t: TerrenoInput; vppRango?: [number, number] }) {
   const m2 = Math.max(1, t.m2Vivienda || 90);
   const aviso = (v: "info" | "warning", texto: React.ReactNode, i: boolean) => <Alert variant={v}>{i ? <Info aria-hidden /> : <TriangleAlert aria-hidden />}<span>{texto}</span></Alert>;
   return (
@@ -84,7 +84,7 @@ function Avisos({ r, p, t }: { r: TerrenoResultado; p: Record<ParamKey, number>;
       {r.avisos.includes("densidad") && aviso("warning", <>Densidad máxima de {fnum(p.densMax, 0)} viviendas por hectárea: el sector queda en {fnum((p.densMax * r.sueloBruto) / 10000, 0)} (con {fnum(m2, 0)} m² por vivienda el techo daría {fnum(r.viviendasSector, 0)}).</>, false)}
       {r.avisos.includes("por-urbanizar") && aviso("info", <>Suelo urbano por urbanizar: las dotaciones y los viales los fija el plan del ayuntamiento. Estas cifras son un tope orientativo.</>, true)}
       {r.avisos.includes("solar") && aviso("info", <>Solar: sin cesiones ni urbanización. Pide la edificabilidad al ayuntamiento (cédula urbanística).</>, true)}
-      {r.reservaVPPPct > 0 && aviso("info", <>El {fnum(r.reservaVPPPct, 0)} % del techo ({nf0.format(r.reservaVPPTecho)} m²) será vivienda protegida, con sus precios máximos y requisitos.</>, true)}
+      {r.reservaVPPPct > 0 && aviso("info", <>El {fnum(r.reservaVPPPct, 0)} % del techo ({nf0.format(r.reservaVPPTecho)} m²) será vivienda protegida, con sus precios máximos y requisitos.{vppRango && <> La cifra está por comprobar: entre el {fnum(vppRango[0], 0)} % y el {fnum(vppRango[1], 0)} % serían {nf0.format((r.techoTotal * vppRango[0]) / 100)} a {nf0.format((r.techoTotal * vppRango[1]) / 100)} m². Los municipios pequeños con poca construcción pueden estar exentos (pestaña Normas).</>}</>, true)}
     </>
   );
 }
@@ -247,7 +247,7 @@ export default function Terreno() {
                 {hayNormas && <TabsTrigger value="normas" className={TAB}>Normas ({claves.length})</TabsTrigger>}
               </TabsList>
               <TabsContent value="reparto">
-                <Avisos r={r} p={p} t={t} />
+                <Avisos r={r} p={p} t={t} vppRango={n.params.reservaVPP?.rango} />
                 {r.edificable && <Cascada r={r} />}
               </TabsContent>
               <TabsContent value="costes"><Costes r={r} /></TabsContent>

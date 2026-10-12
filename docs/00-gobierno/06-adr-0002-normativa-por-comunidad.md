@@ -49,7 +49,7 @@ ultima_revision: 2026-10-11
 - **Los costes de urbanización** (125 €/m² de urbanización y 55 €/m² de zona verde) salen de la memoria de viabilidad del PEPRI T-1 de València de abril de 2026, con módulos del IVE. Otros documentos dan cifras distintas: Olocau en 2018 entre 122 y 161 €/m² de viales y entre 44 y 52 de zonas verdes, y València en 2010 240 y 120. La primera versión usaba las de 2010 sin saber su año; el 12/10/2026 se comprobó que eran de julio de 2010 y se sustituyeron. Los 20 m² de viales por cada 100 m² de techo son un método de estimación. Son editables y están marcados como estimación.
 - **Los plazos hasta poder construir** no tienen fuente: el valor por defecto es una estimación y se avisa.
 - **La edificabilidad real de un terreno la fija el plan del ayuntamiento.** La calculadora es orientación y recomienda pedir el informe o cédula urbanística.
-- Solo la Comunitat Valenciana está cargada. Para el resto se usa el marco estatal y referencias, con aviso.
+- Solo la Comunitat Valenciana está cargada, y es el ámbito previsto (con la provincia de València). Para el resto se usa el marco estatal y referencias, con aviso.
 
 ## Estado de implementación (11/10/2026)
 
@@ -60,9 +60,9 @@ ultima_revision: 2026-10-11
 
 ## Pendiente
 
-1. Comprobar la reserva del 30 % frente al 40 % estatal. Los artículos 33, 36 y 82 ya están verificados en el BOE (12/10/2026).
+1. Comprobar la reserva del 30 % frente al 40 % estatal. Los artículos 33, 36 y 82 ya están verificados en el BOE (12/10/2026). Mientras tanto, la interfaz muestra el rango (30–40 %) en metros cuadrados de techo (`rango: [30, 40]`).
 2. Los costes de referencia son de un plan de reforma interior de València (abril de 2026): revisarlos cuando haya un documento más reciente o de nueva urbanización.
-3. Cargar otras comunidades, con revisión de cada fuente.
+3. ~~Cargar otras comunidades~~ Descartado el 12/10/2026: el ámbito se limita a la Comunitat Valenciana y la provincia de València. El registro sigue preparado para añadir comunidades como datos si cambia la decisión.
 4. Decidir una revisión periódica de la normativa y qué hacer ante el anteproyecto de ley del suelo valenciana.
 5. Valorar guardar la clase de suelo en la ficha de cada candidato y leerla de los anuncios cuando el portal la indique.
 

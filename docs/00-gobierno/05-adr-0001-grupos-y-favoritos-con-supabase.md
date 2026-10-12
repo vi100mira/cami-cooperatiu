@@ -65,7 +65,7 @@ Límites de la verificación: la búsqueda en vivo está apagada en local, así 
 
 ## Pendiente
 
-1. Revisión jurídica del aviso de privacidad y de las garantías de transferencia internacional (Vercel), La caducidad de grupos inactivos se decidió el 12/10/2026: sin plazo automático y con purga manual (ADR-0003). Responsable y contacto: hechos el 11/10/2026.
+1. Revisión jurídica del aviso de privacidad y de las garantías de transferencia internacional. Comprobado el 12/10/2026 en los contratos de tratamiento de datos de ambos proveedores: Vercel (actualizado el 17/03/2026) y Supabase recogen las cláusulas contractuales tipo de la Comisión Europea (Decisión de Ejecución (UE) 2021/914) y ninguno menciona el Marco de Privacidad de Datos UE–EE. UU.; el aviso lo refleja. Que esas cláusulas basten en este caso lo debe validar la revisión jurídica (dossier en `08-dossier-revision-juridica.md`). La caducidad de grupos inactivos se decidió el 12/10/2026: sin plazo automático y con purga manual (ADR-0003). Responsable y contacto: hechos el 11/10/2026.
 2. Variables en Vercel: hechas el 11/10/2026 en Production (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` con valor distinto del local, sin prefijo `NEXT_PUBLIC_`). Falta decidir si se añaden a Preview: hacerlo haría que los despliegues de prueba escribieran en la misma base que producción, porque solo hay un proyecto de Supabase.
 3. Hecho el 12/10/2026: el script de extremo a extremo está en el repositorio como prueba de integración.
 4. Decidir si se añade administración del grupo (hoy no hay roles) y recuperación de contraseña.

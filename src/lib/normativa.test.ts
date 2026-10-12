@@ -14,6 +14,7 @@ describe("normativaPara", () => {
     expect(r.valor).toBe(30);
     expect(r.verif).toBe("comprobar");
     expect(r.nota).toMatch(/40 %/);
+    expect(r.rango).toEqual([30, 40]);
   });
 
   it("la reserva valenciana avisa de la exención de los municipios pequeños (art. 33.3)", () => {

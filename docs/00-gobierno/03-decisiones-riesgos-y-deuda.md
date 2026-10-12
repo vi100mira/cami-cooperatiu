@@ -49,7 +49,7 @@ ultima_revision: 2026-10-11
 - Varios commits de arreglo directamente en producción (p. ej. «Arreglo de sintaxis»): no hay comprobación previa al push desde Cowork.
 - Las rutas de grupos y favoritos tienen pruebas unitarias de sus piezas y la prueba de extremo a extremo `npm run test:e2e` (31 comprobaciones el 12/10/2026), que hay que ejecutar a mano contra un servidor con la base real: no corre en ningún CI.
 - No hay roles ni administración de grupo, ni recuperación de contraseña.
-- Solo la Comunitat Valenciana tiene normativa cargada; las demás usan el marco estatal y referencias con aviso. Cargar una comunidad exige revisar cada fuente.
+- Solo la Comunitat Valenciana tiene normativa cargada, y el ámbito del proyecto se centra en ella y en la provincia de València (decisión del 12/10/2026). Fuera de ahí se usa el marco estatal y referencias con aviso. Cargar otra comunidad exigiría revisar cada fuente.
 - El plazo hasta poder construir y los costes de urbanización de referencia no tienen una fuente oficial; son estimaciones editables.
 - La clase de suelo no se guarda en la ficha de cada candidato ni se lee de los anuncios.
 - El esquema vive en `supabase/migrations/`, pero no hay herramienta que lo aplique ni detecte desvíos con la base real.
