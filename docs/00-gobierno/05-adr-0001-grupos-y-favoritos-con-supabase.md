@@ -46,7 +46,7 @@ ultima_revision: 2026-10-11
 **Riesgos y límites aceptados**
 - **La seguridad pasa a depender del servidor.** Quien obtenga `SUPABASE_SERVICE_ROLE_KEY` o `AUTH_SECRET` salta cualquier aislamiento; RLS no protege frente a esa clave.
 - **Sistema basado en confianza:** quien conozca la contraseña del grupo y la de una persona entra como ella.
-- **Sin recuperación de contraseña:** no hay correo; una contraseña perdida no se recupera.
+- **Sin recuperación por correo:** no hay correo. Desde el 12/10/2026 (ADR-0004) una contraseña perdida se recupera con el código de recuperación del grupo o con quien administra.
 - **Límite de intentos en memoria**, por instancia serverless y por IP: es un freno, no una garantía contra fuerza bruta.
 - **Sesión de una persona borrada:** su cookie sigue firmada hasta 12 horas, aunque `/api/sesion` ya la degrada a «grupo» y las escrituras fallan.
 - **Datos personales en servidor** (nombres o alias): aplican las obligaciones del RGPD. El responsable (Leida cooperativa) y su contacto constan en el aviso desde el 11/10/2026; falta la revisión jurídica.
@@ -68,7 +68,7 @@ Límites de la verificación: la búsqueda en vivo está apagada en local, así 
 1. Revisión jurídica del aviso de privacidad y de las garantías de transferencia internacional. Comprobado el 12/10/2026 en los contratos de tratamiento de datos de ambos proveedores: Vercel (actualizado el 17/03/2026) y Supabase recogen las cláusulas contractuales tipo de la Comisión Europea (Decisión de Ejecución (UE) 2021/914) y ninguno menciona el Marco de Privacidad de Datos UE–EE. UU.; el aviso lo refleja. Que esas cláusulas basten en este caso lo debe validar la revisión jurídica (dossier en `08-dossier-revision-juridica.md`). La caducidad de grupos inactivos se decidió el 12/10/2026: sin plazo automático y con purga manual (ADR-0003). Responsable y contacto: hechos el 11/10/2026.
 2. Variables en Vercel: hechas el 11/10/2026 en Production (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `AUTH_SECRET` con valor distinto del local, sin prefijo `NEXT_PUBLIC_`). Falta decidir si se añaden a Preview: hacerlo haría que los despliegues de prueba escribieran en la misma base que producción, porque solo hay un proyecto de Supabase.
 3. Hecho el 12/10/2026: el script de extremo a extremo está en el repositorio como prueba de integración.
-4. Decidir si se añade administración del grupo (hoy no hay roles) y recuperación de contraseña.
+4. ~~Decidir si se añade administración del grupo y recuperación de contraseña.~~ Decidido e implementado el 12/10/2026: ADR-0004.
 5. Valorar el paso a Supabase Auth cuando haya usuarios reales.
 
 ## Evidencia en el código

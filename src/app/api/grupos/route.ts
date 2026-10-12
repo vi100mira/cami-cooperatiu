@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, generarCodigo, normalizarCodigo } from "@/lib/auth";
 import { fijarSesion } from "@/lib/session";
 import { validarAlta } from "@/lib/validate";
 import { rateLimit } from "@/lib/guards";
 import { ipDe } from "@/lib/http";
 
-// Alta de grupo: crea el grupo y su primer miembro, y deja la sesión iniciada.
+// Alta de grupo: crea el grupo y su primer miembro (que lo administra), y deja la sesión iniciada.
 export async function POST(req: Request) {
   if (!rateLimit("alta:" + ipDe(req), undefined, 10, 15 * 60_000))
     return NextResponse.json({ error: "Demasiados intentos. Espera unos minutos." }, { status: 429 });
@@ -16,10 +16,11 @@ export async function POST(req: Request) {
   const { nombre, slug, grupoPassword, miembro, miembroPassword } = r.v;
 
   const sb = db();
-  const [gh, mh] = await Promise.all([hashPassword(grupoPassword), hashPassword(miembroPassword)]);
+  const codigo = generarCodigo();
+  const [gh, mh, rh] = await Promise.all([hashPassword(grupoPassword), hashPassword(miembroPassword), hashPassword(normalizarCodigo(codigo))]);
 
   const { data: g, error: eg } = await sb.from("grupos_cooperativos")
-    .insert({ nombre, slug, password_hash: gh }).select("id").single();
+    .insert({ nombre, slug, password_hash: gh, recovery_hash: rh }).select("id").single();
   if (eg) {
     const dup = eg.code === "23505";
     return NextResponse.json(
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
   }
 
   const { data: m, error: em } = await sb.from("miembros")
-    .insert({ grupo_id: g.id, nombre: miembro, password_hash: mh }).select("id").single();
+    .insert({ grupo_id: g.id, nombre: miembro, password_hash: mh, es_admin: true }).select("id").single();
   if (em) {
     // Sin primer miembro el grupo no sirve: se deshace para no dejar datos a medias.
     await sb.from("grupos_cooperativos").delete().eq("id", g.id);
@@ -37,5 +38,6 @@ export async function POST(req: Request) {
   }
 
   await fijarSesion({ g: g.id, m: m.id });
-  return NextResponse.json({ ok: true, slug });
+  // El código de recuperación se devuelve solo esta vez; en la base queda su huella.
+  return NextResponse.json({ ok: true, slug, codigo });
 }

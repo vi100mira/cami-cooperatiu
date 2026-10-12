@@ -1,4 +1,5 @@
 // Validación de entrada en servidor. Todo lo que llega del navegador se trata como no fiable.
+import { REGIONS } from "./content";
 
 export const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -57,4 +58,22 @@ export function datosOferta(x: unknown): { ok: true; v: DatosOferta } | { ok: fa
       fuente: texto(o.fuente, 0, 40) || null,
     },
   };
+}
+
+// Contraseña nueva (personal o de grupo): mismo criterio que en el alta.
+export const passwordValida = (x: unknown): x is string => typeof x === "string" && x.length >= 8 && x.length <= 200;
+
+// Datos de la cooperativa que comparten las personas del grupo. Lista blanca: ingresos y capital nunca se guardan.
+export interface DatosGrupo { region: string; ciudad: string; familias: number; barrio: string; }
+
+export function validarDatosGrupo(x: unknown): { ok: true; v: DatosGrupo } | { ok: false; error: string } {
+  const o = (x && typeof x === "object" ? x : {}) as Record<string, unknown>;
+  const region = typeof o.region === "string" ? o.region : "";
+  const ciudad = typeof o.ciudad === "string" ? o.ciudad.trim() : "";
+  const barrio = typeof o.barrio === "string" ? o.barrio.trim() : "";
+  const familias = typeof o.familias === "number" && Number.isInteger(o.familias) ? o.familias : NaN;
+  if (region && !REGIONS.some((r) => r[0] === region)) return { ok: false, error: "Comunidad no válida." };
+  if (ciudad.length > 80 || barrio.length > 80) return { ok: false, error: "La ciudad y el barrio admiten hasta 80 caracteres." };
+  if (!(familias >= 1 && familias <= 200)) return { ok: false, error: "Las familias deben ser entre 1 y 200." };
+  return { ok: true, v: { region, ciudad, familias, barrio } };
 }

@@ -40,12 +40,18 @@ La sesión es una cookie firmada (`httpOnly`, `sameSite=strict`, 12 h) que lleva
 ### Límites conocidos
 
 - Quien conozca la contraseña del grupo y la de una persona entra como ella.
-- No hay recuperación de contraseña (no hay correo) ni roles de administración.
-- Los datos de ruta, calculadoras y candidatos no se comparten entre personas ni dispositivos.
+- Sin correo, la recuperación depende del código de recuperación del grupo (se enseña una sola vez) o de quien administra (ADR-0004). Gana el último que escribe en los datos compartidos.
+- Los ingresos, las calculadoras, los candidatos y el nombre de la cooperativa no se comparten entre personas ni dispositivos; solo se comparten la comunidad, la ciudad, las familias y el barrio.
+
+### Administración y recuperación (ADR-0004)
+
+- **Quien crea el grupo lo administra.** Puede quitar a una persona, restablecer su contraseña y generar un código de recuperación nuevo, confirmando cada vez con su contraseña personal. Si se va, pasa a administrarlo quien lleva más tiempo.
+- **Código de recuperación:** se enseña una vez al crear el grupo y sirve, sin haber entrado, para cambiar la contraseña de una persona o la del grupo. Es de un solo uso: al usarlo se genera otro.
+- **Cualquier persona** puede cambiar su propia contraseña conociendo la actual.
 
 ### Datos personales
 
-Solo el nombre del grupo, el nombre o alias de cada persona, las contraseñas cifradas y los favoritos. No se piden correo, teléfono, DNI, ingresos ni datos bancarios, y los ingresos de las calculadoras siguen siendo locales. Hay aviso de privacidad visible y cada persona puede borrar su perfil desde la pestaña «Grupo»; si es la última, el grupo también se borra. No hay caducidad automática: se anota la fecha de última actividad y el responsable puede purgar a mano los grupos inactivos (ADR-0003). El responsable es Leida cooperativa y su contacto consta en el aviso desde el 11/10/2026. **Pendiente:** revisión jurídica del aviso.
+Solo el nombre del grupo, el nombre o alias de cada persona, las contraseñas y el código de recuperación (cifrados), quién administra, los favoritos y los datos básicos de la cooperativa (comunidad, ciudad, familias y barrio). No se piden correo, teléfono, DNI, ingresos ni datos bancarios, y los ingresos de las calculadoras siguen siendo locales. Hay aviso de privacidad visible y cada persona puede borrar su perfil desde la pestaña «Grupo»; si es la última, el grupo también se borra. No hay caducidad automática: se anota la fecha de última actividad y el responsable puede purgar a mano los grupos inactivos (ADR-0003). El responsable es Leida cooperativa y su contacto consta en el aviso desde el 11/10/2026. **Pendiente:** revisión jurídica del aviso.
 
 ## Fase 1b: exportar e importar el estado local (pendiente, sin servidor)
 

@@ -4,7 +4,8 @@ import { datosDeListing, ofertaIdDe, type DatosFav, type Tipo } from "./favorito
 import type { Listing } from "./parse-fotocasa";
 
 export interface Fav { id: string; ofertaId: string; datos: DatosFav; fecha: string; marcadoPor: string; esMio: boolean; }
-export interface Persona { id: string; nombre: string; }
+export interface Persona { id: string; nombre: string; esAdmin?: boolean; }
+export interface DatosCoop { region: string; ciudad: string; familias: number; barrio: string; }
 export interface GrupoInfo { nombre: string; slug: string; }
 export type Estado = "cargando" | "fuera" | "grupo" | "miembro";
 export interface Alta { nombre: string; slug: string; password: string; miembro: string; miembroPassword: string; }
@@ -23,6 +24,18 @@ interface Ctx {
   /** Cada acción devuelve un mensaje de error, o null si ha ido bien. */
   entrarGrupo: (slug: string, password: string) => Promise<string | null>;
   crearGrupo: (a: Alta) => Promise<string | null>;
+  /** Código de recuperación recién generado: se enseña una sola vez. */
+  codigoNuevo: string | null;
+  descartarCodigo: () => void;
+  /** Acciones de quien administra el grupo; piden su contraseña personal. */
+  quitarPersona: (miembroId: string, password: string) => Promise<string | null>;
+  restablecerPassword: (miembroId: string, nuevaPassword: string, password: string) => Promise<string | null>;
+  nuevoCodigo: (password: string) => Promise<string | null>;
+  cambiarMiPassword: (actual: string, nueva: string) => Promise<string | null>;
+  recuperar: (a: { slug: string; codigo: string; que: "grupo" | "miembro"; nombre?: string; nuevaPassword: string }) => Promise<string | null>;
+  /** Datos de «Tu cooperativa» compartidos por el grupo (null si todavía nadie los ha guardado). */
+  datosCoop: DatosCoop | null | undefined;
+  guardarDatosCoop: (d: DatosCoop) => Promise<string | null>;
   elegirMiembro: (id: string, password: string) => Promise<string | null>;
   anadirMiembro: (nombre: string, password: string) => Promise<string | null>;
   cambiarPersona: () => Promise<void>;
@@ -42,13 +55,18 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
   const [miembro, setMiembro] = useState<Persona | null>(null);
   const [miembros, setMiembros] = useState<Persona[]>([]);
   const [favoritos, setFavoritos] = useState<Fav[]>([]);
+  const [codigoNuevo, setCodigoNuevo] = useState<string | null>(null);
+  const [datosCoop, setDatosCoop] = useState<DatosCoop | null | undefined>(undefined);
 
   const refrescar = useCallback(async () => {
     const r = await api<{ disponible: boolean; estado: Estado; grupo?: GrupoInfo; miembro?: Persona }>("/api/sesion");
     if (!r.ok) { setDisponible(false); setEstado("fuera"); setGrupo(null); setMiembro(null); return; }
     setDisponible(r.j.disponible); setEstado(r.j.estado); setGrupo(r.j.grupo ?? null); setMiembro(r.j.miembro ?? null);
-    if (r.j.estado === "miembro") { const f = await api<{ favoritos: Fav[] }>("/api/favoritos"); setFavoritos(f.ok ? f.j.favoritos : []); } else setFavoritos([]);
-    if (r.j.estado === "grupo") { const m = await api<{ miembros: Persona[] }>("/api/miembros"); setMiembros(m.ok ? m.j.miembros : []); }
+    if (r.j.estado === "miembro") {
+      const [f, d] = await Promise.all([api<{ favoritos: Fav[] }>("/api/favoritos"), api<{ datos: DatosCoop | null }>("/api/grupos/datos")]);
+      setFavoritos(f.ok ? f.j.favoritos : []); setDatosCoop(d.ok ? d.j.datos : undefined);
+    } else { setFavoritos([]); setDatosCoop(undefined); }
+    if (r.j.estado === "grupo" || r.j.estado === "miembro") { const m = await api<{ miembros: Persona[] }>("/api/miembros"); setMiembros(m.ok ? m.j.miembros : []); }
   }, []);
   useEffect(() => { refrescar(); }, [refrescar]);
 
@@ -60,7 +78,37 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
   }, [refrescar]);
 
   const entrarGrupo = useCallback((slug: string, password: string) => accion("/api/grupos/entrar", "POST", { slug, password }), [accion]);
-  const crearGrupo = useCallback((a: Alta) => accion("/api/grupos", "POST", a), [accion]);
+  const crearGrupo = useCallback(async (a: Alta) => {
+    const r = await api<{ codigo: string }>("/api/grupos", "POST", a);
+    if (!r.ok) return r.j.error ?? FALLO;
+    setCodigoNuevo(r.j.codigo);
+    await refrescar();
+    return null;
+  }, [refrescar]);
+  const descartarCodigo = useCallback(() => setCodigoNuevo(null), []);
+  const quitarPersona = useCallback((miembroId: string, password: string) => accion("/api/grupos/admin", "POST", { accion: "quitar", miembroId, password }), [accion]);
+  const restablecerPassword = useCallback((miembroId: string, nuevaPassword: string, password: string) => accion("/api/grupos/admin", "POST", { accion: "restablecer", miembroId, nuevaPassword, password }), [accion]);
+  const nuevoCodigo = useCallback(async (password: string) => {
+    const r = await api<{ codigo: string }>("/api/grupos/admin", "POST", { accion: "codigo", password });
+    if (!r.ok) return r.j.error ?? FALLO;
+    setCodigoNuevo(r.j.codigo);
+    return null;
+  }, []);
+  const cambiarMiPassword = useCallback(async (actual: string, nueva: string) => {
+    const r = await api("/api/miembros/yo", "PATCH", { actual, nueva });
+    return r.ok ? null : r.j.error ?? FALLO;
+  }, []);
+  const recuperar = useCallback(async (a: { slug: string; codigo: string; que: "grupo" | "miembro"; nombre?: string; nuevaPassword: string }) => {
+    const r = await api<{ codigo: string }>("/api/grupos/recuperar", "POST", a);
+    if (!r.ok) return r.j.error ?? FALLO;
+    setCodigoNuevo(r.j.codigo);
+    return null;
+  }, []);
+  const guardarDatosCoop = useCallback(async (d: DatosCoop) => {
+    const r = await api("/api/grupos/datos", "PUT", d);
+    if (r.ok) setDatosCoop(d);
+    return r.ok ? null : r.j.error ?? FALLO;
+  }, []);
   const elegirMiembro = useCallback((miembroId: string, password: string) => accion("/api/miembros/entrar", "POST", { miembroId, password }), [accion]);
   const anadirMiembro = useCallback(async (nombre: string, password: string) => {
     const r = await api<{ id: string }>("/api/miembros", "POST", { nombre, password });
@@ -106,8 +154,9 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
 
   const valor = useMemo<Ctx>(() => ({
     estado, disponible, grupo, miembro, miembros, favoritos,
+    codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop,
     entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, quitarFavorito, esFavorito, quienes,
-  }), [estado, disponible, grupo, miembro, miembros, favoritos, entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, quitarFavorito, esFavorito, quienes]);
+  }), [estado, disponible, grupo, miembro, miembros, favoritos, codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop, entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, quitarFavorito, esFavorito, quienes]);
   return <C.Provider value={valor}>{children}</C.Provider>;
 }
 export function useGrupo() { const c = useContext(C); if (!c) throw new Error("GrupoProvider"); return c; }

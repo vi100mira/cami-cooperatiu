@@ -11,9 +11,9 @@ export async function GET() {
   if (!s) return NextResponse.json({ error: "Entra primero al grupo." }, { status: 401 });
 
   const { data, error } = await db().from("miembros")
-    .select("id, nombre").eq("grupo_id", s.g).order("nombre");
+    .select("id, nombre, es_admin").eq("grupo_id", s.g).order("nombre");
   if (error) return NextResponse.json({ error: "No se han podido cargar los miembros." }, { status: 500 });
-  return NextResponse.json({ miembros: data ?? [] });
+  return NextResponse.json({ miembros: (data ?? []).map((m) => ({ id: m.id, nombre: m.nombre, esAdmin: m.es_admin })) });
 }
 
 // Añadir un miembro al grupo ya existente.

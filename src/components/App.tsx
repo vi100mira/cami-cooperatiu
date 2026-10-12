@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StoreProvider, useStore } from "@/lib/store";
 import { GrupoProvider, useGrupo } from "@/lib/grupo";
+import { SyncDatosGrupo } from "./SyncDatosGrupo";
 import { HelpCtx } from "./Rich";
 import Sheet from "./Sheet";
 import Ruta, { Hero } from "./Ruta";
@@ -71,7 +72,7 @@ function Shell() {
           <div className="sf-cols">
             <p><b>Orientación, no asesoría.</b> No es asesoría jurídica ni financiera: antes de firmar estatutos, préstamos o compras, consulta con una persona profesional y con una federación como Fecovi.</p>
             <p><b>Datos orientativos.</b> Las cifras de las calculadoras son ejemplos editables. Los anuncios de la búsqueda en vivo proceden de portales externos y pueden no estar actualizados. Las condiciones de cada concurso cambian: lee siempre sus bases.</p>
-            <p><b>Privacidad.</b> Solo si creas o entras a un grupo guardamos tu nombre o alias, contraseñas cifradas y los favoritos que marques. Sin correo, teléfono ni datos bancarios. Responsable: Leida cooperativa. <button type="button" className="font-semibold text-primary underline" onClick={() => go("grupo", "privacidad")}>Leer el aviso completo</button></p>
+            <p><b>Privacidad.</b> Solo si creas o entras a un grupo guardamos tu nombre o alias, contraseñas cifradas, los favoritos que marques y los datos básicos de la cooperativa (comunidad, ciudad, familias y barrio). Sin correo, teléfono ni datos bancarios. Responsable: Leida cooperativa. <button type="button" className="font-semibold text-primary underline" onClick={() => go("grupo", "privacidad")}>Leer el aviso completo</button></p>
           </div>
         </footer>
       </div>
@@ -80,4 +81,4 @@ function Shell() {
   );
 }
 
-export default function App() { return <StoreProvider><GrupoProvider><Shell /></GrupoProvider></StoreProvider>; }
+export default function App() { return <StoreProvider><GrupoProvider><SyncDatosGrupo /><Shell /></GrupoProvider></StoreProvider>; }

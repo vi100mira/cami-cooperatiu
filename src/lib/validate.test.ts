@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { slugDesde, validarAlta, datosOferta } from "./validate";
+import { slugDesde, validarAlta, datosOferta, validarDatosGrupo, passwordValida } from "./validate";
 
 describe("slugDesde", () => {
   it("normaliza acentos, ñ y signos", () => {
@@ -45,5 +45,34 @@ describe("datosOferta (lista blanca)", () => {
     const r = datosOferta({ titulo: "X", url: "https://x.es", tipo: "terrenos", precio: -5, m2: "80" });
     expect(r.ok).toBe(true);
     if (r.ok) { expect(r.v.precio).toBeNull(); expect(r.v.m2).toBeNull(); }
+  });
+});
+
+describe("validarDatosGrupo", () => {
+  const ok = { region: "cv", ciudad: "València", familias: 12, barrio: "Russafa" };
+  it("acepta datos correctos y descarta campos de más", () => {
+    const r = validarDatosGrupo({ ...ok, ingresos: 99999, capital: 5 });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(Object.keys(r.v).sort()).toEqual(["barrio", "ciudad", "familias", "region"]);
+  });
+  it("admite la comunidad sin elegir", () => expect(validarDatosGrupo({ ...ok, region: "" }).ok).toBe(true));
+  it("rechaza comunidades inventadas, familias fuera de rango y textos largos", () => {
+    expect(validarDatosGrupo({ ...ok, region: "zz" }).ok).toBe(false);
+    expect(validarDatosGrupo({ ...ok, familias: 0 }).ok).toBe(false);
+    expect(validarDatosGrupo({ ...ok, familias: 201 }).ok).toBe(false);
+    expect(validarDatosGrupo({ ...ok, familias: 2.5 }).ok).toBe(false);
+    expect(validarDatosGrupo({ ...ok, familias: "12" }).ok).toBe(false);
+    expect(validarDatosGrupo({ ...ok, ciudad: "x".repeat(81) }).ok).toBe(false);
+    expect(validarDatosGrupo(null).ok).toBe(false);
+    expect(validarDatosGrupo({}).ok).toBe(false);
+  });
+});
+
+describe("passwordValida", () => {
+  it("exige entre 8 y 200 caracteres", () => {
+    expect(passwordValida("corta")).toBe(false);
+    expect(passwordValida("suficiente1")).toBe(true);
+    expect(passwordValida("x".repeat(201))).toBe(false);
+    expect(passwordValida(12345678)).toBe(false);
   });
 });

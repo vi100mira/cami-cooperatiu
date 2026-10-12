@@ -47,8 +47,8 @@ ultima_revision: 2026-10-11
 - No hay CI que ejecute los tests antes del despliegue.
 - Aviso de Vitest por usar `__dirname` en `vitest.config.mts`.
 - Varios commits de arreglo directamente en producción (p. ej. «Arreglo de sintaxis»): no hay comprobación previa al push desde Cowork.
-- Las rutas de grupos y favoritos tienen pruebas unitarias de sus piezas y la prueba de extremo a extremo `npm run test:e2e` (31 comprobaciones el 12/10/2026), que hay que ejecutar a mano contra un servidor con la base real: no corre en ningún CI.
-- No hay roles ni administración de grupo, ni recuperación de contraseña.
+- Las rutas de grupos y favoritos tienen pruebas unitarias de sus piezas y la prueba de extremo a extremo `npm run test:e2e` (64 comprobaciones el 12/10/2026 en local; 31 contra producción antes de ADR-0004), que hay que ejecutar a mano contra un servidor con la base real: no corre en ningún CI.
+- Administración de grupo y recuperación de contraseña implementadas el 12/10/2026 (ADR-0004), pendientes de desplegar. Los grupos anteriores no tienen código de recuperación hasta que su administradora lo genere; sin conversaciones en vivo, los datos compartidos de la cooperativa se ven al cargar y gana el último que escribe.
 - Solo la Comunitat Valenciana tiene normativa cargada, y el ámbito del proyecto se centra en ella y en la provincia de València (decisión del 12/10/2026). Fuera de ahí se usa el marco estatal y referencias con aviso. Cargar otra comunidad exigiría revisar cada fuente.
 - El plazo hasta poder construir y los costes de urbanización de referencia no tienen una fuente oficial; son estimaciones editables.
 - La clase de suelo no se guarda en la ficha de cada candidato ni se lee de los anuncios.

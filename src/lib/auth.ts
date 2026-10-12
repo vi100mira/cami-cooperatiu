@@ -1,10 +1,19 @@
 import bcrypt from "bcryptjs";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, randomInt, timingSafeEqual } from "crypto";
 
 // Contraseñas: siempre hash bcrypt, nunca texto plano.
 const COST = 12;
 export const hashPassword = (p: string) => bcrypt.hash(p, COST);
 export const checkPassword = (p: string, hash: string) => bcrypt.compare(p, hash);
+
+// Código de recuperación del grupo: 20 caracteres sin los ambiguos (0/O, 1/I/L), unos 100 bits. Se muestra una vez y solo se guarda su huella.
+const ALFABETO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+export function generarCodigo(): string {
+  const c = Array.from({ length: 20 }, () => ALFABETO[randomInt(ALFABETO.length)]).join("");
+  return c.match(/.{5}/g)!.join("-");
+}
+/** Quita guiones y espacios y pasa a mayúsculas, para que se pueda escribir con o sin guiones. */
+export const normalizarCodigo = (c: string) => c.replace(/[\s-]/g, "").toUpperCase();
 
 // Sesión: token firmado (HMAC-SHA256) con { g: grupo, m?: miembro, exp }. Sin secreto no se puede falsificar.
 export interface Sesion { g: string; m?: string; exp: number; }

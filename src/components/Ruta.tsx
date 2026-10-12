@@ -65,7 +65,7 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
           <Field label="Familias" htmlFor="g-fam"><Input id="g-fam" type="number" min={1} max={200} inputMode="numeric" value={s.group.fam} onChange={(e) => { const v = parseInt(e.target.value, 10); if (isNaN(v)) return; set((x) => ({ ...x, group: { ...x.group, fam: Math.max(1, Math.min(200, v)) } })); }} /></Field>
           <Field label="Barrio o zona de interés" htmlFor="g-barrio"><Input id="g-barrio" type="text" autoComplete="off" placeholder="Por ejemplo, Cabanyal o Patraix" value={s.group.barrio} onChange={(e) => set((x) => ({ ...x, group: { ...x.group, barrio: e.target.value } }))} /></Field>
         </div>
-        <p className="text-[13px] text-muted-foreground">Estos datos adaptan las entidades, los enlaces y los mensajes a tu zona, y alimentan las calculadoras. Se guardan solo en este navegador.</p>
+        <p className="text-[13px] text-muted-foreground">Estos datos adaptan las entidades, los enlaces y los mensajes a tu zona, y alimentan las calculadoras. Se guardan en este navegador; si entras a un grupo, la comunidad, la ciudad, las familias y el barrio también se comparten con él.</p>
         <GrupoConexion />
       </Card>
       <div className="grid gap-1.5">

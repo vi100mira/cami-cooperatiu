@@ -13,9 +13,9 @@ export async function GET() {
     const { data: g } = await sb.from("grupos_cooperativos").select("nombre, slug").eq("id", s.g).maybeSingle();
     if (!g) { (await cookies()).delete(COOKIE); return NextResponse.json({ disponible: true, estado: "fuera" }); }
     if (!s.m) return NextResponse.json({ disponible: true, estado: "grupo", grupo: g });
-    const { data: m } = await sb.from("miembros").select("id, nombre").eq("id", s.m).eq("grupo_id", s.g).maybeSingle();
+    const { data: m } = await sb.from("miembros").select("id, nombre, es_admin").eq("id", s.m).eq("grupo_id", s.g).maybeSingle();
     if (!m) { await fijarSesion({ g: s.g }); return NextResponse.json({ disponible: true, estado: "grupo", grupo: g }); }
-    return NextResponse.json({ disponible: true, estado: "miembro", grupo: g, miembro: m });
+    return NextResponse.json({ disponible: true, estado: "miembro", grupo: g, miembro: { id: m.id, nombre: m.nombre, esAdmin: m.es_admin } });
   } catch {
     return NextResponse.json({ disponible: false, estado: "fuera" });
   }

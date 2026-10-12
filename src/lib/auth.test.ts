@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { hashPassword, checkPassword, firmar, leer } from "./auth";
+import { hashPassword, checkPassword, firmar, leer, generarCodigo, normalizarCodigo } from "./auth";
 
 beforeAll(() => { process.env.AUTH_SECRET = "x".repeat(40); });
 
@@ -41,5 +41,22 @@ describe("sesión firmada", () => {
     expect(leer(undefined)).toBeNull();
     expect(leer("basura")).toBeNull();
     expect(leer("a.b.c")).toBeNull();
+  });
+});
+
+describe("código de recuperación", () => {
+  it("tiene 4 grupos de 5 caracteres sin letras ambiguas", () => {
+    for (let i = 0; i < 50; i++) {
+      const c = generarCodigo();
+      expect(c).toMatch(/^[A-HJKMNP-Z2-9]{5}(-[A-HJKMNP-Z2-9]{5}){3}$/);
+    }
+  });
+  it("no se repite entre llamadas", () => {
+    expect(new Set(Array.from({ length: 200 }, generarCodigo)).size).toBe(200);
+  });
+  it("se normaliza con o sin guiones, espacios y minúsculas", () => {
+    expect(normalizarCodigo("abcde-fghjk-mnpqr-stuvw")).toBe("ABCDEFGHJKMNPQRSTUVW");
+    expect(normalizarCodigo(" abcde fghjk mnpqr stuvw ")).toBe("ABCDEFGHJKMNPQRSTUVW");
+    expect(normalizarCodigo(generarCodigo())).toHaveLength(20);
   });
 });
