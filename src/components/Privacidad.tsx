@@ -22,14 +22,15 @@ export function Privacidad() {
               <li>el nombre del grupo y su identificador;</li>
               <li>el nombre o alias de cada persona (mejor sin apellidos);</li>
               <li>las contraseñas, únicamente como huella cifrada, nunca en texto plano;</li>
-              <li>los favoritos que marques: título, zona, precio, superficie, portal, enlace del anuncio y fecha.</li>
+              <li>los favoritos que marques: título, zona, precio, superficie, portal, enlace del anuncio y fecha;</li>
+              <li>la fecha de la última actividad del grupo (la última vez que alguien entró o marcó un favorito).</li>
             </ul>
             <p>Usamos además una cookie técnica de sesión de 12 horas, necesaria para mantenerte dentro del grupo. No es de seguimiento ni de publicidad. No guardamos correo, teléfono, DNI, ingresos, datos bancarios ni ubicación. Lo que rellenes en la ruta, las calculadoras y los candidatos se queda en tu navegador y no llega a nosotros.</p>
           </div>
           <p><b className="text-foreground">Para qué.</b> Identificar a tu grupo y mostrar a sus miembros los favoritos de todos, con el nombre de quien los marcó. No hacemos perfiles ni decisiones automatizadas, no hay publicidad y no cedemos datos a terceros.</p>
           <p><b className="text-foreground">Base jurídica.</b> Tu consentimiento (art. 6.1.a del RGPD), que das al marcar la casilla al crear un grupo o al añadirte a uno. Puedes retirarlo en cualquier momento borrando tu perfil.</p>
           <p><b className="text-foreground">Proveedores.</b> Supabase aloja la base de datos en la Unión Europea (París) y Vercel aloja la web. Ambos tratan datos por nuestra cuenta. Vercel es una empresa estadounidense, por lo que puede haber transferencias internacionales con las garantías contractuales que ofrece ese proveedor.</p>
-          <p><b className="text-foreground">Cuánto tiempo.</b> Hasta que borres tu perfil. Cuando se va la última persona de un grupo, el grupo se borra también.</p>
+          <p><b className="text-foreground">Cuánto tiempo.</b> Hasta que borres tu perfil. Cuando se va la última persona de un grupo, el grupo se borra también. No hay un plazo automático de caducidad: nada se borra solo. Como anotamos la fecha de la última actividad, el responsable puede borrar a mano los grupos que lleven mucho tiempo sin usarse.</p>
           <p><b className="text-foreground">Tus derechos.</b> Acceso, rectificación, supresión, oposición, limitación y portabilidad. La supresión la haces tú desde la pestaña «Grupo», con «Borrar mi perfil». Para los demás derechos, escribe a <a className="font-semibold text-primary underline" href={`mailto:${CONTACTO}`}>{CONTACTO}</a>. Si crees que no hemos tratado bien tus datos, puedes reclamar ante la <a className="font-semibold text-primary underline" href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">Agencia Española de Protección de Datos</a>.</p>
           <p><b className="text-foreground">Un sistema basado en confianza.</b> No hay correo ni cuentas externas: quien conozca la contraseña del grupo y la de una persona entra como ella. Usa contraseñas que no utilices en otros sitios. Si se pierden, no se pueden recuperar.</p>
         </div>

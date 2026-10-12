@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/supabase";
+import { db, anotarActividad } from "@/lib/supabase";
 import { checkPassword } from "@/lib/auth";
 import { sesionActual, fijarSesion } from "@/lib/session";
 import { rateLimit } from "@/lib/guards";
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
   if (!m || !ok)
     return NextResponse.json({ error: "Contraseña incorrecta." }, { status: 401 });
 
+  await anotarActividad(s.g);
   await fijarSesion({ g: s.g, m: m.id });
   return NextResponse.json({ ok: true, nombre: m.nombre });
 }

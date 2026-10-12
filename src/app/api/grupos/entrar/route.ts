@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/supabase";
+import { db, anotarActividad } from "@/lib/supabase";
 import { checkPassword } from "@/lib/auth";
 import { fijarSesion } from "@/lib/session";
 import { rateLimit } from "@/lib/guards";
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   if (!g || !ok)
     return NextResponse.json({ error: "Grupo o contraseña incorrectos." }, { status: 401 });
 
+  await anotarActividad(g.id);
   await fijarSesion({ g: g.id });
   return NextResponse.json({ ok: true, nombre: g.nombre, slug: g.slug });
 }

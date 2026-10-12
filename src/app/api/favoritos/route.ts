@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/supabase";
+import { db, anotarActividad } from "@/lib/supabase";
 import { sesionActual } from "@/lib/session";
 import { datosOferta } from "@/lib/validate";
 
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
   const { error } = await db().from("favoritos")
     .upsert({ miembro_id: s.m, oferta_id: ofertaId, datos: d.v }, { onConflict: "miembro_id,oferta_id" });
   if (error) return NextResponse.json({ error: "No se ha podido guardar el favorito." }, { status: 500 });
+  await anotarActividad(s.g);
   return NextResponse.json({ ok: true });
 }
 
@@ -57,5 +58,6 @@ export async function DELETE(req: Request) {
 
   const { error } = await db().from("favoritos").delete().eq("miembro_id", s.m).eq("oferta_id", ofertaId);
   if (error) return NextResponse.json({ error: "No se ha podido quitar el favorito." }, { status: 500 });
+  await anotarActividad(s.g);
   return NextResponse.json({ ok: true });
 }

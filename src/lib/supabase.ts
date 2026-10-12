@@ -8,3 +8,11 @@ export function db() {
   if (!url || !key) throw new Error("Falta SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY");
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
+
+/**
+ * Anota la última actividad del grupo para poder purgar a mano los que llevan mucho tiempo sin usarse (ADR-0003).
+ * No bloquea ni hace fallar la petición: si no se puede anotar, no pasa nada.
+ */
+export async function anotarActividad(grupoId: string): Promise<void> {
+  try { await db().from("grupos_cooperativos").update({ ultima_actividad: new Date().toISOString() }).eq("id", grupoId); } catch { /* sin efecto */ }
+}
