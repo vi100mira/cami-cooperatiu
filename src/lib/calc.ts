@@ -3,11 +3,15 @@ export interface CalcInput {
   interes: number; plazo: number; mant: number; reserva: number;
   alq: number; sube: number; ipc: number; hor: number;
   ingresos: number; iprem: number; pagas: number; mult: number;
+  /** Financiación sin ahorro: % máximo que presta el banco, ahorro real por familia, préstamo participativo o puente
+   *  (interés y años), capital de personas colaboradoras (interés y años) y canon del suelo en derecho de superficie. */
+  ltv: number; ahorro: number; i2: number; p2: number; ic: number; pc: number; canon: number;
 }
 export const CDEF: CalcInput = {
   suelo: 1000000, obra: 2200000, gastos: 12, subv: 0, aport: 15000,
   interes: 3.5, plazo: 30, mant: 60, reserva: 25, alq: 900, sube: 3, ipc: 2, hor: 40,
   ingresos: 36000, iprem: 600, pagas: 14, mult: 4.5,
+  ltv: 80, ahorro: 0, i2: 4, p2: 15, ic: 1.75, pc: 20, canon: 0,
 };
 
 export function model(c: CalcInput, fam: number) {

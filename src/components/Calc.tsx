@@ -1,13 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { TERMS } from "@/lib/content";
 import { useStore, type Sim } from "@/lib/store";
 import { viviendasDeCalculo, quitarSimulacion, ajustarObraPorM2, OBRA_POR_VIVIENDA, OBRA_POR_M2 } from "@/lib/simulacion";
 import { M2_POR_VIVIENDA } from "@/lib/fit";
 import { model, series, eligibility, niceTicks, queHariaFalta, type CalcInput, type Model } from "@/lib/calc";
+import { financiacionSinAhorro, type Propuesta } from "@/lib/financiacion";
+import { irASub } from "@/lib/subpestana";
 import { eur, nf0, fnum, kfmt } from "@/lib/format";
 import { useHelp } from "./Rich";
-import { TriangleAlert, Check, X, Mountain, Calculator, Wallet, Scale } from "lucide-react";
+import { TriangleAlert, Check, X, Mountain, Calculator, Wallet, Scale, PiggyBank, Star } from "lucide-react";
 import { Tabs, TabsContent } from "./ui/tabs";
 import { SubNav } from "./SubNav";
 import { useSubPestana } from "@/lib/subpestana";
@@ -43,6 +45,19 @@ const SPC: Spec[] = [
   { k: "ipc", l: "Subida anual de mantenimiento y reserva", u: "% al año", step: 0.5 },
   { k: "hor", l: "Horizonte", r: true, min: 5, max: 60, step: 1, fmt: (v) => v + " años" },
 ];
+
+const SPD: Spec[] = [
+  { k: "ltv", l: "Lo que presta el banco, como mucho", r: true, min: 0, max: 100, step: 5, fmt: (v) => v + " % del coste", t: "banca" },
+  { k: "ahorro", l: "Ahorro que sí puede poner cada familia (puede ser 0)", u: "€", step: 500, t: "aportacion" },
+  { k: "i2", l: "Préstamo participativo o puente: interés", r: true, min: 0, max: 10, step: 0.25, fmt: (v) => fnum(v, 2) + " %", t: "participativo" },
+  { k: "p2", l: "Préstamo participativo o puente: plazo", r: true, min: 1, max: 30, step: 1, fmt: (v) => v + " años" },
+  { k: "ic", l: "Capital de colaboradoras: interés que se les paga", r: true, min: 0, max: 6, step: 0.25, fmt: (v) => fnum(v, 2) + " %", t: "titulos" },
+  { k: "pc", l: "Capital de colaboradoras: años para devolverlo", r: true, min: 1, max: 40, step: 1, fmt: (v) => v + " años" },
+  { k: "canon", l: "Canon del suelo público, si lo hay", u: "€/vivienda/mes", step: 5, t: "superficie" },
+];
+
+const irSinAhorro = () => { irASub("calc", "sinahorro"); requestAnimationFrame(() => document.getElementById("subnav-calc")?.scrollIntoView({ block: "nearest" })); };
+const LinkSinAhorro = ({ children }: { children: ReactNode }) => <button type="button" className="font-semibold text-primary underline" onClick={irSinAhorro}>{children}</button>;
 
 function Field({ sp }: { sp: Spec }) {
   const { s, set } = useStore();
@@ -86,7 +101,10 @@ function ResA({ m, c }: { m: Model; c: CalcInput }) {
       <div className="bar" role="img" aria-label="Reparto de la cuota mensual">{parts.filter((p) => p[1] > 0).map((p) => <i key={p[0]} style={{ flex: `${p[1].toFixed(2)} 1 0`, background: p[2] }} title={`${p[0]}: ${eur(p[1])} al mes`} />)}</div>
       <div className="lg">{parts.map((p) => <div key={p[0]}><span className="sw" style={{ background: p[2] }} /><span>{p[0]}</span><span className="v">{eur(p[1])}</span></div>)}</div>
       {m.need < 0 && <Alert variant="info"><Check aria-hidden /><span>Con estas aportaciones y ayudas no hace falta préstamo y sobrarían {eur(m.surplus)}.</span></Alert>}
-      {m.need >= 0 && m.pct > 0.85 && <Alert variant="warning"><TriangleAlert aria-hidden /><span>El préstamo cubre una parte muy grande del coste. Conviene hablar pronto con la entidad financiera sobre el importe máximo que concedería.</span></Alert>}
+      {m.need >= 0 && m.pct > (+c.ltv || 0) / 100 + 1e-9
+        ? <Alert variant="warning"><TriangleAlert aria-hidden /><span>El préstamo cubre el {Math.round(m.pct * 100)} % del coste, y el banco no suele pasar del {fnum(+c.ltv || 0, 0)} %. Mira cómo cubrir lo que falta en <LinkSinAhorro>Sin ahorro</LinkSinAhorro>.</span></Alert>
+        : m.need >= 0 && m.pct > 0.85 && <Alert variant="warning"><TriangleAlert aria-hidden /><span>El préstamo cubre una parte muy grande del coste. Conviene hablar pronto con la entidad financiera sobre el importe máximo que concedería.</span></Alert>}
+      {(+c.aport || 0) > 0 && <p className="note" style={{ margin: 0 }}>Se supone que cada familia aporta {eur(+c.aport)} al entrar. ¿No tenéis ese ahorro? <LinkSinAhorro>Ver propuestas sin aportación inicial</LinkSinAhorro>.</p>}
       <div><div className="sub">De dónde sale el dinero</div>
         <div className="donut">
           <svg viewBox="0 0 104 104" role="img" aria-label="De dónde sale el dinero">
@@ -156,7 +174,7 @@ function ResB({ m, c }: { m: Model; c: CalcInput }) {
                   </>}
               <li>Unos ingresos de la familia de al menos <b>{eur(falta.ingresosNecesarios)}</b> al año (ahora {eur(+c.ingresos || 0)}).</li>
             </ul>
-            <span>También ayudan más viviendas que repartan el coste, más ayudas o un plazo de préstamo más largo.</span>
+            <span>También ayudan más viviendas que repartan el coste, más ayudas o un plazo de préstamo más largo. Si la salida fuera una aportación que las familias no tienen, mira <LinkSinAhorro>Sin ahorro</LinkSinAhorro>.</span>
           </div>
         </Alert>
       )}
@@ -234,6 +252,54 @@ function ResC({ m, c }: { m: Model; c: CalcInput }) {
   );
 }
 
+function TarjetaPropuesta({ p, v, maxq, recomendada }: { p: Propuesta; v: number; maxq: number; recomendada: boolean }) {
+  const extra = p.tramos.slice(1);
+  return (
+    <div className={"grid gap-2 rounded-lg border p-3" + (recomendada ? " border-primary bg-accent" : "")}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="font-heading text-base font-bold">{p.titulo}</div>
+        {recomendada && <Badge variant="success" className="gap-1"><Star aria-hidden /> La cuota más baja que cabe</Badge>}
+      </div>
+      <p className="note" style={{ margin: 0 }}>{p.como}</p>
+      {p.id === "ayudas" ? (
+        <div className="facts">
+          <div><span>Ayuda que haría falta conseguir</span><b>{eur(p.ayudaNecesaria ?? 0)} ({eur((p.ayudaNecesaria ?? 0) / v)} por vivienda)</b></div>
+          <div><span>Cuota de cada familia con esa ayuda</span><b>{eur(p.cuotaInicial)}/mes</b></div>
+        </div>
+      ) : (
+        <div className="facts">
+          {p.id === "superficie" && <div><span>Coste sin comprar el suelo</span><b>{eur(p.total)}</b></div>}
+          {extra.map((t) => <div key={t.nombre}><span>{t.nombre} ({fnum(t.interes, 2)} %, {t.anios} años)</span><b>{eur(t.importe)}</b></div>)}
+          {!extra.length && <div><span>Lo que falta además del banco</span><b>Nada</b></div>}
+          <div><span>Cuota de cada familia{p.cuotaDespues != null ? ` los primeros ${(p.desdeAnio ?? 1) - 1} años` : ""}</span><b>{eur(p.cuotaInicial)}/mes</b></div>
+          {p.cuotaDespues != null && <div><span>Desde el año {p.desdeAnio}</span><b>{eur(p.cuotaDespues)}/mes</b></div>}
+        </div>
+      )}
+      <Badge variant={p.cabe ? "success" : "danger"} className="px-3 py-1 text-[13px]">{p.cabe ? <><Check aria-hidden /> Cabe en el 30 % de los ingresos ({eur(maxq)}/mes)</> : <><X aria-hidden /> Supera el 30 % de los ingresos ({eur(maxq)}/mes)</>}</Badge>
+      <p className="text-[13px] text-muted-foreground"><b>Quién lo ofrece:</b> {p.quien}</p>
+    </div>
+  );
+}
+
+function ResD({ c, fam }: { c: CalcInput; fam: number }) {
+  const f = financiacionSinAhorro(c, fam);
+  const parts = ([["Banco", f.banco, "var(--s1)"], ["Familias", f.familias, "var(--s2)"], ["Ayudas", Math.min(+c.subv || 0, f.total), "var(--s3)"], ["Falta", f.hueco, "var(--bad)"]] as [string, number, string][]).filter((x) => x[1] > 0);
+  return (
+    <>
+      <p className="note" style={{ marginTop: 0 }}>Se parte del ahorro real de las familias ({eur(+c.ahorro || 0)} cada una), no de la aportación de «Cuota». Coste del proyecto: <b>{eur(f.total)}</b>, {f.viviendas} {f.viviendas === 1 ? "vivienda" : "viviendas"}.</p>
+      <div className="hero-n"><span className="eyebrow">Lo que no cubre el banco</span><span className="big">{nf0.format(f.hueco)}<small>€</small></span></div>
+      <div className="bar" role="img" aria-label="De dónde sale el dinero sin ahorro">{parts.map((p) => <i key={p[0]} style={{ flex: `${p[1].toFixed(2)} 1 0`, background: p[2] }} title={`${p[0]}: ${eur(p[1])}`} />)}</div>
+      <div className="lg">{parts.map((p) => <div key={p[0]}><span className="sw" style={{ background: p[2] }} /><span>{p[0]}</span><span className="v">{eur(p[1])}</span></div>)}</div>
+      {f.hueco > 0
+        ? <p className="note" style={{ margin: 0 }}>Son {eur(f.hueco / f.viviendas)} por vivienda. Pedírselos a cada familia de golpe deja fuera a quien no tiene ahorro. Estas son formas reales de cubrirlo, y cada una sube la cuota de una manera distinta. Si el banco prestara todo, la cuota sería de {eur(f.cuotaSoloBanco)}/mes, pero no suele pasar.</p>
+        : <Alert variant="info"><Check aria-hidden /><span>Con este porcentaje de préstamo, el ahorro y las ayudas, no falta nada: basta con el préstamo del banco.</span></Alert>}
+      {f.hueco > 0 && !f.recomendada && <Alert variant="warning"><TriangleAlert aria-hidden /><span>Ninguna propuesta cabe en el 30 % de los ingresos de la familia de «Presupuesto». Combínalas con más viviendas, más ayudas, una obra más barata o suelo público.</span></Alert>}
+      {f.hueco > 0 && <div className="grid gap-3">{f.propuestas.map((p) => <TarjetaPropuesta key={p.id} p={p} v={f.viviendas} maxq={f.maxq} recomendada={p.id === f.recomendada} />)}</div>}
+      <p className="note">Intereses y plazos son ejemplos para comparar, no ofertas: cámbialos con lo que os digan las entidades. Los títulos participativos suelen emitirse a pocos años y renovarse; aquí se reparten en el plazo elegido para ver su peso en la cuota. Es orientación, no asesoría financiera.</p>
+    </>
+  );
+}
+
 /** Qué sale del anuncio, qué son supuestos y qué queda por revisar al simular. */
 function textoSim(sim: Sim, fam: number) {
   const coop = `Tu cooperativa sigue teniendo ${fam} ${fam === 1 ? "familia" : "familias"}.`;
@@ -275,7 +341,7 @@ function FichaSim({ m, c, sim }: { m: Model; c: CalcInput; sim: Sim }) {
   );
 }
 
-const SUBS_CALC = ["terreno", "cuota", "presupuesto", "alquiler"];
+const SUBS_CALC = ["terreno", "cuota", "presupuesto", "sinahorro", "alquiler"];
 
 export default function Calc() {
   const { s, set } = useStore();
@@ -307,6 +373,7 @@ export default function Calc() {
           { k: "terreno", l: "Del terreno", icono: <Mountain aria-hidden /> },
           { k: "cuota", l: "Cuota", icono: <Calculator aria-hidden /> },
           { k: "presupuesto", l: "Presupuesto", icono: <Wallet aria-hidden /> },
+          { k: "sinahorro", l: "Sin ahorro", icono: <PiggyBank aria-hidden /> },
           { k: "alquiler", l: "Alquiler", icono: <Scale aria-hidden /> },
         ]} />
         <TabsContent value="terreno"><Terreno /></TabsContent>
@@ -314,6 +381,8 @@ export default function Calc() {
         <div className="calc-grid"><div className="inputs">{SPA.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResA m={m} c={s.calc} /></div></div></Card></TabsContent>
         <TabsContent value="presupuesto"><Card id="cB" className="gap-5"><CardTitle className="text-xl">¿Cabe en el presupuesto de cada familia?</CardTitle>
         <div className="calc-grid"><div className="inputs">{SPB.map((sp) => <Field key={sp.k} sp={sp} />)}<p className="note">Los límites de cada concurso cambian: usa estos valores solo como orientación y revisa las bases.</p></div><div className="res" aria-live="polite"><ResB m={m} c={s.calc} /></div></div></Card></TabsContent>
+        <TabsContent value="sinahorro"><Card id="cD" className="gap-5"><CardTitle className="text-xl">¿Y si las familias no tienen ahorro?</CardTitle>
+        <div className="calc-grid"><div className="inputs">{SPD.map((sp) => <Field key={sp.k} sp={sp} />)}<p className="note">El coste, las viviendas, el interés y el plazo del banco salen de «Cuota»; los ingresos, de «Presupuesto».</p></div><div className="res" aria-live="polite"><ResD c={s.calc} fam={viviendasDeCalculo(s)} /></div></div></Card></TabsContent>
         <TabsContent value="alquiler"><Card id="cC" className="gap-5"><CardTitle className="text-xl">Cooperativa frente a alquiler</CardTitle>
         <div className="calc-grid wide"><div className="inputs">{SPC.map((sp) => <Field key={sp.k} sp={sp} />)}</div><div className="res" aria-live="polite"><ResC m={m} c={s.calc} /></div></div></Card></TabsContent>
       </Tabs>
