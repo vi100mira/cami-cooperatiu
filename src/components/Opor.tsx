@@ -271,10 +271,10 @@ export default function Opor() {
         {live
           ? <p className="text-[13px] text-muted-foreground">Hay búsqueda en vivo para València: abajo tienes el botón <b className="text-foreground">Buscar en València</b>. Se actualiza como mucho una vez al día para no gastar recursos compartidos.</p>
           : s.group.ciudad.trim()
-            ? <Alert variant="warning"><TriangleAlert aria-hidden /><span>La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que para <b>{s.group.ciudad.trim()}</b> no hay botón de búsqueda. Usa los botones de portales de aquí abajo: abren la búsqueda ya filtrada en cada portal.</span></Alert>
+            ? <Alert variant="warning"><TriangleAlert aria-hidden /><span>La búsqueda en vivo es una función en pruebas y de momento solo cubre València, así que para <b>{s.group.ciudad.trim()}</b> no hay botón de búsqueda. Haz la búsqueda en un portal con los botones de aquí abajo y pega el enlace en «Añadir desde un enlace»: sus anuncios entrarán en la app.</span></Alert>
             : <Alert variant="warning"><TriangleAlert aria-hidden /><span>Escribe una ciudad para activar la búsqueda. Para València aparece la búsqueda en vivo; para el resto, los botones de portales.</span></Alert>}
       </Card>
-      {live && <LiveSearch ciudad="valencia" onSim={simularListing} onPick={(l, tipo) => toForm({ mapa: consultaMapa(l), fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: l.gestora ? "parada" : tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}.${l.gestora ? ` Lo publica ${l.gestora}, gestora de Sareb: pregunta si es de Sareb, de un banco o una cesión de remate.` : ""} Verifica todos los datos.` })} />}
+      <LiveSearch ciudad="valencia" live={live} onSim={simularListing} onPick={(l, tipo) => toForm({ mapa: consultaMapa(l), fotos: l.fotos, nombre: l.titulo, barrio: l.zona, via: l.gestora ? "parada" : tipo === "terrenos" ? "privado" : "edificio", precio: l.precio ?? 0, url: l.url, notas: `Anuncio encontrado en ${l.fuente ?? "un portal"}.${l.gestora ? ` Lo publica ${l.gestora}, gestora de Sareb: pregunta si es de Sareb, de un banco o una cesión de remate.` : ""} Verifica todos los datos.` })} />
       <PortalSearch ciudad={s.group.ciudad} />
         </TabsContent>
         <TabsContent value="candidatos" className="gap-5">

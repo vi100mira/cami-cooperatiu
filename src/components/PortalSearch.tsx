@@ -30,7 +30,7 @@ export default function PortalSearch({ ciudad }: { ciudad: string }) {
           ))}
         </div>
       ) : <p className="text-[13px] text-muted-foreground">Indica la ciudad de tu grupo en la pestaña Ruta y aparecerán aquí los enlaces.</p>}
-      <p className="text-[13px] text-muted-foreground">Cada botón abre una búsqueda en Google limitada a ese portal, para {c || "tu ciudad"}. Cuando encuentres algo, pulsa «Añadir candidato» y pega el enlace.</p>
+      <p className="text-[13px] text-muted-foreground">Cada botón abre una búsqueda en Google limitada a ese portal, para {c || "tu ciudad"}. Cuando encuentres algo, pega el enlace de la búsqueda o del anuncio en «Añadir desde un enlace» y entrará en la lista con todo lo demás.</p>
     </Card>
   );
 }

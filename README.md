@@ -21,7 +21,7 @@ npm run build
 - **Vercel Hobby (gratis)**: no cobra por excedente; si se agotan los límites, el servicio se pausa en lugar de facturar.
 - **Firecrawl**: solo la búsqueda en vivo lo usa. Cada llamada es un scrape simple (**1 crédito**), nunca modo JSON ni proxy de pago.
   1. `SEARCH_ENABLED` distinto de `true` ⇒ búsqueda apagada, 0 créditos (valor por defecto).
-  2. Lista blanca: solo 2 URLs fijas (edificios, terrenos). Nadie puede pedir otra URL.
+  2. Lista blanca: la búsqueda en vivo solo lee 2 URLs fijas (edificios, terrenos). Los enlaces que pega una persona (`/api/importar`) solo pueden ser de Idealista, Fotocasa, Pisos.com o yaencontre, cuestan 1 crédito y se cachean 24 h por URL.
   3. Caché de 24 h: con visitas ilimitadas, el gasto máximo teórico son 7 créditos al día (una sola búsqueda provincial: 3 lecturas de edificios + 4 de terrenos), y el tope diario lo recorta a `SEARCH_DAILY_CAP`.
   4. Tope diario `SEARCH_DAILY_CAP` (por defecto 12, máximo absoluto 50) por instancia.
   5. Límite de 20 consultas por hora y por IP.
@@ -64,7 +64,7 @@ Cuentas y trabajo en equipo: ver `docs/USUARIOS-Y-COOPERATIVAS.md`.
 
 ## Fuente de datos y aviso legal
 
-Idealista bloquea el acceso automatizado, por lo que la búsqueda usa **Fotocasa**. Antes de abrirla al público, revisa los términos de uso del portal y valora si el uso (no comercial, caché de 24 h, enlazando siempre al anuncio original) es aceptable. Si prefieres no arriesgar, deja `SEARCH_ENABLED=false`: el resto de la app funciona igual.
+La búsqueda en vivo usa Fotocasa, Pisos.com y yaencontre. Idealista solo entra cuando alguien pega un enlace de una búsqueda suya: sus listados se leen, sus fichas no (ver `docs/00-gobierno/10-adr-0005-anuncios-desde-enlaces.md`). Antes de abrirla al público, revisa los términos de uso del portal y valora si el uso (no comercial, caché de 24 h, enlazando siempre al anuncio original) es aceptable. Si prefieres no arriesgar, deja `SEARCH_ENABLED=false`: el resto de la app funciona igual.
 Los datos son orientativos y pueden fallar si el portal cambia su HTML (parser en `src/lib/parse-fotocasa.ts`, con tests).
 
 ## Despliegue en Vercel (gratis)
@@ -94,4 +94,4 @@ Guía de orientación; no es asesoría jurídica ni financiera.
 
 ## Portales de la búsqueda en vivo
 
-Fotocasa, Pisos.com y yaencontre (edificios y terrenos), unidos sin duplicados por precio y m². Idealista bloquea la lectura automática y no se usa: la vía legítima es pedir su API oficial. Alcance: siempre toda la provincia de València; el municipio o barrio se filtra después sobre los resultados, sin gastar créditos. Cada consulta no cacheada de edificios cuesta 3 créditos (uno por portal) y la de terrenos 4 (añade el filtro «de bancos» de yaencontre); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.
+Fotocasa, Pisos.com y yaencontre (edificios y terrenos), unidos sin duplicados por precio y m². Idealista no está en la búsqueda automática; se puede añadir pegando el enlace de una búsqueda suya en «Añadir desde un enlace». Alcance: siempre toda la provincia de València; el municipio o barrio se filtra después sobre los resultados, sin gastar créditos. Cada consulta no cacheada de edificios cuesta 3 créditos (uno por portal) y la de terrenos 4 (añade el filtro «de bancos» de yaencontre); la caché dura 24 h. El tope `SEARCH_DAILY_CAP` cuenta lecturas, no búsquedas.

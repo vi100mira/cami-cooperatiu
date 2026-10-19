@@ -3,9 +3,12 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback, ty
 import { CDEF, type CalcInput } from "./calc";
 import type { Group } from "./content";
 import { TDEF, CLASES, type TerrenoInput } from "./terreno";
+import type { Listing } from "./parse-fotocasa";
 
 export interface Cand { id: string; ejemplo?: boolean; nombre: string; barrio: string; via: string; precio: number; viv: number; estado: string; notas: string; url?: string; direccion?: string; /** Texto para buscar el candidato en un mapa, deducido del anuncio. */ mapa?: string; refcat?: string; plano?: string; fotos?: string[]; chk: Record<number, boolean>; }
-export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; terreno: TerrenoInput; open: number | null; sim?: Sim | null; }
+/** Un origen de datos que añade la persona: lo leído de un enlace (búsqueda o anuncio de un portal) o un anuncio escrito a mano. */
+export interface Importado { url: string; tipo: "edificios" | "terrenos"; fuente: string; actualizado: string; items: Listing[]; aMano?: boolean }
+export interface State { group: Group; done: Record<string, boolean>; cands: Cand[]; calc: CalcInput; terreno: TerrenoInput; open: number | null; sim?: Sim | null; importados?: Importado[]; }
 /** Valores de antes de simular (o los que puso la simulación), para poder volver a ellos. */
 export interface SimValores { suelo?: number; obra?: number; precioTerreno?: number; superficieTerreno?: number }
 export interface Sim {
@@ -55,6 +58,7 @@ function load(): State {
         terreno: terrenoGuardado(sv.terreno, base.terreno),
         open: typeof sv.open === "number" ? sv.open : null,
         sim: sv.sim && typeof sv.sim.titulo === "string" ? sv.sim : null,
+        importados: Array.isArray(sv.importados) ? sv.importados.filter((i: Importado) => i && typeof i.url === "string" && Array.isArray(i.items)) : [],
       };
     }
   } catch {}

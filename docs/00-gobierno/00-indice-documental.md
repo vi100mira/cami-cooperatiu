@@ -2,7 +2,7 @@
 tipo: indice-documental
 estado_documental: vigente
 proyecto: Techo Común
-ultima_revision: 2026-10-11
+ultima_revision: 2026-10-19
 ---
 
 # Índice documental canónico de Techo Común
@@ -16,6 +16,7 @@ ultima_revision: 2026-10-11
 5. [ADR-0001: grupos y favoritos con Supabase](05-adr-0001-grupos-y-favoritos-con-supabase.md)
 6. [ADR-0002: normativa por comunidad](06-adr-0002-normativa-por-comunidad.md)
 7. [ADR-0003: retención de grupos](07-adr-0003-retencion-de-grupos.md)
+8. [ADR-0005: anuncios desde enlaces de portales](10-adr-0005-anuncios-desde-enlaces.md)
 
 ## Fuentes canónicas por pregunta
 
@@ -29,5 +30,6 @@ ultima_revision: 2026-10-11
 | ¿Por qué hay base de datos y cómo se protege? | [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md) | Decisión, alternativas, riesgos y estado de los grupos con Supabase |
 | ¿De dónde salen las cifras urbanísticas de la calculadora de terreno? | [ADR-0002](06-adr-0002-normativa-por-comunidad.md) y `src/lib/normativa.ts` | Registro de normativa por comunidad, con fuente, fecha y fiabilidad de cada cifra |
 | ¿Cuánto tiempo se conservan los grupos y cómo se purgan? | [ADR-0003](07-adr-0003-retencion-de-grupos.md) | Sin caducidad automática; actividad anotada y purga manual |
+| ¿Cómo entran anuncios de Idealista u otros portales desde un enlace? | [ADR-0005](10-adr-0005-anuncios-desde-enlaces.md) | Lista blanca de portales, protecciones de coste y formulario cuando el portal bloquea |
 | Cuentas y trabajo en equipo | [Modelo de usuarios](../USUARIOS-Y-COOPERATIVAS.md) | Modelo vigente (grupos con contraseña) y evolución prevista |
 | ¿Qué demuestra el código? | `src/lib/*.test.ts`, `src/components/`, `src/app/api/` | Evidencia de implementación |

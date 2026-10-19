@@ -2,10 +2,17 @@
 tipo: estado-operativo
 estado_documental: vigente
 proyecto: Techo Común
-ultima_revision: 2026-10-11
+ultima_revision: 2026-10-19
 ---
 
 # Estado operativo y hoja de ruta
+
+## Cambios del 19/10/2026 (en local, sin desplegar)
+
+- **Calculadoras → Sin ahorro**: propuestas para cubrir lo que no presta el banco sin aportación inicial (`src/lib/financiacion.ts`, 8 tests). «Cuota» avisa cuando el préstamo supera el porcentaje que suele dar el banco y enlaza aquí. Dos términos nuevos en el glosario: títulos participativos y préstamo participativo.
+- **Anuncios desde un enlace** (`/api/importar`, [ADR-0005](10-adr-0005-anuncios-desde-enlaces.md)): lector de listados de Idealista con muestra real, lector de fichas y de texto pegado, y lista blanca de portales. Verificado en local sin clave de Firecrawl (formulario, texto pegado, añadir, recargar y simular). La lectura real de un listado de Idealista se comprobó con Firecrawl fuera de la app.
+- Puertas: `npm test` 209 tests en 24 archivos, `npm run typecheck` sin errores.
+- Pendiente: desplegar y probar `/api/importar` en producción con un listado de Idealista.
 
 ## Fotografía a 10/10/2026
 

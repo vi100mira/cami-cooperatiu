@@ -2,7 +2,7 @@
 tipo: memoria-proyecto
 estado_documental: vigente
 proyecto: Techo Común
-ultima_revision: 2026-10-11
+ultima_revision: 2026-10-19
 ---
 
 # Memoria del proyecto Techo Común
@@ -26,6 +26,8 @@ Grupos que quieren formar una cooperativa de vivienda. Ámbito estatal, con dato
 - **Del terreno a las viviendas** (desplegado el 11/10/2026): calculadora de terreno que, según la clase de suelo (solar, urbano por urbanizar, urbanizable o no urbanizable), calcula cuánto suelo es edificable tras viales, dotaciones y cesiones, las viviendas posibles y el coste del suelo urbanizado, y los carga en las de cuota. Cada cifra normativa sale de un registro por comunidad (hoy solo la Comunitat Valenciana) con su artículo, fuente, fecha y fiabilidad. Ver [ADR-0002](06-adr-0002-normativa-por-comunidad.md).
 - **Oportunidades**: vías de acceso a suelo o edificio (concurso, promoción parada, Sareb/Casa 47…), con contacto directo a FECOVI y sección de sorteos de alquiler de Casa 47 para personas socias.
 - **Búsqueda en vivo**: edificios y terrenos en Fotocasa, Pisos.com y yaencontre (también terrenos de bancos), València ciudad o provincia, unión sin duplicados, filtros y detección de gestoras de Sareb (Hipoges, Aliseda). Desde el 12/10/2026 ordena por defecto «ajustado a tu cooperativa»: compara las viviendas estimadas o los m² con las familias, y el precio con la mitad del capital orientativo (aportación y préstamo de las calculadoras), con etiquetas en cada anuncio y una casilla que oculta solo los casos extremos.
+- **Sin ahorro** (19/10/2026, sin desplegar): apartado de las calculadoras para grupos que parten de cero. Calcula lo que no presta el banco (por defecto, el 20 % del coste) y propone formas reales de cubrirlo sin aportación inicial: préstamo participativo o puente devuelto en la cuota, capital de personas colaboradoras (títulos participativos, como La Borda con Coop57), una mezcla de ambos, suelo público en derecho de superficie y la ayuda que haría falta. Cada propuesta da la cuota por familia, cuándo baja y si cabe en el 30 % de los ingresos, y recomienda la más barata que cabe.
+- **Anuncios desde un enlace** (19/10/2026, sin desplegar): pegar una búsqueda o un anuncio de Idealista, Fotocasa, Pisos.com o yaencontre los añade a la lista de la búsqueda, con todo lo demás conectado. Las fichas de Idealista se rellenan a mano o pegando su texto. Ver [ADR-0005](10-adr-0005-anuncios-desde-enlaces.md).
 - **Búsqueda en portales**: enlaces preparados para cualquier ciudad.
 - **Candidatos**: fotos, mapa bajo demanda, Catastro (referencia por dirección) y enlaces a planos.
 - **Entidades**: directorio adaptado por comunidad autónoma con mensajes listos.
@@ -39,6 +41,8 @@ Navegador (ruta, calculadoras y candidatos en localStorage; cookie de sesión de
   → Next.js 16 en Vercel (Hobby)
       ├ /api/buscar   → Firecrawl → Fotocasa, Pisos.com, yaencontre
       │                 (lista blanca, caché 24 h, tope diario, límite por IP, enfriamiento)
+      ├ /api/importar → Firecrawl → enlace pegado de Idealista, Fotocasa, Pisos.com o yaencontre
+      │                 (lista blanca de portales y las mismas protecciones)
       ├ /api/catastro → Sede Electrónica del Catastro
       └ /api/{grupos,miembros,favoritos,sesion}
                       → Supabase (Postgres en la UE; RLS sin políticas, solo clave de servidor)

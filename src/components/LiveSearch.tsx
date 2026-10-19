@@ -21,6 +21,8 @@ import { FavButton } from "./FavButton";
 import { useGrupo } from "@/lib/grupo";
 import { CentroRadio, useCentro } from "./CentroRadio";
 import { ubicar, distanciaKm, consultaMapa } from "@/lib/ubicacion";
+import { ImportarUrl } from "./ImportarUrl";
+import type { Importado } from "@/lib/store";
 
 type Tipo = "edificios" | "terrenos";
 type Busca = Tipo | "ambos";
@@ -42,7 +44,8 @@ const memoria = crearMemoria<Busq>("camiBusqueda.v1", POR_DEFECTO,
   (x) => (x && typeof x === "object" && (x as Busq).state && typeof (x as Busq).tipo === "string" ? { ...POR_DEFECTO, ...(x as Busq) } : null),
   (b) => ({ ...b, state: { ...b.state, loading: false } }));
 
-export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string }) {
+/** live: hay búsqueda en vivo para la ciudad del grupo. Sin ella, se pueden añadir anuncios desde enlaces igualmente. */
+export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase, live = true }: { onPick: (l: Listing, t: Tipo) => void; onSim: (l: Listing, t: Tipo) => void; ciudad: string; live?: boolean }) {
   const [b, setB] = useState<Busq>(memoria.leer);
   useEffect(() => { setB(memoria.leer()); return memoria.suscribir(setB); }, []);
   const up = (p: Partial<Busq>) => memoria.escribir({ ...memoria.leer(), ...p });
@@ -59,7 +62,11 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   const setOcultarSinUbicacion = (v: boolean) => up({ ocultarSinUbicacion: v });
   // Siempre se busca en toda la provincia; el municipio o barrio se afina después sobre los resultados.
   const ciudad = ciudadBase + "-provincia";
-  const { s } = useStore();
+  const { s, set } = useStore();
+  // Lo añadido desde enlaces o a mano se guarda con los datos del grupo. Un mismo enlace sustituye a su versión anterior.
+  const importados = s.importados ?? [];
+  const anadirImportado = (i: Importado) => set((x) => ({ ...x, importados: [i, ...(x.importados ?? []).filter((y) => y.url !== i.url)] }));
+  const quitarImportado = (url: string) => set((x) => ({ ...x, importados: (x.importados ?? []).filter((y) => y.url !== url) }));
   const grupo = useGrupo();
   // La dimensión de la cooperativa sale de Ruta (familias) y de las calculadoras (aportación, ingresos, préstamo).
   const cap = capacidad(s.calc, s.group.fam);
@@ -84,27 +91,38 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
   };
   const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const q = norm(lugar.trim());
-  const resultados = state.resultados ?? [];
-  const grupos = resultados.map((r) => ({ tipo: r.tipo, items: q ? r.items.filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : r.items }));
+  // Lo añadido desde enlaces va junto a la búsqueda en vivo, sin repetir anuncios que ya estén.
+  const vistos = new Set<string>();
+  // Los anuncios sueltos que la persona añade (a mano o desde una ficha) no se filtran: se ven siempre, primero.
+  const sueltos = importados.filter((i) => i.aMano || i.items.length === 1);
+  const resultados: Res[] = [...sueltos, ...(state.resultados ?? []), ...importados.filter((i) => !sueltos.includes(i))].map((r) => ({ ...r, items: r.items.filter((l) => !vistos.has(l.id) && !!vistos.add(l.id)) }));
+  const nSueltos = sueltos.length;
+  const hayResultados = !!state.resultados || importados.length > 0;
+  const mezclaTipos = new Set(resultados.map((r) => r.tipo)).size > 1;
+  const grupos = resultados.slice(nSueltos).map((r) => ({ tipo: r.tipo, items: q ? r.items.filter((l) => norm(`${l.zona} ${l.titulo}`).includes(q)) : r.items }));
   const total = resultados.reduce((n, r) => n + r.items.length, 0);
-  const conEdificios = tipo !== "terrenos";
+  const conEdificios = tipo !== "terrenos" || resultados.some((r) => r.tipo === "edificios");
   const filtros = { maxPrecio: parseFloat(maxP) || 0, minViv: parseInt(minV, 10) || 0, maxPv: parseFloat(maxPv) || 0, orden, verTodo, coop, centro: centro ? { lat: centro.lat, lon: centro.lon } : undefined, radioKm: radio, ocultarSinUbicacion };
-  const items = filtrarTodo(grupos, { ...filtros, soloEncaje });
+  const fijos = resultados.slice(0, nSueltos).flatMap((r) => r.items.map((l) => ({ l, tipo: r.tipo })));
+  const items = [...fijos, ...filtrarTodo(grupos, { ...filtros, soloEncaje })];
   // Cuántos resultados se esconden solo por no encajar con la cooperativa, para poder avisarlo.
-  const ocultos = soloEncaje ? filtrarTodo(grupos, { ...filtros, soloEncaje: false }).length - items.length : 0;
+  const ocultos = soloEncaje ? filtrarTodo(grupos, { ...filtros, soloEncaje: false }).length - (items.length - fijos.length) : 0;
   // Cuántos resultados se esconden solo por estar fuera del radio, y cuántos se muestran sin poder comprobar dónde están.
-  const fueraDeRadio = centro && radio > 0 ? filtrarTodo(grupos, { ...filtros, soloEncaje, radioKm: 0, ocultarSinUbicacion: false }).length - items.length : 0;
+  const fueraDeRadio = centro && radio > 0 ? filtrarTodo(grupos, { ...filtros, soloEncaje, radioKm: 0, ocultarSinUbicacion: false }).length - (items.length - fijos.length) : 0;
   const sinUbicar = centro ? items.filter((e) => !ubicar(e.l)).length : 0;
   const nombreCiudad = CIUDAD_NOMBRE[ciudad] ?? ciudad;
   const fallidos = [...new Set(resultados.flatMap((r) => r.fallidos ?? []))];
   return (
     <Card>
+      {live && <>
       <ToggleChips label="Tipo de inmueble" value={tipo} options={[["edificios", "Edificios"], ["terrenos", "Terrenos"], ["ambos", "Ambos"]]} onChange={(t) => { setTipo(t); setState({ loading: false }); }} />
       {tipo === "ambos" && <p className="text-[13px] text-muted-foreground">«Ambos» hace dos consultas, una por tipo, y cada una cuenta para el límite diario compartido. Verás edificios y terrenos mezclados y ordenados juntos.</p>}
       <Alert variant="info"><Info aria-hidden /><span><b>Función en pruebas.</b> Busca en toda la {nombreCiudad}, incluidos terrenos de bancos, y se actualiza como mucho una vez al día. Hay un máximo diario de consultas compartido entre todas las personas que prueban la app: si se agota, verás un aviso y podrás volver mañana.</span></Alert>
       <div><Button disabled={state.loading} onClick={run}>{state.loading ? <><Loader2 className="animate-spin" aria-hidden /> Buscando…</> : <><Search aria-hidden /> Buscar en la {nombreCiudad}</>}</Button></div>
       {state.err && <Alert variant="danger" role="alert"><TriangleAlert aria-hidden /><span>{state.err}</span></Alert>}
-      {state.resultados && (
+      </>}
+      <ImportarUrl importados={importados} onAdd={anadirImportado} onRemove={quitarImportado} />
+      {hayResultados && (
         <>
       <div className="grid gap-1"><div className="font-heading text-base font-bold">Afina los resultados</div><p className="text-[13px] text-muted-foreground">Los filtros se aplican al momento sobre lo encontrado, sin gastar nuevas consultas.</p></div>
       <FormGrid>
@@ -152,7 +170,7 @@ export default function LiveSearch({ onPick, onSim, ciudad: ciudadBase }: { onPi
                     <Photos fotos={l.fotos ?? []} alt={`${l.titulo} en ${l.zona}`} />
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap gap-1.5">
-                        {tipo === "ambos" && <Badge variant="soft">{t === "terrenos" ? "Terreno" : "Edificio"}</Badge>}
+                        {mezclaTipos && <Badge variant="soft">{t === "terrenos" ? "Terreno" : "Edificio"}</Badge>}
                         {l.fuente && <Badge variant="outline">{l.fuente}</Badge>}
                         {l.gestora && <Badge variant="warning" title="Gestora de activos de Sareb. No todo lo que publica es de Sareb: también gestiona carteras de bancos y cesiones de remate. Pregunta por el origen y la situación del inmueble.">Gestora de Sareb · {l.gestora}</Badge>}
                         {etiquetas(l, t).map((e) => <Badge key={e} variant="warning">{ETIQUETA_TEXTO[e]}</Badge>)}

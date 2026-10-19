@@ -2,7 +2,7 @@
 tipo: decisiones-riesgos
 estado_documental: vigente
 proyecto: Techo Común
-ultima_revision: 2026-10-11
+ultima_revision: 2026-10-19
 ---
 
 # Decisiones, riesgos y deuda
@@ -10,8 +10,8 @@ ultima_revision: 2026-10-11
 ## Decisiones e invariantes
 
 - **Coste cero**: Vercel Hobby (se pausa en vez de facturar) y Firecrawl en plan gratuito sin recarga automática. La búsqueda está apagada salvo `SEARCH_ENABLED=true`.
-- **Búsqueda acotada**: lista blanca de URLs y ciudades, caché de 24 h, tope `SEARCH_DAILY_CAP` (12 por defecto, máximo 50), 20 consultas/hora por IP, enfriamiento de 10 min tras fallo, solo scrapes simples de 1 crédito.
-- **Sin Idealista**: bloquea la lectura automática; solo se usaría su API oficial.
+- **Búsqueda acotada**: lista blanca de URLs y ciudades (y, para los enlaces que pega la persona, de portales: ver ADR-0005), caché de 24 h, tope `SEARCH_DAILY_CAP` (12 por defecto, máximo 50), 20 consultas/hora por IP, enfriamiento de 10 min tras fallo, solo scrapes simples de 1 crédito.
+- **Idealista solo desde enlaces que pega la persona (ADR-0005, 19/10/2026)**: sus páginas de resultados se pueden leer, sus fichas no (no se intenta: formulario o texto pegado). No entra en la búsqueda en vivo automática.
 - **Sin cuentas ni servidor de datos (fase 1): superado el 11/10/2026 por [ADR-0001](05-adr-0001-grupos-y-favoritos-con-supabase.md).** Ahora solo el sistema de grupos y favoritos guarda datos en servidor; la ruta, las calculadoras, los candidatos y los ingresos de las familias siguen solo en el navegador.
 - **La base solo se toca desde el servidor**: RLS activado y sin políticas en `grupos_cooperativos`, `miembros` y `favoritos`, permisos revocados a `anon` y `authenticated`, y `SUPABASE_SERVICE_ROLE_KEY` únicamente en variables de servidor (nunca `NEXT_PUBLIC_*`). No añadir políticas para `anon` o `authenticated` sin revisar el ADR: abrirían los datos de todos los grupos.
 - **Contraseñas solo con hash bcrypt**, sesión en cookie firmada (`AUTH_SECRET`), y errores de acceso genéricos para no revelar qué grupos existen.
@@ -25,7 +25,7 @@ ultima_revision: 2026-10-11
 
 | Riesgo | Mitigación |
 | --- | --- |
-| Términos de uso de los portales | Revisar antes de abrir al público; se puede apagar la búsqueda sin afectar al resto |
+| Términos de uso de los portales (Idealista incluido desde ADR-0005) | Revisar antes de abrir al público; se puede apagar la búsqueda y la lectura de enlaces sin afectar al resto (el formulario a mano sigue funcionando) |
 | Cambios en el HTML de los portales | Parsers con fixtures y tests; detectar fallos en uso real |
 | Gasto en Firecrawl | La garantía real es la caché y el plan gratuito sin recarga; los contadores en memoria son por instancia |
 | Datos de entidades desactualizados | Revisión periódica, sobre todo de la Comunitat Valenciana |
