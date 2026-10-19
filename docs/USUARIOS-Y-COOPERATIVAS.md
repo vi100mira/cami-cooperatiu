@@ -45,7 +45,8 @@ La sesión es una cookie firmada (`httpOnly`, `sameSite=strict`, 12 h) que lleva
 
 ### Administración y recuperación (ADR-0004)
 
-- **Quien crea el grupo lo administra.** Puede quitar a una persona, restablecer su contraseña y generar un código de recuperación nuevo, confirmando cada vez con su contraseña personal. Si se va, pasa a administrarlo quien lleva más tiempo.
+- **Quien crea el grupo lo administra, y puede nombrar a otras personas para administrar** (ADR-0006). Quien administra puede quitar a una persona que no administre, restablecer su contraseña, generar un código de recuperación nuevo y fijar el número de familias, confirmando cada vez con su contraseña personal. Una administradora no puede quitar ni cambiar la contraseña de otra: solo renunciar ella misma, y siempre queda al menos una. Si se va la última, pasa a administrarlo quien lleva más tiempo.
+- **Familias:** cada persona tiene su propio usuario y escribe su familia (texto libre) al unirse; se agrupan sin distinguir mayúsculas ni tildes, y la pestaña Grupo muestra a las personas por familia y cuántas familias hay registradas respecto al número fijado.
 - **Código de recuperación:** se enseña una vez al crear el grupo y sirve, sin haber entrado, para cambiar la contraseña de una persona o la del grupo. Es de un solo uso: al usarlo se genera otro.
 - **Cualquier persona** puede cambiar su propia contraseña conociendo la actual.
 

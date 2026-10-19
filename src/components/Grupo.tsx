@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
-import { Heart, LogOut, UserPlus, ExternalLink, Trash2, Loader2, TriangleAlert, Info, ArrowLeftRight, KeyRound, ShieldCheck, Copy, Check } from "lucide-react";
+import { useId, useState } from "react";
+import { Heart, LogOut, UserPlus, ExternalLink, Trash2, Loader2, TriangleAlert, Info, ArrowLeftRight, KeyRound, ShieldCheck, Copy, Check, Users } from "lucide-react";
 import { useGrupo, type Fav } from "@/lib/grupo";
 import { slugDesde } from "@/lib/validate";
+import { agruparPorFamilia, familiasDistintas, mismaFamilia, FAMILIA_MAX } from "@/lib/familias";
 import { useStore } from "@/lib/store";
 import { eur, fnum } from "@/lib/format";
 import { Button } from "./ui/button";
@@ -28,6 +29,17 @@ const Error_ = ({ texto }: { texto: string | null }) => texto ? <Alert variant="
 const Enviar = ({ busy, children, disabled }: { busy: boolean; children: React.ReactNode; disabled?: boolean }) => (
   <div><Button type="submit" disabled={busy || disabled}>{busy ? <><Loader2 className="animate-spin" aria-hidden /> Un momento…</> : children}</Button></div>
 );
+
+/** Campo de familia con sugerencias de las que ya existen en el grupo. */
+function CampoFamilia({ id, value, onChange, sugerencias, required }: { id: string; value: string; onChange: (v: string) => void; sugerencias: string[]; required?: boolean }) {
+  const lista = useId();
+  return (
+    <Field label="Tu familia" htmlFor={id}>
+      <Input id={id} list={lista} autoComplete="off" required={required} maxLength={FAMILIA_MAX} placeholder="Por ejemplo, Mira Ferrer" value={value} onChange={(ev) => onChange(ev.target.value)} />
+      <datalist id={lista}>{sugerencias.map((f) => <option key={f} value={f} />)}</datalist>
+    </Field>
+  );
+}
 
 function FormEntrar() {
   const g = useGrupo(); const e = useEnvio();
@@ -90,18 +102,19 @@ function FormCrear() {
   const g = useGrupo(); const e = useEnvio();
   const { s } = useStore(); const previo = s.group.name.trim();
   const [nombre, setNombre] = useState(previo); const [slug, setSlug] = useState(slugDesde(previo)); const [tocado, setTocado] = useState(false);
-  const [pw, setPw] = useState(""); const [miembro, setMiembro] = useState(""); const [mpw, setMpw] = useState(""); const [ok, setOk] = useState(false);
+  const [pw, setPw] = useState(""); const [miembro, setMiembro] = useState(""); const [mpw, setMpw] = useState(""); const [familia, setFamilia] = useState(""); const [ok, setOk] = useState(false);
   return (
-    <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); e.run(() => g.crearGrupo({ nombre, slug, password: pw, miembro, miembroPassword: mpw })); }}>
+    <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); e.run(() => g.crearGrupo({ nombre, slug, password: pw, miembro, miembroPassword: mpw, familia })); }}>
       <FormGrid>
         <Field label="Nombre del grupo" htmlFor="cr-nombre"><Input id="cr-nombre" autoComplete="off" required minLength={2} maxLength={120} value={nombre} onChange={(ev) => { setNombre(ev.target.value); if (!tocado) setSlug(slugDesde(ev.target.value)); }} /></Field>
         <Field label="Identificador (para entrar)" htmlFor="cr-slug"><Input id="cr-slug" autoComplete="off" autoCapitalize="none" spellCheck={false} required minLength={3} maxLength={60} pattern="[a-z0-9]+(-[a-z0-9]+)*" title="Letras minúsculas, números y guiones" value={slug} onChange={(ev) => { setTocado(true); setSlug(ev.target.value.toLowerCase()); }} /></Field>
         <Field label="Contraseña del grupo (mín. 8)" htmlFor="cr-pw"><PasswordInput id="cr-pw" autoComplete="new-password" required minLength={8} maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
         <Field label="Tu nombre o alias" htmlFor="cr-miembro"><Input id="cr-miembro" autoComplete="off" required maxLength={60} value={miembro} onChange={(ev) => setMiembro(ev.target.value)} /></Field>
         <Field label="Tu contraseña personal (mín. 8)" htmlFor="cr-mpw"><PasswordInput id="cr-mpw" autoComplete="new-password" required minLength={8} maxLength={200} value={mpw} onChange={(ev) => setMpw(ev.target.value)} /></Field>
+        <CampoFamilia id="cr-familia" value={familia} onChange={setFamilia} sugerencias={[]} required />
       </FormGrid>
       {previo && <p className="text-[13px] text-muted-foreground">Hemos propuesto el nombre de tu cooperativa de la pestaña Ruta; puedes cambiarlo.</p>}
-      <p className="text-[13px] text-muted-foreground">La contraseña del grupo la compartes con el resto de personas; la personal es solo tuya. Serás quien administra el grupo y, al crearlo, te daremos un código de recuperación para guardar: sin él, una contraseña perdida solo la puede restablecer quien administra.</p>
+      <p className="text-[13px] text-muted-foreground">La contraseña del grupo la compartes con el resto de personas; la personal es solo tuya. La familia es el nombre con el que se agrupa a las personas de un mismo hogar (por ejemplo, vuestro apellido): cada persona tiene su propio usuario. Serás quien administra el grupo y, al crearlo, te daremos un código de recuperación para guardar: sin él, una contraseña perdida solo la puede restablecer quien administra.</p>
       <label className="flex cursor-pointer items-start gap-2.5 text-[13.5px]"><Checkbox className="mt-0.5" checked={ok} onCheckedChange={(v) => setOk(v === true)} /> <span>He leído el <a className="font-semibold text-primary underline" href="#privacidad">aviso de privacidad</a> y acepto que se guarden estos datos.</span></label>
       <Error_ texto={e.err} />
       <Enviar busy={e.busy} disabled={!ok}>Crear el grupo</Enviar>
@@ -122,7 +135,7 @@ function Acceso() {
 function ElegirMiembro() {
   const g = useGrupo(); const e = useEnvio(); const n = useEnvio();
   const [id, setId] = useState(""); const [pw, setPw] = useState("");
-  const [nombre, setNombre] = useState(""); const [npw, setNpw] = useState("");
+  const [nombre, setNombre] = useState(""); const [npw, setNpw] = useState(""); const [fam, setFam] = useState("");
   return (
     <Card>
       <div className="grid gap-1"><h3 className="font-heading text-lg font-bold">Grupo «{g.grupo?.nombre}»</h3><p className="text-sm text-muted-foreground">Elige quién eres y escribe tu contraseña personal para confirmarlo.</p></div>
@@ -137,11 +150,13 @@ function ElegirMiembro() {
         </form>
       )}
       <Disclosure summary={<><UserPlus aria-hidden /> Soy nueva en el grupo</>}>
-        <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); n.run(() => g.anadirMiembro(nombre.trim(), npw)); }}>
+        <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); n.run(() => g.anadirMiembro(nombre.trim(), npw, fam)); }}>
           <FormGrid>
             <Field label="Tu nombre o alias" htmlFor="nm-nombre"><Input id="nm-nombre" autoComplete="off" required maxLength={60} value={nombre} onChange={(ev) => setNombre(ev.target.value)} /></Field>
             <Field label="Tu contraseña personal (mín. 8)" htmlFor="nm-pw"><PasswordInput id="nm-pw" autoComplete="new-password" required minLength={8} maxLength={200} value={npw} onChange={(ev) => setNpw(ev.target.value)} /></Field>
+            <CampoFamilia id="nm-familia" value={fam} onChange={setFam} sugerencias={g.familias} required />
           </FormGrid>
+          <p className="text-[13px] text-muted-foreground">Cada persona de tu hogar crea su propio usuario y escribe la misma familia. Si ya existe, elígela de la lista.</p>
           <p className="text-[13px] text-muted-foreground">Al añadirte aceptas el <a className="font-semibold text-primary underline" href="#privacidad">aviso de privacidad</a>.</p>
           <Error_ texto={n.err} />
           <Enviar busy={n.busy}>Añadirme al grupo</Enviar>
@@ -176,7 +191,7 @@ function FavCard({ f }: { f: Fav }) {
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{d.zona}</span>
         </div>
         {d.m2 ? <p className="text-[13px] text-muted-foreground"><b className="font-mono font-medium text-foreground">{fnum(d.m2, 0)} m²</b></p> : null}
-        <p className="text-[13px] text-muted-foreground">Marcado por <b className="text-foreground">{f.marcadoPor}</b> · {new Date(f.fecha).toLocaleDateString("es-ES")}</p>
+        <p className="text-[13px] text-muted-foreground">Marcado por <b className="text-foreground">{f.marcadoPor}</b>{f.familia ? ` (familia ${f.familia})` : ""} · {new Date(f.fecha).toLocaleDateString("es-ES")}</p>
         {err && <p role="alert" className="text-[13px] text-destructive">{err}</p>}
         {/^https:\/\//.test(d.url) && <div><Button size="sm" variant="ghost" asChild><a href={d.url} target="_blank" rel="noopener noreferrer">Ver anuncio <ExternalLink aria-hidden /></a></Button></div>}
       </article>
@@ -202,8 +217,16 @@ function CambiarPassword() {
   );
 }
 
-function FilaAdmin({ id, nombre, pw }: { id: string; nombre: string; pw: string }) {
+function FilaAdmin({ id, nombre, esAdmin, pw }: { id: string; nombre: string; esAdmin: boolean; pw: string }) {
   const g = useGrupo(); const e = useEnvio(); const [nueva, setNueva] = useState(""); const [ok, setOk] = useState(false);
+  if (esAdmin) {
+    return (
+      <li className="flex flex-wrap items-center gap-2 border-t py-3">
+        <b className="font-heading">{nombre}</b> <Badge variant="soft">Administra</Badge>
+        <span className="text-[13px] text-muted-foreground">Solo ella o él puede renunciar; no se le puede quitar ni cambiar la contraseña.</span>
+      </li>
+    );
+  }
   return (
     <li className="grid gap-2 border-t py-3">
       <b className="font-heading">{nombre}</b>
@@ -211,6 +234,8 @@ function FilaAdmin({ id, nombre, pw }: { id: string; nombre: string; pw: string 
         <Field label="Contraseña nueva para esta persona" htmlFor={"ad-" + id}><PasswordInput id={"ad-" + id} autoComplete="new-password" minLength={8} maxLength={200} value={nueva} onChange={(ev) => setNueva(ev.target.value)} /></Field>
         <Button size="sm" variant="outline" disabled={e.busy || nueva.length < 8 || !pw}
           onClick={() => e.run(async () => { const r = await g.restablecerPassword(id, nueva, pw); setOk(r === null); if (r === null) setNueva(""); return r; })}>Restablecer</Button>
+        <Button size="sm" variant="outline" disabled={e.busy || !pw}
+          onClick={() => { if (window.confirm(`¿Nombrar a ${nombre} para administrar el grupo? Podrá hacer lo mismo que tú, salvo quitarte a ti ni cambiarte la contraseña.`)) e.run(() => g.ascenderPersona(id, pw)); }}>Nombrar para administrar</Button>
         <Button size="sm" variant="outline" disabled={e.busy || !pw} className="border-destructive text-destructive hover:bg-bad-soft hover:text-destructive"
           onClick={() => { if (window.confirm(`¿Quitar a ${nombre} del grupo? Se borran también sus favoritos.`)) e.run(() => g.quitarPersona(id, pw)); }}>Quitar del grupo</Button>
       </div>
@@ -221,31 +246,80 @@ function FilaAdmin({ id, nombre, pw }: { id: string; nombre: string; pw: string 
 }
 
 function Administrar() {
-  const g = useGrupo(); const e = useEnvio(); const [pw, setPw] = useState("");
+  const g = useGrupo(); const e = useEnvio(); const r = useEnvio(); const [pw, setPw] = useState("");
   const otras = g.miembros.filter((m) => m.id !== g.miembro?.id);
+  const admins = g.miembros.filter((m) => m.esAdmin).length;
   return (
     <Disclosure summary={<><ShieldCheck aria-hidden /> Administrar el grupo</>}>
       <div className="grid gap-4">
-        <p className="max-w-[68ch] text-sm text-muted-foreground">Administras este grupo. Cada acción te pide tu contraseña personal para confirmar que eres tú.</p>
+        <p className="max-w-[68ch] text-sm text-muted-foreground">Administras este grupo{admins > 1 ? ` junto con otras ${admins - 1} ${admins === 2 ? "persona" : "personas"}` : ""}. Cada acción te pide tu contraseña personal para confirmar que eres tú. Siempre tiene que haber al menos una persona administrando.</p>
         <Field label="Tu contraseña personal" htmlFor="ad-pw"><PasswordInput id="ad-pw" autoComplete="current-password" maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
         {otras.length > 0
-          ? <ul className="grid">{otras.map((m) => <FilaAdmin key={m.id} id={m.id} nombre={m.nombre} pw={pw} />)}</ul>
+          ? <ul className="grid">{otras.map((m) => <FilaAdmin key={m.id} id={m.id} nombre={m.nombre} esAdmin={!!m.esAdmin} pw={pw} />)}</ul>
           : <p className="text-[13px] text-muted-foreground">Todavía no hay más personas en el grupo.</p>}
         <div className="grid gap-2 border-t pt-3">
           <p className="max-w-[68ch] text-sm text-muted-foreground">El código de recuperación sirve para cambiar contraseñas sin haber entrado. Generar uno nuevo anula el anterior.</p>
           <Error_ texto={e.err} />
           <div><Button size="sm" variant="outline" disabled={e.busy || !pw} onClick={() => e.run(() => g.nuevoCodigo(pw))}><KeyRound aria-hidden /> Generar un código de recuperación nuevo</Button></div>
         </div>
+        <div className="grid gap-2 border-t pt-3">
+          <p className="max-w-[68ch] text-sm text-muted-foreground">{admins > 1 ? "Si ya no quieres administrar el grupo, puedes renunciar: seguirás en él como una persona más." : "Eres la única persona que administra. Para poder renunciar, nombra antes a otra."}</p>
+          <Error_ texto={r.err} />
+          <div><Button size="sm" variant="outline" disabled={r.busy || !pw || admins < 2}
+            onClick={() => { if (window.confirm("¿Renunciar a administrar el grupo? Seguirás en él como una persona más.")) r.run(() => g.renunciarAdmin(pw)); }}>Renunciar a administrar</Button></div>
+        </div>
       </div>
     </Disclosure>
   );
 }
 
+/** Quién hay en el grupo, agrupado por familias, y el cambio de la familia propia. */
+function PersonasPorFamilia() {
+  const g = useGrupo(); const e = useEnvio();
+  const grupos = agruparPorFamilia(g.miembros);
+  const [editando, setEditando] = useState(false); const [fam, setFam] = useState("");
+  const registradas = familiasDistintas(g.miembros).length;
+  const total = g.datosCoop?.familias;
+  return (
+    <Card className="gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="grid gap-0.5">
+          <h3 className="flex items-center gap-2 font-heading text-xl font-bold"><Users className="size-5 text-primary" aria-hidden /> Personas y familias</h3>
+          <p className="text-sm text-muted-foreground">{registradas} {registradas === 1 ? "familia registrada" : "familias registradas"}{total ? ` de ${total}` : ""} · {g.miembros.length} {g.miembros.length === 1 ? "persona" : "personas"}.</p>
+        </div>
+        {!editando && <Button size="sm" variant="outline" onClick={() => { setFam(g.miembro?.familia ?? ""); setEditando(true); }}>{g.miembro?.familia ? "Cambiar mi familia" : "Indicar mi familia"}</Button>}
+      </div>
+      {editando && (
+        <form className="grid gap-3 rounded-lg border p-3" onSubmit={(ev) => { ev.preventDefault(); e.run(async () => { const r = await g.cambiarMiFamilia(fam); if (r === null) setEditando(false); return r; }); }}>
+          <CampoFamilia id="mf-familia" value={fam} onChange={setFam} sugerencias={g.familias} />
+          <p className="text-[13px] text-muted-foreground">Déjalo vacío para no indicar familia. Si escribes una que ya existe (aunque cambien mayúsculas o tildes), te unes a ella.</p>
+          <Error_ texto={e.err} />
+          <div className="flex gap-2"><Button type="submit" size="sm" disabled={e.busy}>Guardar</Button><Button type="button" size="sm" variant="ghost" onClick={() => setEditando(false)}>Cancelar</Button></div>
+        </form>
+      )}
+      <ul className="grid gap-2">
+        {grupos.map((gr) => (
+          <li key={gr.familia ?? "sin"} className="rounded-lg border bg-card p-3">
+            <p className="font-heading text-sm font-bold">{gr.familia ? `Familia ${gr.familia}` : "Sin familia indicada"} <span className="font-normal text-muted-foreground">· {gr.personas.length}</span></p>
+            <p className="mt-1 flex flex-wrap gap-1.5">
+              {gr.personas.map((p) => <span key={p.id} className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[13px]">{p.nombre}{p.esAdmin && <ShieldCheck className="size-3.5 text-primary" aria-label="Administra el grupo" />}</span>)}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 function Favoritos() {
   const g = useGrupo(); const e = useEnvio();
-  const [filtro, setFiltro] = useState<"todos" | "mios">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "mios" | "familia">("todos");
   const mios = g.favoritos.filter((f) => f.esMio);
-  const lista = filtro === "mios" ? mios : g.favoritos;
+  const miFamilia = g.miembro?.familia;
+  const deMiFamilia = miFamilia ? g.favoritos.filter((f) => f.esMio || mismaFamilia(f.familia, miFamilia)) : [];
+  const opciones: ["todos" | "mios" | "familia", string][] = [["todos", `Todos (${g.favoritos.length})`], ["mios", `Solo los míos (${mios.length})`]];
+  if (miFamilia) opciones.push(["familia", `Solo de mi familia (${deMiFamilia.length})`]);
+  const lista = filtro === "mios" ? mios : filtro === "familia" && miFamilia ? deMiFamilia : g.favoritos;
   return (
     <>
       <Card>
@@ -261,14 +335,15 @@ function Favoritos() {
         </div>
       </Card>
       <ResumenCooperativa variante="grupo" />
+      <PersonasPorFamilia />
       <div className="grid gap-1.5">
         <h3 className="font-heading text-xl font-bold">Favoritos del grupo</h3>
         <p className="max-w-[68ch] text-sm text-muted-foreground">Las ofertas que ha marcado cada persona del grupo, con su nombre. Para añadir más, pulsa el corazón de un anuncio en <b>Oportunidades</b>.</p>
       </div>
-      <ToggleChips label="Qué favoritos ver" value={filtro} options={[["todos", `Todos (${g.favoritos.length})`], ["mios", `Solo los míos (${mios.length})`]]} onChange={setFiltro} />
+      <ToggleChips label="Qué favoritos ver" value={filtro} options={opciones} onChange={setFiltro} />
       {lista.length
         ? <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">{lista.map((f) => <FavCard key={f.id} f={f} />)}</div>
-        : <p className="text-[13px] text-muted-foreground">{filtro === "mios" ? "Todavía no has marcado ningún favorito." : "Todavía no hay favoritos en el grupo."}</p>}
+        : <p className="text-[13px] text-muted-foreground">{filtro === "mios" ? "Todavía no has marcado ningún favorito." : filtro === "familia" ? "Todavía no hay favoritos de tu familia." : "Todavía no hay favoritos en el grupo."}</p>}
       <CambiarPassword />
       {g.miembro?.esAdmin && <Administrar />}
       <Disclosure summary={<><Trash2 aria-hidden /> Borrar mi perfil</>}>

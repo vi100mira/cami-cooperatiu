@@ -10,6 +10,8 @@ ultima_revision: 2026-10-12
 
 # ADR-0004: Administración del grupo, código de recuperación y datos de la cooperativa compartidos
 
+> **Actualizada por [ADR-0006](11-adr-0006-familias-y-varias-administraciones.md) (19/10/2026):** ya no hay una sola persona administradora por grupo (se retiró el índice único) y el número de familias solo lo cambian quienes administran. El resto de esta decisión sigue vigente.
+
 ## Contexto
 
 - ADR-0001 dejó dos huecos: no había administración (nadie podía quitar a una persona ni restablecer su contraseña) y una contraseña perdida no se podía recuperar, porque no hay correo.

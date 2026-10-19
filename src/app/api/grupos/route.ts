@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   const r = validarAlta(await req.json().catch(() => null));
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 });
-  const { nombre, slug, grupoPassword, miembro, miembroPassword } = r.v;
+  const { nombre, slug, grupoPassword, miembro, miembroPassword, familia } = r.v;
 
   const sb = db();
   const codigo = generarCodigo();
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   }
 
   const { data: m, error: em } = await sb.from("miembros")
-    .insert({ grupo_id: g.id, nombre: miembro, password_hash: mh, es_admin: true }).select("id").single();
+    .insert({ grupo_id: g.id, nombre: miembro, password_hash: mh, es_admin: true, familia: familia || null }).select("id").single();
   if (em) {
     // Sin primer miembro el grupo no sirve: se deshace para no dejar datos a medias.
     await sb.from("grupos_cooperativos").delete().eq("id", g.id);

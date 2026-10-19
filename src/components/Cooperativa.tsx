@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Users, Pencil, MapPin, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useGrupo } from "@/lib/grupo";
+import { familiasDistintas } from "@/lib/familias";
 import { REGIONS, regionName } from "@/lib/content";
 import { Button } from "./ui/button";
 import { Card, CardTitle } from "./ui/card";
@@ -23,13 +24,14 @@ export function ResumenCooperativa({ variante }: { variante: "ruta" | "grupo" })
   const c = useCentro();
   const nombre = s.group.name.trim();
   const centro = c.municipio ? (c.radio > 0 ? `Hasta ${c.radio} km de ${c.municipio.nombre}` : `Centro: ${c.municipio.nombre}, sin límite de distancia`) : "Sin centro de acción";
+  const compartido = g.estado === "miembro";
+  const registradas = familiasDistintas(g.miembros).length;
   const datos = [
     regionName(s.group.region) || "Comunidad sin elegir",
     s.group.ciudad.trim() || "Ciudad sin indicar",
-    `${s.group.fam} ${s.group.fam === 1 ? "familia" : "familias"}`,
+    compartido ? `${s.group.fam} ${s.group.fam === 1 ? "familia" : "familias"} · ${registradas} ${registradas === 1 ? "registrada" : "registradas"}` : `${s.group.fam} ${s.group.fam === 1 ? "familia" : "familias"}`,
     s.group.barrio.trim() ? `Zona: ${s.group.barrio.trim()}` : "",
   ].filter(Boolean);
-  const compartido = g.estado === "miembro";
   return (
     <Card className="gap-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -55,6 +57,10 @@ export function EditarCooperativa() {
   const ref = useRef<HTMLDialogElement>(null);
   const [abierto, setAbierto] = useState(false);
   const { s, set } = useStore();
+  const g = useGrupo();
+  // Dentro de un grupo, el número de familias lo fija quien lo administra; las demás personas solo lo ven.
+  const soloLectura = g.estado === "miembro" && !g.miembro?.esAdmin;
+  const registradas = familiasDistintas(g.miembros).length;
   const up = (patch: Partial<typeof s.group>) => set((x) => ({ ...x, group: { ...x.group, ...patch } }));
 
   useEffect(() => {
@@ -94,9 +100,10 @@ export function EditarCooperativa() {
           </div>
           <div className="grid gap-3 sm:grid-cols-[2fr_1fr_2fr]">
             <Field label="Nombre de la cooperativa" htmlFor="g-name"><Input id="g-name" type="text" autoComplete="off" placeholder="Por ejemplo, Llar del Barri" value={s.group.name} onChange={(e) => up({ name: e.target.value })} /></Field>
-            <Field label="Familias" htmlFor="g-fam"><Input id="g-fam" type="number" min={1} max={200} inputMode="numeric" value={s.group.fam} onChange={(e) => { const v = parseInt(e.target.value, 10); if (isNaN(v)) return; up({ fam: Math.max(1, Math.min(200, v)) }); }} /></Field>
+            <Field label="Familias" htmlFor="g-fam"><Input id="g-fam" type="number" min={1} max={200} inputMode="numeric" readOnly={soloLectura} aria-readonly={soloLectura} className={soloLectura ? "cursor-not-allowed bg-muted" : undefined} value={s.group.fam} onChange={(e) => { const v = parseInt(e.target.value, 10); if (isNaN(v)) return; up({ fam: Math.max(1, Math.min(200, v)) }); }} /></Field>
             <Field label="Barrio o zona de interés" htmlFor="g-barrio"><Input id="g-barrio" type="text" autoComplete="off" placeholder="Por ejemplo, Cabanyal o Patraix" value={s.group.barrio} onChange={(e) => up({ barrio: e.target.value })} /></Field>
           </div>
+          {g.estado === "miembro" && <p className="text-[13px] text-muted-foreground">Familias registradas en el grupo: <b className="text-foreground">{registradas} de {s.group.fam}</b>. {soloLectura ? "El número de familias lo fija quien administra el grupo." : "Como administras el grupo, el número de familias lo decides tú."}</p>}
           <CentroRadio id="coop-cr" />
           <div className="flex justify-end"><Button onClick={() => setAbierto(false)}>Hecho</Button></div>
         </div>

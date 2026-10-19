@@ -17,6 +17,13 @@ describe("validarAlta", () => {
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.v.slug).toBe("techo-vecinal");
   });
+  it("la familia es opcional y se limpia; si no es texto se ignora", () => {
+    const f = (x: unknown) => { const r = validarAlta({ ...ok, familia: x }); return r.ok ? r.v.familia : null; };
+    expect(f("  Mira   Ferrer ")).toBe("Mira Ferrer");
+    expect(f(undefined)).toBe("");
+    expect(f(42)).toBe("");
+    expect(f("x".repeat(90))).toHaveLength(60);
+  });
   it("rechaza contraseñas de menos de 8 caracteres", () => {
     expect(validarAlta({ ...ok, password: "corta" }).ok).toBe(false);
     expect(validarAlta({ ...ok, miembroPassword: "corta" }).ok).toBe(false);

@@ -10,7 +10,7 @@ export async function GET(req: Request) {
 
   const filtro = new URL(req.url).searchParams.get("filtro") === "mios" ? "mios" : "todos";
   let q = db().from("favoritos")
-    .select("id, oferta_id, datos, created_at, miembro_id, miembros!inner(nombre, grupo_id)")
+    .select("id, oferta_id, datos, created_at, miembro_id, miembros!inner(nombre, familia, grupo_id)")
     .eq("miembros.grupo_id", s.g)
     .order("created_at", { ascending: false });
   if (filtro === "mios") q = q.eq("miembro_id", s.m);
@@ -25,6 +25,7 @@ export async function GET(req: Request) {
       datos: f.datos,
       fecha: f.created_at,
       marcadoPor: (f.miembros as unknown as { nombre: string } | null)?.nombre ?? "",
+      familia: (f.miembros as unknown as { familia: string | null } | null)?.familia ?? null,
       esMio: f.miembro_id === s.m,
     })),
   });

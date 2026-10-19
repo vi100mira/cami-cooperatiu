@@ -3,12 +3,12 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { datosDeListing, ofertaIdDe, type DatosFav, type Tipo } from "./favoritos";
 import type { Listing } from "./parse-fotocasa";
 
-export interface Fav { id: string; ofertaId: string; datos: DatosFav; fecha: string; marcadoPor: string; esMio: boolean; }
-export interface Persona { id: string; nombre: string; esAdmin?: boolean; }
+export interface Fav { id: string; ofertaId: string; datos: DatosFav; fecha: string; marcadoPor: string; familia?: string | null; esMio: boolean; }
+export interface Persona { id: string; nombre: string; esAdmin?: boolean; familia?: string | null; }
 export interface DatosCoop { region: string; ciudad: string; familias: number; barrio: string; centro?: string; radio?: number; }
 export interface GrupoInfo { nombre: string; slug: string; }
 export type Estado = "cargando" | "fuera" | "grupo" | "miembro";
-export interface Alta { nombre: string; slug: string; password: string; miembro: string; miembroPassword: string; }
+export interface Alta { nombre: string; slug: string; password: string; miembro: string; miembroPassword: string; familia?: string; }
 
 type Resp<T> = { ok: boolean; status: number; j: T & { error?: string } };
 async function api<T extends object = object>(path: string, method = "GET", body?: unknown): Promise<Resp<T>> {
@@ -21,6 +21,11 @@ const FALLO = "No se ha podido completar la acción. Inténtalo de nuevo.";
 
 interface Ctx {
   estado: Estado; disponible: boolean; grupo: GrupoInfo | null; miembro: Persona | null; miembros: Persona[]; favoritos: Fav[];
+  /** Nombres de familia que ya existen en el grupo (para sugerirlos al unirse). */
+  familias: string[];
+  cambiarMiFamilia: (familia: string) => Promise<string | null>;
+  ascenderPersona: (miembroId: string, password: string) => Promise<string | null>;
+  renunciarAdmin: (password: string) => Promise<string | null>;
   /** Cada acción devuelve un mensaje de error, o null si ha ido bien. */
   entrarGrupo: (slug: string, password: string) => Promise<string | null>;
   crearGrupo: (a: Alta) => Promise<string | null>;
@@ -37,7 +42,7 @@ interface Ctx {
   datosCoop: DatosCoop | null | undefined;
   guardarDatosCoop: (d: DatosCoop) => Promise<string | null>;
   elegirMiembro: (id: string, password: string) => Promise<string | null>;
-  anadirMiembro: (nombre: string, password: string) => Promise<string | null>;
+  anadirMiembro: (nombre: string, password: string, familia: string) => Promise<string | null>;
   cambiarPersona: () => Promise<void>;
   salir: () => Promise<void>;
   borrarMiPerfil: () => Promise<string | null>;
@@ -56,6 +61,7 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
   const [grupo, setGrupo] = useState<GrupoInfo | null>(null);
   const [miembro, setMiembro] = useState<Persona | null>(null);
   const [miembros, setMiembros] = useState<Persona[]>([]);
+  const [familias, setFamilias] = useState<string[]>([]);
   const [favoritos, setFavoritos] = useState<Fav[]>([]);
   const [codigoNuevo, setCodigoNuevo] = useState<string | null>(null);
   const [datosCoop, setDatosCoop] = useState<DatosCoop | null | undefined>(undefined);
@@ -68,7 +74,7 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
       const [f, d] = await Promise.all([api<{ favoritos: Fav[] }>("/api/favoritos"), api<{ datos: DatosCoop | null }>("/api/grupos/datos")]);
       setFavoritos(f.ok ? f.j.favoritos : []); setDatosCoop(d.ok ? d.j.datos : undefined);
     } else { setFavoritos([]); setDatosCoop(undefined); }
-    if (r.j.estado === "grupo" || r.j.estado === "miembro") { const m = await api<{ miembros: Persona[] }>("/api/miembros"); setMiembros(m.ok ? m.j.miembros : []); }
+    if (r.j.estado === "grupo" || r.j.estado === "miembro") { const m = await api<{ miembros: Persona[]; familias: string[] }>("/api/miembros"); setMiembros(m.ok ? m.j.miembros : []); setFamilias(m.ok ? m.j.familias : []); }
   }, []);
   useEffect(() => { refrescar(); }, [refrescar]);
 
@@ -90,6 +96,14 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
   const descartarCodigo = useCallback(() => setCodigoNuevo(null), []);
   const quitarPersona = useCallback((miembroId: string, password: string) => accion("/api/grupos/admin", "POST", { accion: "quitar", miembroId, password }), [accion]);
   const restablecerPassword = useCallback((miembroId: string, nuevaPassword: string, password: string) => accion("/api/grupos/admin", "POST", { accion: "restablecer", miembroId, nuevaPassword, password }), [accion]);
+  const ascenderPersona = useCallback((miembroId: string, password: string) => accion("/api/grupos/admin", "POST", { accion: "ascender", miembroId, password }), [accion]);
+  const renunciarAdmin = useCallback((password: string) => accion("/api/grupos/admin", "POST", { accion: "renunciar", password }), [accion]);
+  const cambiarMiFamilia = useCallback(async (familia: string) => {
+    const r = await api("/api/miembros/yo", "PATCH", { familia });
+    if (!r.ok) return r.j.error ?? FALLO;
+    await refrescar();
+    return null;
+  }, [refrescar]);
   const nuevoCodigo = useCallback(async (password: string) => {
     const r = await api<{ codigo: string }>("/api/grupos/admin", "POST", { accion: "codigo", password });
     if (!r.ok) return r.j.error ?? FALLO;
@@ -107,13 +121,14 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
   const guardarDatosCoop = useCallback(async (d: DatosCoop) => {
-    const r = await api("/api/grupos/datos", "PUT", d);
-    if (r.ok) setDatosCoop(d);
+    const r = await api<{ datos?: DatosCoop }>("/api/grupos/datos", "PUT", d);
+    // El servidor devuelve lo que ha guardado: si no administras, el número de familias es el del grupo, no el tuyo.
+    if (r.ok) setDatosCoop(r.j.datos ?? d);
     return r.ok ? null : r.j.error ?? FALLO;
   }, []);
   const elegirMiembro = useCallback((miembroId: string, password: string) => accion("/api/miembros/entrar", "POST", { miembroId, password }), [accion]);
-  const anadirMiembro = useCallback(async (nombre: string, password: string) => {
-    const r = await api<{ id: string }>("/api/miembros", "POST", { nombre, password });
+  const anadirMiembro = useCallback(async (nombre: string, password: string, familia: string) => {
+    const r = await api<{ id: string }>("/api/miembros", "POST", { nombre, password, familia });
     if (!r.ok) return r.j.error ?? FALLO;
     return elegirMiembro(r.j.id, password);
   }, [elegirMiembro]);
@@ -129,7 +144,7 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
     // Cambio inmediato en pantalla; si el servidor falla, se deshace.
     setFavoritos(mio
       ? antes.filter((f) => !(f.esMio && f.ofertaId === ofertaId))
-      : [{ id: "pendiente-" + ofertaId, ofertaId, datos: datosDeListing(l, tipo), fecha: new Date().toISOString(), marcadoPor: miembro.nombre, esMio: true }, ...antes]);
+      : [{ id: "pendiente-" + ofertaId, ofertaId, datos: datosDeListing(l, tipo), fecha: new Date().toISOString(), marcadoPor: miembro.nombre, familia: miembro.familia ?? null, esMio: true }, ...antes]);
     const r = mio
       ? await api("/api/favoritos?ofertaId=" + encodeURIComponent(ofertaId), "DELETE")
       : await api("/api/favoritos", "POST", { ofertaId, datos: datosDeListing(l, tipo) });
@@ -159,10 +174,10 @@ export function GrupoProvider({ children }: { children: ReactNode }) {
   const quienes = useCallback((l: Listing) => { const id = ofertaIdDe(l); return favoritos.filter((f) => f.ofertaId === id).map((f) => f.marcadoPor); }, [favoritos]);
 
   const valor = useMemo<Ctx>(() => ({
-    estado, disponible, grupo, miembro, miembros, favoritos,
+    estado, disponible, grupo, miembro, miembros, favoritos, familias, cambiarMiFamilia, ascenderPersona, renunciarAdmin,
     codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop,
     entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, marcarFavorito, quitarFavorito, esFavorito, quienes,
-  }), [estado, disponible, grupo, miembro, miembros, favoritos, codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop, entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, marcarFavorito, quitarFavorito, esFavorito, quienes]);
+  }), [estado, disponible, grupo, miembro, miembros, favoritos, familias, cambiarMiFamilia, ascenderPersona, renunciarAdmin, codigoNuevo, descartarCodigo, quitarPersona, restablecerPassword, nuevoCodigo, cambiarMiPassword, recuperar, datosCoop, guardarDatosCoop, entrarGrupo, crearGrupo, elegirMiembro, anadirMiembro, cambiarPersona, salir, borrarMiPerfil, alternarFavorito, marcarFavorito, quitarFavorito, esFavorito, quienes]);
   return <C.Provider value={valor}>{children}</C.Provider>;
 }
 export function useGrupo() { const c = useContext(C); if (!c) throw new Error("GrupoProvider"); return c; }

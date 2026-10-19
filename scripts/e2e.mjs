@@ -51,7 +51,7 @@ const sA = new Sesion(), sB = new Sesion(), sG2 = new Sesion();
 let anaBorrada = false;
 try {
   // Altas
-  let r = await sA.call("POST", "/api/grupos", { nombre: "Prueba E2E A", slug: slugA, password: pwG, miembro: "Ana", miembroPassword: pwAna });
+  let r = await sA.call("POST", "/api/grupos", { nombre: "Prueba E2E A", slug: slugA, password: pwG, miembro: "Ana", miembroPassword: pwAna, familia: "garcia " });
   check("Alta de grupo A", r.s === 200, `HTTP ${r.s}`);
   const codigoInicial = r.j?.codigo;
   check("El alta devuelve un código de recuperación", /^[A-Z2-9]{5}(-[A-Z2-9]{5}){3}$/.test(codigoInicial ?? ""));
@@ -72,7 +72,10 @@ try {
   check("Grupo inexistente => 401 (mismo error)", (await new Sesion().call("POST", "/api/grupos/entrar", { slug: `no-existe-${rnd}`, password: "mala-mala-1" })).s === 401);
   r = await sB.call("POST", "/api/grupos/entrar", { slug: slugA, password: pwG });
   check("Entrar al grupo A", r.s === 200, `HTTP ${r.s}`);
-  check("Añadir miembro Beto", (await sB.call("POST", "/api/miembros", { nombre: "Beto", password: pwBeto })).s === 200);
+  r = await sB.call("GET", "/api/miembros");
+  check("Antes de identificarse se ven las familias existentes, pero no quién es de cuál", r.j?.familias?.length === 1 && r.j.miembros.every((m) => !("familia" in m)), JSON.stringify(r.j));
+  check("Añadir miembro Beto (familia escrita con otra grafía)", (await sB.call("POST", "/api/miembros", { nombre: "Beto", password: pwBeto, familia: "García" })).s === 200);
+  check("Familia que no es texto => 400", (await sB.call("POST", "/api/miembros", { nombre: "Zeta", password: pwBeto, familia: 42 })).s === 400);
   check("Miembro duplicado => 409", (await sB.call("POST", "/api/miembros", { nombre: "Beto", password: pwBeto })).s === 409);
   r = await sB.call("GET", "/api/miembros");
   const miembros = r.j?.miembros ?? [];
@@ -81,6 +84,17 @@ try {
   check("Favoritos antes de identificarse => 401", (await sB.call("GET", "/api/favoritos")).s === 401);
   check("Persona con contraseña mala => 401", (await sB.call("POST", "/api/miembros/entrar", { miembroId: beto?.id, password: "mala-mala-1" })).s === 401);
   check("Beto confirma identidad", (await sB.call("POST", "/api/miembros/entrar", { miembroId: beto?.id, password: pwBeto })).s === 200);
+
+  // Familias
+  r = await sB.call("GET", "/api/miembros");
+  const fa = r.j?.miembros?.find((m) => m.nombre === "Ana")?.familia, fb = r.j?.miembros?.find((m) => m.nombre === "Beto")?.familia;
+  check("Ana y Beto quedan en la misma familia, con la grafía de la primera", fa === "garcia" && fb === "garcia", `${fa} / ${fb}`);
+  check("Identificado, Beto ve la familia de cada persona y la lista de familias es de 1", r.j?.familias?.length === 1);
+  check("Beto indica su propia familia", (await sB.call("PATCH", "/api/miembros/yo", { familia: "Soler" })).s === 200);
+  check("La familia propia no puede ser un objeto", (await sB.call("PATCH", "/api/miembros/yo", { familia: { a: 1 } })).s === 400);
+  r = await sA.call("GET", "/api/miembros");
+  check("Ahora hay dos familias", r.j?.familias?.length === 2, JSON.stringify(r.j?.familias));
+  check("La familia aparece en la sesión", (await sB.call("GET", "/api/sesion")).j?.miembro?.familia === "Soler");
 
   // Roles y administración
   check("Ana (creó el grupo) administra", (await sA.call("GET", "/api/sesion")).j?.miembro?.esAdmin === true);
@@ -110,6 +124,15 @@ try {
   check("Datos antiguos, sin centro ni distancia, siguen siendo válidos", (await sB.call("PUT", "/api/grupos/datos", { region: "cv", ciudad: "València", familias: 12, barrio: "Russafa" })).s === 200);
   check("Beto vuelve a guardar el centro y la distancia", (await sB.call("PUT", "/api/grupos/datos", coop)).s === 200);
 
+  // El número de familias solo lo cambia quien administra
+  r = await sB.call("PUT", "/api/grupos/datos", { ...coop, familias: 40, barrio: "Patraix" });
+  check("Beto (no administra) puede cambiar el barrio, y el servidor le dice lo guardado", r.s === 200 && r.j?.datos?.barrio === "Patraix" && r.j?.datos?.familias === 12, JSON.stringify(r.j));
+  check("…pero el número de familias sigue siendo 12", (await sA.call("GET", "/api/grupos/datos")).j?.datos?.familias === 12);
+  r = await sA.call("PUT", "/api/grupos/datos", { ...coop, familias: 15 });
+  check("Ana (administra) sí cambia el número de familias", r.s === 200 && r.j?.datos?.familias === 15);
+  check("Beto lo ve actualizado", (await sB.call("GET", "/api/grupos/datos")).j?.datos?.familias === 15);
+  check("Se restablecen los datos de prueba", (await sA.call("PUT", "/api/grupos/datos", coop)).s === 200);
+
   // Favoritos
   const of1 = { ofertaId: "Fotocasa:e2e-1", datos: { titulo: "Edificio de prueba", url: "https://www.fotocasa.es/es/x/1/d", tipo: "edificios", precio: 900000, m2: 700, zona: "Russafa", fuente: "Fotocasa", telefono: "600000000", iban: "ES0000" } };
   const of2 = { ofertaId: "Pisos:e2e-2", datos: { titulo: "Terreno de prueba", url: "https://www.pisos.com/x/2", tipo: "terrenos", precio: 300000 } };
@@ -122,6 +145,7 @@ try {
   r = await sB.call("GET", "/api/favoritos?filtro=todos");
   check("Todos: 2 favoritos", r.s === 200 && r.j?.favoritos?.length === 2, `n=${r.j?.favoritos?.length}`);
   check("Cada favorito lleva el nombre de quien lo marcó", (r.j?.favoritos ?? []).map((f) => f.marcadoPor).sort().join(",") === "Ana,Beto");
+  check("…y su familia", (r.j?.favoritos ?? []).map((f) => f.familia).sort().join(",") === "Soler,garcia");
   r = await sB.call("GET", "/api/favoritos?filtro=mios");
   check("Solo los míos: 1", r.j?.favoritos?.length === 1 && r.j.favoritos[0].esMio === true);
   await sB.call("DELETE", `/api/favoritos?ofertaId=${encodeURIComponent(of2.ofertaId)}`);
@@ -163,14 +187,33 @@ try {
   // Administración: nuevo código, quitar a alguien y traspaso al irse quien administra
   r = await sA.call("POST", "/api/grupos/admin", { accion: "codigo", password: pwAna2 });
   check("Ana genera un código nuevo", r.s === 200 && /^[A-Z2-9]{5}(-[A-Z2-9]{5}){3}$/.test(r.j?.codigo ?? ""), `HTTP ${r.s}`);
-  check("Dani se añade al grupo", (await sA.call("POST", "/api/miembros", { nombre: "Dani", password: pwBeto })).s === 200);
+  check("Dani se añade al grupo", (await sA.call("POST", "/api/miembros", { nombre: "Dani", password: pwBeto, familia: "SOLER" })).s === 200);
+  check("Dani cae en la familia Soler existente", ((await sA.call("GET", "/api/miembros")).j?.miembros ?? []).find((m) => m.nombre === "Dani")?.familia === "Soler");
   const dani = ((await sA.call("GET", "/api/miembros")).j?.miembros ?? []).find((m) => m.nombre === "Dani");
   check("Ana no se puede quitar a sí misma", (await sA.call("POST", "/api/grupos/admin", { accion: "quitar", miembroId: ana?.id, password: pwAna2 })).s === 400);
   check("Ana quita a Dani", (await sA.call("POST", "/api/grupos/admin", { accion: "quitar", miembroId: dani?.id, password: pwAna2 })).s === 200);
   check("Quedan Ana y Beto", ((await sA.call("GET", "/api/miembros")).j?.miembros ?? []).length === 2);
+
+  // Varias personas administran
+  check("Beto no puede nombrar a nadie => 403", (await sB.call("POST", "/api/grupos/admin", { accion: "ascender", miembroId: beto?.id, password: pwBeto3 })).s === 403);
+  check("Ana (única administradora) no puede renunciar => 400", (await sA.call("POST", "/api/grupos/admin", { accion: "renunciar", password: pwAna2 })).s === 400);
+  check("Ana nombra a Beto para administrar", (await sA.call("POST", "/api/grupos/admin", { accion: "ascender", miembroId: beto?.id, password: pwAna2 })).s === 200);
+  check("Nombrar a quien ya administra => 400", (await sA.call("POST", "/api/grupos/admin", { accion: "ascender", miembroId: beto?.id, password: pwAna2 })).s === 400);
+  check("Beto ahora administra", (await sB.call("GET", "/api/sesion")).j?.miembro?.esAdmin === true);
+  check("Beto no puede quitar a Ana, que también administra => 403", (await sB.call("POST", "/api/grupos/admin", { accion: "quitar", miembroId: ana?.id, password: pwBeto3 })).s === 403);
+  check("Beto no puede cambiar la contraseña de Ana => 403", (await sB.call("POST", "/api/grupos/admin", { accion: "restablecer", miembroId: ana?.id, nuevaPassword: "hack-hack-12", password: pwBeto3 })).s === 403);
+  check("Cada acción sigue pidiendo la contraseña propia => 401", (await sB.call("POST", "/api/grupos/admin", { accion: "codigo", password: pwAna2 })).s === 401);
+  check("Beto puede generar el código de recuperación", (await sB.call("POST", "/api/grupos/admin", { accion: "codigo", password: pwBeto3 })).s === 200);
+  check("Ana renuncia a administrar", (await sA.call("POST", "/api/grupos/admin", { accion: "renunciar", password: pwAna2 })).s === 200);
+  check("Ana ya no administra", (await sA.call("GET", "/api/sesion")).j?.miembro?.esAdmin === false);
+  check("Beto, ya único, no puede renunciar => 400", (await sB.call("POST", "/api/grupos/admin", { accion: "renunciar", password: pwBeto3 })).s === 400);
+  check("Siempre queda alguien administrando", ((await sB.call("GET", "/api/miembros")).j?.miembros ?? []).filter((m) => m.esAdmin).length === 1);
+  check("Beto renuncia tras volver a nombrar a Ana", (await sB.call("POST", "/api/grupos/admin", { accion: "ascender", miembroId: ana?.id, password: pwBeto3 })).s === 200
+    && (await sB.call("POST", "/api/grupos/admin", { accion: "renunciar", password: pwBeto3 })).s === 200);
+  check("Ana vuelve a ser la única administradora", (await sA.call("GET", "/api/sesion")).j?.miembro?.esAdmin === true && (await sB.call("GET", "/api/sesion")).j?.miembro?.esAdmin === false);
   r = await sA.call("DELETE", "/api/miembros/yo"); anaBorrada = true;
   check("Ana se va y el grupo sigue", r.s === 200 && r.j?.grupoBorrado === false);
-  check("Beto pasa a administrar el grupo", (await sB.call("GET", "/api/sesion")).j?.miembro?.esAdmin === true);
+  check("Beto, que no administraba, pasa a administrar el grupo al irse Ana", (await sB.call("GET", "/api/sesion")).j?.miembro?.esAdmin === true);
 } catch (e) {
   check("La prueba terminó sin excepciones", false, String(e?.message ?? e));
 } finally {

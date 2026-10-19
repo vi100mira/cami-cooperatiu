@@ -28,6 +28,12 @@ export function SyncDatosGrupo() {
     }
   }, [estado, ready, datosCoop, set]);
 
+  // Quien no administra no decide el número de familias: si el grupo cambia, lo adopta.
+  useEffect(() => {
+    if (estado !== "miembro" || !conciliado.current || !datosCoop || g.miembro?.esAdmin) return;
+    if (datosCoop.familias !== s.group.fam) set((x) => ({ ...x, group: { ...x.group, fam: datosCoop.familias } }));
+  }, [estado, datosCoop, g.miembro?.esAdmin, s.group.fam, set]);
+
   // Cada cambio local se guarda en el grupo, con una pequeña espera para no escribir letra a letra.
   useEffect(() => {
     if (estado !== "miembro" || !conciliado.current || clave === ultimo.current) return;

@@ -6,6 +6,7 @@ import { COOKIE, sesionActual } from "@/lib/session";
 import { rateLimit } from "@/lib/guards";
 import { hashFicticio } from "@/lib/http";
 import { passwordValida } from "@/lib/validate";
+import { canonicaFamilia, familiasDistintas, limpiarFamilia } from "@/lib/familias";
 
 // Derecho de supresión: la persona borra su perfil y sus favoritos (cascada).
 // Si era la última del grupo, el grupo también se borra para no dejar datos huérfanos.
@@ -27,10 +28,21 @@ export async function DELETE() {
   return NextResponse.json({ ok: true, grupoBorrado });
 }
 
-// Cambiar la contraseña personal propia, conociendo la actual.
+// Cambiar datos propios: la familia (basta con estar identificada) o la contraseña personal (exige conocer la actual).
 export async function PATCH(req: Request) {
   const s = await sesionActual();
   if (!s?.m) return NextResponse.json({ error: "Confirma tu identidad primero." }, { status: 401 });
+
+  const c = (await req.clone().json().catch(() => null)) as { familia?: unknown } | null;
+  if (c && "familia" in c) {
+    if (c.familia !== null && typeof c.familia !== "string") return NextResponse.json({ error: "La familia debe ser un texto." }, { status: 400 });
+    const sb = db();
+    const { data: otras } = await sb.from("miembros").select("familia").eq("grupo_id", s.g).neq("id", s.m);
+    const familia = canonicaFamilia(limpiarFamilia(c.familia), familiasDistintas(otras ?? []));
+    const { error } = await sb.from("miembros").update({ familia: familia || null }).eq("id", s.m).eq("grupo_id", s.g);
+    if (error) return NextResponse.json({ error: "No se ha podido guardar la familia." }, { status: 500 });
+    return NextResponse.json({ ok: true, familia: familia || null });
+  }
   if (!rateLimit("cambiar-pw:" + s.m, undefined, 10, 15 * 60_000)) return NextResponse.json({ error: "Demasiados intentos. Espera unos minutos." }, { status: 429 });
 
   const b = (await req.json().catch(() => null)) as { actual?: unknown; nueva?: unknown } | null;

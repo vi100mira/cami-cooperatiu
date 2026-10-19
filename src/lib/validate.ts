@@ -1,5 +1,6 @@
 // Validación de entrada en servidor. Todo lo que llega del navegador se trata como no fiable.
 import { REGIONS } from "./content";
+import { limpiarFamilia } from "./familias";
 
 export const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -17,6 +18,8 @@ const texto = (x: unknown, min: number, max: number): string | null => {
 export interface Alta {
   nombre: string; slug: string; grupoPassword: string;
   miembro: string; miembroPassword: string;
+  /** Familia de quien crea el grupo; "" si no la indica. */
+  familia: string;
 }
 
 export function validarAlta(b: unknown): { ok: true; v: Alta } | { ok: false; error: string } {
@@ -31,7 +34,7 @@ export function validarAlta(b: unknown): { ok: true; v: Alta } | { ok: false; er
   if (!grupoPassword) return { ok: false, error: "La contraseña del grupo debe tener entre 8 y 200 caracteres." };
   if (!miembro) return { ok: false, error: "Escribe tu nombre (hasta 60 caracteres)." };
   if (!miembroPassword) return { ok: false, error: "Tu contraseña personal debe tener entre 8 y 200 caracteres." };
-  return { ok: true, v: { nombre, slug, grupoPassword, miembro, miembroPassword } };
+  return { ok: true, v: { nombre, slug, grupoPassword, miembro, miembroPassword, familia: limpiarFamilia(o.familia) } };
 }
 
 // Lista blanca de lo que se guarda de una oferta. Cualquier otro campo se descarta.

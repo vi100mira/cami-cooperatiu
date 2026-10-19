@@ -18,7 +18,8 @@ Resumen para quien revise el aviso de privacidad. No es asesoramiento jurídico:
 | Nombre del grupo cooperativo | Al crear el grupo | Supabase |
 | Contraseña del grupo y contraseña personal | Al crear o entrar | Solo su resumen criptográfico (bcrypt, coste 12) |
 | Código de recuperación del grupo | Al crear el grupo (se enseña una vez) | Solo su resumen criptográfico (bcrypt) |
-| Quién administra el grupo | Al crear el grupo | Supabase (marca en la ficha de la persona) |
+| Familia de cada persona (texto libre, opcional, p. ej. un apellido; ADR-0006) | Al crear el grupo, al unirse o al cambiarla | Supabase (en la ficha de la persona). La ven las personas identificadas del grupo; quien solo conoce la contraseña del grupo ve los nombres de familia pero no a quién corresponden |
+| Quién administra el grupo (puede ser más de una persona) | Al crear el grupo o al ser nombrada | Supabase (marca en la ficha de la persona) |
 | Datos básicos de la cooperativa: comunidad, ciudad, número de familias, barrio, centro de acción (municipio) y distancia máxima en km | Al rellenarlos estando dentro de un grupo | Supabase, en el grupo (ADR-0004) |
 | Favoritos (anuncios marcados con el corazón) | Al marcarlos | Supabase |
 | Fecha de última actividad del grupo | Al entrar o marcar favoritos | Supabase |
@@ -54,7 +55,8 @@ No hay caducidad automática (ADR-0003). Se anota la fecha de última actividad 
 4. ¿Hace falta un registro de actividades de tratamiento o una evaluación de impacto con este volumen y tipo de datos?
 5. ¿Debe el aviso mencionar algo más sobre menores, derecho de supresión de una sola persona o el procedimiento de ejercicio de derechos, dado que no hay correo en la base?
 6. Los datos de «Tu cooperativa» (comunidad, ciudad, número de familias, barrio, centro de acción y distancia máxima) se comparten desde el 12/10/2026 entre las personas del grupo (ADR-0004). ¿Basta el aviso actual, o junto al nombre del grupo se consideran datos que exigen algo más?
-7. Quien administra el grupo puede quitar a una persona y restablecer su contraseña, y existe un código de recuperación de grupo de un solo uso. ¿Es suficiente la información que se da sobre ello y sobre quién puede ver o cambiar qué?
+7. Quien administra el grupo (puede haber varias personas, ADR-0006) puede quitar a una persona que no administre, restablecer su contraseña, nombrar a otra persona para administrar y fijar el número de familias, y existe un código de recuperación de grupo de un solo uso. ¿Es suficiente la información que se da sobre ello y sobre quién puede ver o cambiar qué?
+8. La «familia» (texto libre, opcional) se muestra a las demás personas identificadas del grupo. ¿Basta con recomendar no usar nombres completos, o debe el aviso decir algo más sobre ese dato?
 
 ## 7. Dónde está cada cosa
 
