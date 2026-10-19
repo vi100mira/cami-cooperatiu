@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0006
-estado: aceptada; implementada y verificada en local (19/10/2026); pendiente de desplegar
+estado: aceptada; implementada, verificada y desplegada en producción (19/10/2026, commit 4463c25)
 fecha: 2026-10-19
 ultima_revision: 2026-10-19
 ---
@@ -58,8 +58,8 @@ ultima_revision: 2026-10-19
 | Aspecto | Implementado | Verificado | Desplegado |
 | --- | --- | --- | --- |
 | Migración `20261019_familias_y_varios_admin.sql` (columna `familia`, sin índice único de administración) | Sí | Aplicada en la base real; `leida-vecinal` intacto (1 persona, administradora, sin familia). El proyecto estaba pausado por inactividad y se reactivó | Sí (base de datos; aditiva) |
-| Rutas `/api/miembros` (GET/POST), `/api/miembros/yo` (PATCH familia), `/api/grupos` (alta), `/api/grupos/admin` (`ascender`, `renunciar`; `quitar` y `restablecer` no alcanzan a administradoras), `/api/grupos/datos` (familias solo administración), `/api/favoritos` (familia) | Sí | `npm run test:e2e` en local: 99 comprobaciones, incluidas las reglas de administración, las familias y la limpieza | No |
-| Interfaz (familia al crear y unirse con sugerencias, «Personas y familias», filtro de favoritos, «Nombrar para administrar», «Renunciar a administrar», familias de solo lectura con «registradas de N») | Sí | Navegador en local con un grupo de prueba (borrado después): administradora edita, otra persona ve solo lectura y sin panel de administración, sugerencias y agrupación correctas | No |
+| Rutas `/api/miembros` (GET/POST), `/api/miembros/yo` (PATCH familia), `/api/grupos` (alta), `/api/grupos/admin` (`ascender`, `renunciar`; `quitar` y `restablecer` no alcanzan a administradoras), `/api/grupos/datos` (familias solo administración), `/api/favoritos` (familia) | Sí | `npm run test:e2e`: 99 comprobaciones en local y contra producción, incluidas las reglas de administración, las familias y la limpieza | Sí |
+| Interfaz (familia al crear y unirse con sugerencias, «Personas y familias», filtro de favoritos, «Nombrar para administrar», «Renunciar a administrar», familias de solo lectura con «registradas de N») | Sí | Navegador en local con un grupo de prueba (borrado después): administradora edita, otra persona ve solo lectura y sin panel de administración, sugerencias y agrupación correctas | Sí (el fragmento con «Personas y familias» se sirve en producción) |
 | Pruebas unitarias | Sí | 250 en verde (`familias.test.ts` y alta con familia) | — |
 
 ## Evidencia en el código
