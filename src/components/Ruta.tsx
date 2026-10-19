@@ -10,6 +10,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
+import { InstalarApp } from "./InstalarApp";
 import { ResumenCooperativa } from "./Cooperativa";
 
 export const stats = (done: Record<string, boolean>, i: number) => {
@@ -30,7 +31,7 @@ export function Hero({ s }: { s: ReturnType<typeof useStore>["s"] }) {
         <p className="eyebrow">Vivienda cooperativa en cesión de uso · España</p>
         <h1>Techo Común</h1>
         <p className="lead">De un grupo de familias a las llaves de un edificio que nadie podrá especular. Sigue la ruta, simula las cuentas y busca oportunidades.</p>
-        <ThemeToggle />
+        <div className="mt-3 flex flex-wrap items-start gap-2"><ThemeToggle /><InstalarApp /></div>
         <p className="next">{fin ? <><b>Ruta completada.</b> Ya podéis vivir en común.</> : <><b>Siguiente paso:</b> {plain(nx!.t)}</>}</p>
       </div>
       <div className="pring" role="img" aria-label={`Progreso total: ${done} de ${all} pasos`}>

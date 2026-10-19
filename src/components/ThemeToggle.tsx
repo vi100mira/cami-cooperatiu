@@ -20,7 +20,7 @@ export function ThemeToggle() {
   const oscuro = tema === "dark";
   return (
     <button type="button" onClick={cambiar} aria-pressed={oscuro} title={oscuro ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
-      className="mt-3 inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-[13px] font-medium text-foreground outline-none transition hover:border-primary hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/40">
+      className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-[13px] font-medium text-foreground outline-none transition hover:border-primary hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/40">
       {oscuro ? <Sun className="size-3.5" aria-hidden /> : <Moon className="size-3.5" aria-hidden />}
       {oscuro ? "Tema claro" : "Tema oscuro"}
     </button>
