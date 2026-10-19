@@ -3,7 +3,7 @@ tipo: adr
 estado_documental: vigente
 proyecto: Techo Común
 adr: 0005
-estado: aceptada; implementada y verificada en local (19/10/2026); sin desplegar
+estado: aceptada; implementada, verificada y desplegada en producción (19/10/2026, commit 955acad)
 fecha: 2026-10-19
 ultima_revision: 2026-10-19
 ---
@@ -43,4 +43,4 @@ ultima_revision: 2026-10-19
 
 - Tests: `parse-idealista` (muestra real), `parse-ficha` e `importar` (lista blanca, trucos de dominio, URLs raras, fichas).
 - En local, sin clave de Firecrawl: ficha de Idealista → aviso y formulario; texto pegado → precio, m² y título; añadido → aparece en la lista, sobrevive a recargar y se simula en las calculadoras.
-- Lectura real de un listado de Idealista: comprobada con Firecrawl fuera de la app; falta comprobarla en producción con la clave de Vercel.
+- Producción (19/10/2026, tras desplegar 955acad): `/api/importar` con un listado de Idealista devuelve 30 anuncios con precio, m² y zona; un portal no admitido devuelve 400.
