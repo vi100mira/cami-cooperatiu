@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
+import { PasswordInput } from "./ui/password-input";
 import { Field, FormGrid } from "./ui/field";
 import { Alert } from "./ui/alert";
 import { Checkbox } from "./ui/checkbox";
@@ -35,7 +36,7 @@ function FormEntrar() {
     <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); e.run(() => g.entrarGrupo(slug.trim().toLowerCase(), pw)); }}>
       <FormGrid>
         <Field label="Identificador del grupo" htmlFor="gr-slug"><Input id="gr-slug" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="por ejemplo, techo-vecinal" required maxLength={60} value={slug} onChange={(ev) => setSlug(ev.target.value)} /></Field>
-        <Field label="Contraseña del grupo" htmlFor="gr-pw"><Input id="gr-pw" type="password" autoComplete="off" required maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
+        <Field label="Contraseña del grupo" htmlFor="gr-pw"><PasswordInput id="gr-pw" autoComplete="off" required maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
       </FormGrid>
       <Error_ texto={e.err} />
       <Enviar busy={e.busy}>Entrar</Enviar>
@@ -56,7 +57,7 @@ function FormRecuperar() {
           <Field label="Identificador del grupo" htmlFor="rc-slug"><Input id="rc-slug" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={60} value={slug} onChange={(ev) => setSlug(ev.target.value)} /></Field>
           <Field label="Código de recuperación" htmlFor="rc-cod"><Input id="rc-cod" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={30} placeholder="XXXXX-XXXXX-XXXXX-XXXXX" value={codigo} onChange={(ev) => setCodigo(ev.target.value)} /></Field>
           {que === "miembro" && <Field label="Nombre de la persona" htmlFor="rc-nombre"><Input id="rc-nombre" autoComplete="off" maxLength={60} value={nombre} onChange={(ev) => setNombre(ev.target.value)} /></Field>}
-          <Field label="Contraseña nueva (mín. 8)" htmlFor="rc-npw"><Input id="rc-npw" type="password" autoComplete="new-password" minLength={8} maxLength={200} value={npw} onChange={(ev) => setNpw(ev.target.value)} /></Field>
+          <Field label="Contraseña nueva (mín. 8)" htmlFor="rc-npw"><PasswordInput id="rc-npw" autoComplete="new-password" minLength={8} maxLength={200} value={npw} onChange={(ev) => setNpw(ev.target.value)} /></Field>
         </FormGrid>
         <Error_ texto={e.err} />
         {hecho && !e.err && <Alert variant="info" role="status"><Info aria-hidden /><span>Contraseña cambiada. Ya puedes entrar con la nueva. Arriba tienes el código de recuperación nuevo: guárdalo.</span></Alert>}
@@ -95,9 +96,9 @@ function FormCrear() {
       <FormGrid>
         <Field label="Nombre del grupo" htmlFor="cr-nombre"><Input id="cr-nombre" autoComplete="off" required minLength={2} maxLength={120} value={nombre} onChange={(ev) => { setNombre(ev.target.value); if (!tocado) setSlug(slugDesde(ev.target.value)); }} /></Field>
         <Field label="Identificador (para entrar)" htmlFor="cr-slug"><Input id="cr-slug" autoComplete="off" autoCapitalize="none" spellCheck={false} required minLength={3} maxLength={60} pattern="[a-z0-9]+(-[a-z0-9]+)*" title="Letras minúsculas, números y guiones" value={slug} onChange={(ev) => { setTocado(true); setSlug(ev.target.value.toLowerCase()); }} /></Field>
-        <Field label="Contraseña del grupo (mín. 8)" htmlFor="cr-pw"><Input id="cr-pw" type="password" autoComplete="new-password" required minLength={8} maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
+        <Field label="Contraseña del grupo (mín. 8)" htmlFor="cr-pw"><PasswordInput id="cr-pw" autoComplete="new-password" required minLength={8} maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
         <Field label="Tu nombre o alias" htmlFor="cr-miembro"><Input id="cr-miembro" autoComplete="off" required maxLength={60} value={miembro} onChange={(ev) => setMiembro(ev.target.value)} /></Field>
-        <Field label="Tu contraseña personal (mín. 8)" htmlFor="cr-mpw"><Input id="cr-mpw" type="password" autoComplete="new-password" required minLength={8} maxLength={200} value={mpw} onChange={(ev) => setMpw(ev.target.value)} /></Field>
+        <Field label="Tu contraseña personal (mín. 8)" htmlFor="cr-mpw"><PasswordInput id="cr-mpw" autoComplete="new-password" required minLength={8} maxLength={200} value={mpw} onChange={(ev) => setMpw(ev.target.value)} /></Field>
       </FormGrid>
       {previo && <p className="text-[13px] text-muted-foreground">Hemos propuesto el nombre de tu cooperativa de la pestaña Ruta; puedes cambiarlo.</p>}
       <p className="text-[13px] text-muted-foreground">La contraseña del grupo la compartes con el resto de personas; la personal es solo tuya. Serás quien administra el grupo y, al crearlo, te daremos un código de recuperación para guardar: sin él, una contraseña perdida solo la puede restablecer quien administra.</p>
@@ -130,7 +131,7 @@ function ElegirMiembro() {
         : <p className="text-sm text-muted-foreground">Todavía no hay nadie en este grupo.</p>}
       {id && (
         <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); e.run(() => g.elegirMiembro(id, pw)); }}>
-          <Field label="Tu contraseña personal" htmlFor="em-pw"><Input id="em-pw" type="password" autoComplete="off" required maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
+          <Field label="Tu contraseña personal" htmlFor="em-pw"><PasswordInput id="em-pw" autoComplete="off" required maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
           <Error_ texto={e.err} />
           <Enviar busy={e.busy}>Entrar como {g.miembros.find((m) => m.id === id)?.nombre}</Enviar>
         </form>
@@ -139,7 +140,7 @@ function ElegirMiembro() {
         <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); n.run(() => g.anadirMiembro(nombre.trim(), npw)); }}>
           <FormGrid>
             <Field label="Tu nombre o alias" htmlFor="nm-nombre"><Input id="nm-nombre" autoComplete="off" required maxLength={60} value={nombre} onChange={(ev) => setNombre(ev.target.value)} /></Field>
-            <Field label="Tu contraseña personal (mín. 8)" htmlFor="nm-pw"><Input id="nm-pw" type="password" autoComplete="new-password" required minLength={8} maxLength={200} value={npw} onChange={(ev) => setNpw(ev.target.value)} /></Field>
+            <Field label="Tu contraseña personal (mín. 8)" htmlFor="nm-pw"><PasswordInput id="nm-pw" autoComplete="new-password" required minLength={8} maxLength={200} value={npw} onChange={(ev) => setNpw(ev.target.value)} /></Field>
           </FormGrid>
           <p className="text-[13px] text-muted-foreground">Al añadirte aceptas el <a className="font-semibold text-primary underline" href="#privacidad">aviso de privacidad</a>.</p>
           <Error_ texto={n.err} />
@@ -190,8 +191,8 @@ function CambiarPassword() {
     <Disclosure summary={<><KeyRound aria-hidden /> Cambiar mi contraseña</>}>
       <form className="grid gap-4" onSubmit={(ev) => { ev.preventDefault(); e.run(async () => { const r = await g.cambiarMiPassword(actual, nueva); setOk(r === null); if (r === null) { setActual(""); setNueva(""); } return r; }); }}>
         <FormGrid>
-          <Field label="Contraseña actual" htmlFor="cp-act"><Input id="cp-act" type="password" autoComplete="current-password" required maxLength={200} value={actual} onChange={(ev) => setActual(ev.target.value)} /></Field>
-          <Field label="Contraseña nueva (mín. 8)" htmlFor="cp-new"><Input id="cp-new" type="password" autoComplete="new-password" required minLength={8} maxLength={200} value={nueva} onChange={(ev) => setNueva(ev.target.value)} /></Field>
+          <Field label="Contraseña actual" htmlFor="cp-act"><PasswordInput id="cp-act" autoComplete="current-password" required maxLength={200} value={actual} onChange={(ev) => setActual(ev.target.value)} /></Field>
+          <Field label="Contraseña nueva (mín. 8)" htmlFor="cp-new"><PasswordInput id="cp-new" autoComplete="new-password" required minLength={8} maxLength={200} value={nueva} onChange={(ev) => setNueva(ev.target.value)} /></Field>
         </FormGrid>
         <Error_ texto={e.err} />
         {ok && !e.err && <Alert variant="info" role="status"><Info aria-hidden /><span>Contraseña cambiada.</span></Alert>}
@@ -207,7 +208,7 @@ function FilaAdmin({ id, nombre, pw }: { id: string; nombre: string; pw: string 
     <li className="grid gap-2 border-t py-3">
       <b className="font-heading">{nombre}</b>
       <div className="flex flex-wrap items-end gap-2">
-        <Field label="Contraseña nueva para esta persona" htmlFor={"ad-" + id}><Input id={"ad-" + id} type="password" autoComplete="new-password" minLength={8} maxLength={200} value={nueva} onChange={(ev) => setNueva(ev.target.value)} /></Field>
+        <Field label="Contraseña nueva para esta persona" htmlFor={"ad-" + id}><PasswordInput id={"ad-" + id} autoComplete="new-password" minLength={8} maxLength={200} value={nueva} onChange={(ev) => setNueva(ev.target.value)} /></Field>
         <Button size="sm" variant="outline" disabled={e.busy || nueva.length < 8 || !pw}
           onClick={() => e.run(async () => { const r = await g.restablecerPassword(id, nueva, pw); setOk(r === null); if (r === null) setNueva(""); return r; })}>Restablecer</Button>
         <Button size="sm" variant="outline" disabled={e.busy || !pw} className="border-destructive text-destructive hover:bg-bad-soft hover:text-destructive"
@@ -226,7 +227,7 @@ function Administrar() {
     <Disclosure summary={<><ShieldCheck aria-hidden /> Administrar el grupo</>}>
       <div className="grid gap-4">
         <p className="max-w-[68ch] text-sm text-muted-foreground">Administras este grupo. Cada acción te pide tu contraseña personal para confirmar que eres tú.</p>
-        <Field label="Tu contraseña personal" htmlFor="ad-pw"><Input id="ad-pw" type="password" autoComplete="current-password" maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
+        <Field label="Tu contraseña personal" htmlFor="ad-pw"><PasswordInput id="ad-pw" autoComplete="current-password" maxLength={200} value={pw} onChange={(ev) => setPw(ev.target.value)} /></Field>
         {otras.length > 0
           ? <ul className="grid">{otras.map((m) => <FilaAdmin key={m.id} id={m.id} nombre={m.nombre} pw={pw} />)}</ul>
           : <p className="text-[13px] text-muted-foreground">Todavía no hay más personas en el grupo.</p>}
