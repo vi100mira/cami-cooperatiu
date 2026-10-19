@@ -7,6 +7,8 @@ modelo: M06
 
 # M06 · Esquema de reglamento de régimen interno
 
+> **Modelo orientativo.** Adáptalo a vuestros estatutos y a la ley vigente; si va a tener efectos frente a terceras personas, que lo revise una persona abogada especializada en cooperativas.
+
 **Quién lo redacta:** la cooperativa, con apoyo jurídico. **Quién lo aprueba:** la asamblea. **Qué es:** el texto que desarrolla los estatutos con el detalle del día a día. La ley valenciana prevé que los estatutos se desarrollen mediante un reglamento de régimen interno aprobado por la asamblea, **cuya inscripción en el Registro no es obligatoria** (art. 10.2, último párrafo). Es más fácil de cambiar que los estatutos, pero no puede contradecirlos.
 
 **Regla práctica:** en estatutos, lo que protege el modelo (cesión de uso, transmisión, devolución, mayorías); en el reglamento, lo que cambia con la vida de la comunidad (uso de espacios, comisiones, calendario).

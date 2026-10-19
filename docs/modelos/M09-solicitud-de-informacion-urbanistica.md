@@ -7,6 +7,8 @@ modelo: M09
 
 # M09 · Solicitud de información urbanística
 
+> **Modelo orientativo.** Adáptalo a vuestros estatutos y a la ley vigente; si va a tener efectos frente a terceras personas, que lo revise una persona abogada especializada en cooperativas.
+
 **Quién lo redacta:** el grupo o la cooperativa (si ya está constituida, firma quien la represente). **A quién va:** al ayuntamiento donde está la parcela (servicio de urbanismo). **Cuándo:** antes de hacer una oferta por un solar o edificio (estación 4). **Para qué sirve:** saber qué se puede construir, porque la edificabilidad real la fija el plan del ayuntamiento y no el anuncio.
 
 **Cómo presentarla:** casi todos los ayuntamientos tienen un procedimiento propio (sede electrónica o registro). Mirad si hay un formulario oficial de «consulta urbanística», «cédula urbanística» o «informe urbanístico» y usad el texto de abajo como memoria o complemento. Puede haber tasa.

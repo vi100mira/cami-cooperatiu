@@ -7,6 +7,8 @@ modelo: M12
 
 # M12 · Certificación de acuerdos
 
+> **Modelo orientativo.** Adáptalo a vuestros estatutos y a la ley vigente; si va a tener efectos frente a terceras personas, que lo revise una persona abogada especializada en cooperativas.
+
 **Quién lo redacta:** la persona que ejerce la secretaría, con el visto bueno de la presidencia. **Cuándo:** cuando un banco, el ayuntamiento, el Registro o la notaría piden una prueba de lo que ha acordado la asamblea o el consejo rector.
 
 **Base legal (ley valenciana):** cualquier persona socia puede solicitar certificación del acta o de los acuerdos, y el consejo rector está obligado a dársela, expedida por la secretaría con el visto bueno de la presidencia (art. 38.4). Para inscribir en el Registro nombramientos y ceses, o depositar cuentas, basta una certificación del acuerdo adoptado por el órgano competente, elevada a público o con las firmas de presidencia y secretaría legitimadas notarialmente o autenticadas por el Registro (art. 18.2).

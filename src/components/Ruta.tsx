@@ -3,7 +3,8 @@ import { PH, entitiesFor, TERMS } from "@/lib/content";
 import { useStore } from "@/lib/store";
 import { Rich, useHelp } from "./Rich";
 import { plain } from "@/lib/format";
-import { ChevronDown, ArrowRight, Check } from "lucide-react";
+import { ChevronDown, ArrowRight, Check, FileText } from "lucide-react";
+import { MODELOS_INDICE } from "@/lib/modelos-indice";
 import { Card, CardTitle } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import { Badge } from "./ui/badge";
@@ -88,6 +89,14 @@ export default function Ruta({ goTo }: { goTo: (k: string) => void }) {
                       </div>
                     ))}
                   </div>
+                  {(p.docs?.length ?? 0) > 0 && (
+                    <div><div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Documentos y modelos de esta fase</div>
+                      <div className="flex flex-wrap gap-2">
+                        {p.docs!.map((c) => { const m = MODELOS_INDICE.find((x) => x.codigo === c); return m ? <button key={c} type="button" onClick={() => window.dispatchEvent(new CustomEvent("cami:goto", { detail: "docs:" + c }))} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[13px] font-medium transition hover:border-primary hover:text-primary"><FileText className="size-3.5" aria-hidden /> {m.codigo} · {m.corto}</button> : null; })}
+                        <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cami:goto", { detail: "docs" }))} className="cursor-pointer rounded-full px-3 py-1 text-[13px] font-semibold text-primary underline">Ver todos</button>
+                      </div>
+                    </div>
+                  )}
                   <div><div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Conceptos de esta fase</div><div className="flex flex-wrap gap-2">{p.terms.map((k) => <button key={k} type="button" className="cursor-help rounded-full border bg-card px-3 py-1 text-[13px] font-medium transition hover:border-primary hover:text-primary" onClick={(e) => help(k, e.currentTarget)}>{TERMS[k].t}</button>)}</div></div>
                   {p.ents.length > 0 && <div><div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dónde preguntar</div><div className="flex flex-wrap gap-2">{p.ents.map((id) => { const e = entitiesFor(s.group).find((x) => x.id === id); if (!e) return null; return <a key={id} className="rounded-full border bg-card px-3 py-1 text-[13px] font-medium text-primary transition hover:bg-accent" href={e.url} target="_blank" rel="noopener noreferrer">{e.name} ↗</a>; })}</div></div>}
                 </div>

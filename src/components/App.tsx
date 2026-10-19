@@ -13,11 +13,15 @@ import Opor from "./Opor";
 import Grupo from "./Grupo";
 import Glos from "./Glos";
 import Faq from "./Faq";
-import { Route, Calculator, Building2, CircleHelp, BookOpen, Users } from "lucide-react";
+import { Route, Calculator, Building2, CircleHelp, BookOpen, Users, FileText } from "lucide-react";
+import dynamic from "next/dynamic";
+
+// Los textos de los modelos pesan: solo se descargan al abrir la pestaña.
+const Documentos = dynamic(() => import("./Documentos"), { ssr: false, loading: () => <p className="text-sm text-muted-foreground" role="status">Cargando…</p> });
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
-const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["grupo", "Grupo"], ["faq", "Preguntas"], ["glos", "Glosario"]];
-const ICONS: Record<string, React.ReactNode> = { ruta: <Route aria-hidden />, calc: <Calculator aria-hidden />, opor: <Building2 aria-hidden />, grupo: <Users aria-hidden />, faq: <CircleHelp aria-hidden />, glos: <BookOpen aria-hidden /> };
+const TABS: [string, string][] = [["ruta", "Ruta"], ["calc", "Calculadoras"], ["opor", "Oportunidades"], ["docs", "Documentos"], ["grupo", "Grupo"], ["faq", "Preguntas"], ["glos", "Glosario"]];
+const ICONS: Record<string, React.ReactNode> = { ruta: <Route aria-hidden />, calc: <Calculator aria-hidden />, opor: <Building2 aria-hidden />, docs: <FileText aria-hidden />, grupo: <Users aria-hidden />, faq: <CircleHelp aria-hidden />, glos: <BookOpen aria-hidden /> };
 
 function Shell() {
   const { s, set } = useStore();
@@ -53,7 +57,8 @@ function Shell() {
     // «calc:terreno» abre el apartado del terreno de las calculadoras; «calc», el de la cuota.
     const ev = (e: Event) => {
       const t = (e as CustomEvent).detail as string;
-      if (t === "calc:terreno") { irASub("calc", "terreno"); go("calc", "sec-calc"); }
+      if (t === "docs" || t.startsWith("docs:")) { irASub("docs", t.split(":")[1] || "catalogo"); go("docs", "sec-docs"); }
+      else if (t === "calc:terreno") { irASub("calc", "terreno"); go("calc", "sec-calc"); }
       else if (t === "calc") { irASub("calc", "cuota"); go("calc", "sec-calc"); }
       else go(t);
     };
@@ -82,6 +87,7 @@ function Shell() {
           {tab === "ruta" && <Ruta goTo={goTo} />}
           {tab === "calc" && <Calc />}
           {tab === "opor" && <Opor />}
+          {tab === "docs" && <Documentos />}
           {tab === "grupo" && <Grupo />}
           {tab === "faq" && <Faq />}
           {tab === "glos" && <Glos />}

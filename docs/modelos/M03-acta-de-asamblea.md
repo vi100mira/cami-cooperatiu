@@ -7,6 +7,8 @@ modelo: M03
 
 # M03 · Acta de asamblea
 
+> **Modelo orientativo.** Adáptalo a vuestros estatutos y a la ley vigente; si va a tener efectos frente a terceras personas, que lo revise una persona abogada especializada en cooperativas.
+
 **Quién lo redacta:** la persona que ejerce la secretaría, con la firma de la presidencia. **Cuándo:** de cada asamblea, incluida la constituyente. Se incorpora al libro de actas.
 
 **Lo que exige la ley valenciana (art. 38):**

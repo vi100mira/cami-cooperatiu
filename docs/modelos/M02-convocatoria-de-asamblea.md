@@ -7,6 +7,8 @@ modelo: M02
 
 # M02 · Convocatoria de asamblea
 
+> **Modelo orientativo.** Adáptalo a vuestros estatutos y a la ley vigente; si va a tener efectos frente a terceras personas, que lo revise una persona abogada especializada en cooperativas.
+
 **Quién lo redacta:** quien convoca según los estatutos (normalmente el consejo rector; antes de constituirse, la persona del grupo designada para ello). **Cuándo:** antes de cada asamblea, incluida la constituyente.
 
 **Lo que exige la ley valenciana para una cooperativa constituida (art. 34):**

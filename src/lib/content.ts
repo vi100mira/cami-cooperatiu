@@ -1,6 +1,6 @@
 export interface Term{t:string;d:string;rel?:string[];link?:[string,string]}
 export interface Task{id:string;t:string;go?:string;goL?:string}
-export interface Phase{id:string;short:string;title:string;lead:string;hard?:string;terms:string[];ents:string[];tasks:Task[]}
+export interface Phase{id:string;short:string;title:string;lead:string;hard?:string;terms:string[];ents:string[];/** Códigos de los modelos de documento (docs/modelos) que ayudan en esta estación. */docs?:string[];tasks:Task[]}
 export interface Scores{c:number;r:number;z:number;l:number}
 export interface Via{id:string;title:string;tag:string;s:Scores;que:string;pro:string[];con:string[];ver:string;link?:{url:string;label:string;nota:string;acciones?:{label:string;url:string}[]}[]}
 export interface Entity{g:string;id:string;name:string;desc:string;url:string;ul:string;ct?:string[];ctn?:string;tpl?:string}
@@ -36,37 +36,37 @@ redbase:{t:"Red Base Viva",d:"Iniciativa valenciana de las consellerias de Econo
 };
 
 export const PH:Phase[]=[
-{id:"grupo",short:"Grupo",title:"Reunir el grupo motor",lead:"Un núcleo de personas que comparten la necesidad de vivienda y la visión del proyecto. Suele nacer de amistades, de un barrio o de un movimiento vecinal.",terms:["grupo","asamblea"],ents:[],tasks:[
+{id:"grupo",short:"Grupo",title:"Reunir el grupo motor",lead:"Un núcleo de personas que comparten la necesidad de vivienda y la visión del proyecto. Suele nacer de amistades, de un barrio o de un movimiento vecinal.",terms:["grupo","asamblea"],ents:[],docs:["M01","M02","M03"],tasks:[
  {id:"g1",t:"Escribir en una página qué buscáis: dónde, para quién y con qué valores"},
  {id:"g2",t:"Reunir un primer núcleo de familias comprometidas: el {{grupo|grupo motor}}"},
  {id:"g3",t:"Acordar cómo decidís y cada cuánto os reunís: la {{asamblea|asamblea}} empieza desde el primer día"},
  {id:"g4",t:"Recoger, de forma privada, los ingresos aproximados de cada familia: afectan a los requisitos de {{vpo|vivienda protegida}}",go:"calc",goL:"Comprobar"},
  {id:"g5",t:"Hablar de cuánto puede aportar cada familia al entrar",go:"calc",goL:"Simular"}]},
-{id:"red",short:"Red",title:"Buscar asesoría y apoyo",lead:"No hace falta reinventar nada. Hay federaciones y cooperativas con estatutos modelo, asesoría jurídica y financiera, y experiencia acumulada.",terms:["fecovi","redbase","banca"],ents:["fed","sostre","fiare"],tasks:[
+{id:"red",short:"Red",title:"Buscar asesoría y apoyo",lead:"No hace falta reinventar nada. Hay federaciones y cooperativas con estatutos modelo, asesoría jurídica y financiera, y experiencia acumulada.",terms:["fecovi","redbase","banca"],ents:["fed","sostre","fiare"],docs:["M01"],tasks:[
  {id:"r1",t:"Contactar con la federación de cooperativas de tu comunidad (en la Comunitat Valenciana, {{fecovi|Fecovi}}) y pedir una sesión informativa",go:"entidades",goL:"Mensaje"},
  {id:"r2",t:"Hablar con una cooperativa que ya funcione, como La Borda en Barcelona o Entrepatios en Madrid"},
  {id:"r3",t:"Preguntar por redes de colaboración público-cooperativa (en la Comunitat Valenciana, la {{redbase|Red Base Viva}}) y por convocatorias abiertas del gobierno autonómico y del Ayuntamiento"},
  {id:"r4",t:"Elegir equipo técnico (arquitectura y gestión) con experiencia en cesión de uso"},
  {id:"r5",t:"Tener una primera conversación con una entidad de {{banca|banca ética}}",go:"entidades",goL:"Mensaje"}]},
-{id:"cons",short:"Estatutos",title:"Constituir la cooperativa",lead:"Aquí se fijan las reglas: cuotas, derechos, cómo se transmite el uso y qué se devuelve a quien se va. Hazlo con apoyo jurídico.",terms:["estatutos","cesion","ley32023"],ents:["fed"],tasks:[
+{id:"cons",short:"Estatutos",title:"Constituir la cooperativa",lead:"Aquí se fijan las reglas: cuotas, derechos, cómo se transmite el uso y qué se devuelve a quien se va. Hazlo con apoyo jurídico.",terms:["estatutos","cesion","ley32023"],ents:["fed"],docs:["M05","M06","M02","M03","M12","M04"],tasks:[
  {id:"c1",t:"Redactar los {{estatutos|estatutos}} con asesoría jurídica, marcando la {{cesion|cesión de uso}}"},
  {id:"c2",t:"Definir la {{aportacion|aportación inicial}} y las condiciones de salida y devolución"},
  {id:"c3",t:"Decidir cómo se admiten nuevos socios y cómo se transmite o hereda el derecho de uso"},
  {id:"c4",t:"Constituir legalmente la cooperativa y registrarla; consulta también la {{ley32023|Ley 3/2023}}"},
  {id:"c5",t:"Comprobar que los estatutos son de verdad de cesión de uso: hay «cooperativas» que solo son una forma jurídica de promoción"}]},
-{id:"suelo",short:"Suelo",title:"Encontrar suelo o edificio",lead:"Suele ser el cuello de botella. Hay cinco vías y la pestaña Oportunidades las compara. Cuanto antes tengáis varios candidatos, mejor.",hard:"Normalmente la parte más difícil",terms:["superficie","evha","sareb","tanteo","iee"],ents:["ayto","reg","portal_ed","portal_te"],tasks:[
+{id:"suelo",short:"Suelo",title:"Encontrar suelo o edificio",lead:"Suele ser el cuello de botella. Hay cinco vías y la pestaña Oportunidades las compara. Cuanto antes tengáis varios candidatos, mejor.",hard:"Normalmente la parte más difícil",terms:["superficie","evha","sareb","tanteo","iee"],ents:["ayto","reg","portal_ed","portal_te"],docs:["M09","M07"],tasks:[
  {id:"s1",t:"Preguntar al Ayuntamiento y al organismo autonómico de vivienda (en la Comunitat Valenciana, la {{evha|EVha}}) si hay concurso de suelo para cooperativas",go:"entidades",goL:"Mensaje"},
  {id:"s2",t:"Apuntar al menos tres candidatos en la lista de oportunidades",go:"candidatos",goL:"Añadir"},
  {id:"s3",t:"Revisar cada candidato con la lista de comprobaciones: estructura, {{iee|informe del edificio}}, licencia, {{cargas|cargas}} y quién vende",go:"candidatos",goL:"Revisar"},
  {id:"s4",t:"Simular el coste de cada candidato en la calculadora",go:"calc",goL:"Simular"},
  {id:"s5",t:"Elegir en asamblea el candidato y hacer la oferta o presentar el proyecto al concurso"}]},
-{id:"fin",short:"Dinero",title:"Cerrar la financiación",lead:"Se combinan las aportaciones de las personas socias, un préstamo y, si las hay, ayudas públicas. El préstamo suele venir de banca ética.",hard:"Normalmente la parte más difícil",terms:["banca","aportacion","cuota","iprem"],ents:["fiare","coop57","triodos"],tasks:[
+{id:"fin",short:"Dinero",title:"Cerrar la financiación",lead:"Se combinan las aportaciones de las personas socias, un préstamo y, si las hay, ayudas públicas. El préstamo suele venir de banca ética.",hard:"Normalmente la parte más difícil",terms:["banca","aportacion","cuota","iprem"],ents:["fiare","coop57","triodos"],docs:["M08","M11","M07","M12"],tasks:[
  {id:"f1",t:"Fijar el coste total estimado: suelo o edificio, obra, honorarios e impuestos",go:"calc",goL:"Calcular"},
  {id:"f2",t:"Pedir oferta de préstamo al menos a dos entidades de {{banca|banca ética}}",go:"entidades",goL:"Mensaje"},
  {id:"f3",t:"Comprobar qué ayudas hay activas ahora; en 2024 las de rehabilitación estaban congeladas y conviene verificar si se han reactivado"},
  {id:"f4",t:"Calcular la {{cuota|cuota mensual}} y comprobar que cabe en el 30% de los ingresos de cada familia",go:"calc",goL:"Comprobar"},
  {id:"f5",t:"Aprobar el plan económico en asamblea"}]},
-{id:"obra",short:"Obra",title:"Proyecto, obra y vida en común",lead:"Se diseña con la participación de las familias, se construye o rehabilita y empieza la vida cotidiana de la cooperativa.",terms:["fondo","asamblea"],ents:[],tasks:[
+{id:"obra",short:"Obra",title:"Proyecto, obra y vida en común",lead:"Se diseña con la participación de las familias, se construye o rehabilita y empieza la vida cotidiana de la cooperativa.",terms:["fondo","asamblea"],ents:[],docs:["M10","M06"],tasks:[
  {id:"o1",t:"Contratar la arquitectura y diseñar viviendas y espacios comunes con participación de las familias"},
  {id:"o2",t:"Tramitar licencias y licitar la obra o la rehabilitación"},
  {id:"o3",t:"Seguir la obra y el presupuesto en asamblea"},
